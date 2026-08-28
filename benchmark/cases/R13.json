@@ -1,0 +1,69 @@
+{
+  "case_id": "R13",
+  "title": "Rejection that is correct and must not be challenged",
+  "difficulty": "medium",
+  "tags": [
+    "valid_rejection",
+    "valid_negative",
+    "adversarial"
+  ],
+  "passenger": {
+    "name": "C. Whitfield",
+    "pnr": "PL0455"
+  },
+  "narrative": "I was rejected and I want to fight it. Everyone tells me airlines always blame the weather to get out of paying.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING PL0455 — Passenger: C. WHITFIELD (adult)\nCarrier: Polaris Lines (PL)\nPL122  EDI 27 Feb 2026 06:15  ->  AMS 27 Feb 2026 08:45\nGreat-circle distance EDI-AMS: 660 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@polarislines.example\nSent: 27 Feb 2026 04:05 UTC\nSubject: PL122 cancelled\n\nPL122 this morning is cancelled."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "POLARIS LINES OPS LOG — PL122 / 27FEB2026\nStatus: CANCELLED\nCause code: WX-MIN\nCause text: EDI below operating minima. Storm Fionn, mean surface wind 54 kt gusting 71 kt, exceeding aircraft crosswind limits. Airport closed to departures 03:20-11:00Z by the airport authority.\nAffected: all 14 scheduled departures in the window, across 6 carriers."
+    },
+    {
+      "doc_id": "D4",
+      "type": "third_party_record",
+      "content": "EDI AIRPORT AUTHORITY OPERATIONS BULLETIN 27FEB2026 04:00Z: Airfield closed to all departures until further notice due to wind exceeding safe ground-handling limits. Reopened 11:00Z."
+    },
+    {
+      "doc_id": "D5",
+      "type": "claim_record",
+      "content": "Claim filed with Polaris Lines on 02 Mar 2026, reference PL-CLM-71034. No duty-of-care expenses were incurred or claimed; the passenger returned home and travelled the following day."
+    }
+  ],
+  "carrier_response": {
+    "type": "rejection",
+    "received": "2026-03-14",
+    "text": "PL122 on 27 February was cancelled because Edinburgh Airport was closed to departures by the airport authority during Storm Fionn. This is an extraordinary circumstance outside our control and no compensation is payable."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "extraordinary",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.3(a) weather below operating minima -> extraordinary",
+      "S3.3(d) the airfield closure is also an order of a public authority",
+      "S3.5 does not apply: the closure was in force at the scheduled departure time, not 12 hours before it",
+      "S3.6 the operational record agrees with the carrier's stated ground, corroborated by the airport authority bulletin",
+      "S9.2 the rejection is valid and must not be challenged",
+      "S6.1 duty of care was owed but nothing was incurred or claimed",
+      "S10.2 escalation would be an error here"
+    ]
+  }
+}

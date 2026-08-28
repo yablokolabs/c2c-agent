@@ -1,0 +1,57 @@
+{
+  "case_id": "R03",
+  "title": "Unforeseen technical fault, six-hour delay, long haul",
+  "difficulty": "medium",
+  "tags": [
+    "operational_disruption",
+    "grounding_over_recall"
+  ],
+  "passenger": {
+    "name": "S. Ivanova",
+    "pnr": "LP08KD"
+  },
+  "narrative": "Six hours late into Nairobi because something broke on the plane. The airline told me sudden technical faults are outside their control.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING LP08KD — Passenger: S. IVANOVA (adult)\nCarrier: Lyra Pacific (LP)\nLP771  AMS 02 Sep 2026 21:15  ->  NBO 03 Sep 2026 07:40\nSingle booking reference. Great-circle distance AMS-NBO: 6,635 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS LP771 02SEP2026 — IVANOVA/S — seat 34K — boarded 21:02Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "NBO ARRIVALS — LP771 03SEP2026\nScheduled on-blocks 07:40 local\nActual on-blocks 13:46 local\nDelay at final destination: 6h 06m"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "LYRA PACIFIC OPS LOG — LP771 / 02SEP2026\nStatus: DELAYED 06:06\nCause code: TECH-UNSCH\nCause text: Unscheduled maintenance. Bleed air valve fault detected by LP line maintenance during pre-departure checks at AMS. Part sourced from LP stores, replaced, aircraft returned to service.\nNo manufacturer or regulator directive associated with this defect."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 750,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(b) 6h 06m at final destination, at or over 3h30m",
+      "S3.2(a) technical fault, explicitly including unforeseen faults -> carrier-controlled",
+      "S3.4 fault found by carrier's own maintenance, not a manufacturer/regulator directive -> not S3.3(g)",
+      "S4.6 notice ladder does not apply to delays",
+      "S5.4 6h 06m is at or over 5 hours -> no taper",
+      "S5.1 6,635 km -> band C -> 750 units"
+    ]
+  }
+}

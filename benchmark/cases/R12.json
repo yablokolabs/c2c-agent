@@ -1,0 +1,63 @@
+{
+  "case_id": "R12",
+  "title": "Rejection citing weather contradicted by the operational record",
+  "difficulty": "medium",
+  "tags": [
+    "invalid_rejection",
+    "challenge"
+  ],
+  "passenger": {
+    "name": "E. Kowalski",
+    "pnr": "HB1188"
+  },
+  "narrative": "They turned me down saying it was the weather. It was a beautiful day. I do not know what to do next.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING HB1188 — Passenger: E. KOWALSKI (adult)\nCarrier: Halcyon (HB)\nHB640  WAW 03 Aug 2026 17:20  ->  LIS 03 Aug 2026 21:00\nGreat-circle distance WAW-LIS: 2,750 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@halcyon.example\nSent: 01 Aug 2026 19:30 UTC\nSubject: HB640 03 Aug cancelled\n\nHB640 on 03 August is cancelled. No alternative is available on this routing. Your fare has been refunded."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "HALCYON OPS LOG — HB640 / 03AUG2026\nStatus: CANCELLED\nCause code: CRW-DUTY\nCause text: Operating crew timed out following an earlier HB-controlled rotation delay. No reserve crew available at WAW.\nWeather: WAW and LIS both CAVOK for the entire operating window. No ATC restriction in force."
+    },
+    {
+      "doc_id": "D4",
+      "type": "claim_record",
+      "content": "Claim filed with Halcyon on 10 Aug 2026, reference HB-CLM-55210."
+    }
+  ],
+  "carrier_response": {
+    "type": "rejection",
+    "received": "2026-08-24",
+    "text": "Halcyon has assessed your claim HB-CLM-55210. HB640 on 3 August was cancelled owing to extraordinary circumstances, namely adverse weather conditions beyond our control. Under the applicable policy no compensation is payable. This is our final response."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "challenge_rejection",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.6 where the stated cause and the operational record disagree, the operational record governs",
+      "S3.2(b) crew timed out -> carrier-controlled, and the log records CAVOK, contradicting the weather ground",
+      "S4.1 notice 01 Aug 19:30 -> 03 Aug 17:20 is under 7 days -> 100%",
+      "S4.4 no re-routing offered -> no exemption",
+      "S5.1 2,750 km -> band B -> 420 units",
+      "S9.1(a) rejection cites S3.3 where the record shows S3.2 -> validly challengeable",
+      "S10.1(b) escalation is not yet available because the challenge has not yet been put to the carrier"
+    ]
+  }
+}

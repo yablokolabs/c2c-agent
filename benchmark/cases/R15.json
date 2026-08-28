@@ -1,0 +1,69 @@
+{
+  "case_id": "R15",
+  "title": "Challenge ignored for thirty-five days, escalation ripe",
+  "difficulty": "medium",
+  "tags": [
+    "escalation",
+    "eventual_resolution"
+  ],
+  "passenger": {
+    "name": "N. Villalobos",
+    "pnr": "AT7326"
+  },
+  "narrative": "I challenged their rejection over a month ago with the ops record attached and they have gone silent again.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING AT7326 — Passenger: N. VILLALOBOS (adult)\nCarrier: Altair (AT)\nAT900  GRU 14 Jan 2026 23:50  ->  LIS 15 Jan 2026 13:30\nGreat-circle distance GRU-LIS: 7,930 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS AT900 14JAN2026 — VILLALOBOS/N — seat 28D — boarded 23:31Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "LIS ARRIVALS — AT900 15JAN2026\nScheduled on-blocks 13:30 local\nActual on-blocks 21:12 local\nDelay at final destination: 7h 42m"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "ALTAIR OPS LOG — AT900 / 14JAN2026\nStatus: DELAYED 07:42\nCause code: TECH-UNSCH\nCause text: Engine oil filter contamination found on arrival inspection by AT maintenance at GRU. Rectification 06:40. No manufacturer directive involved.\nNo weather or ATC restriction."
+    },
+    {
+      "doc_id": "D5",
+      "type": "claim_record",
+      "content": "Claim filed with Altair 20 Jan 2026, reference AT-CLM-88420.\nAltair rejection received 12 Mar 2026 citing 'extraordinary technical circumstances'.\nPassenger challenge sent to Altair 18 Mar 2026, attaching the operational record.\nNo response from Altair since.\nToday's date for the purposes of this case: 22 Apr 2026. Days since challenge: 35. Days since filing: 92."
+    }
+  ],
+  "carrier_response": {
+    "type": "rejection",
+    "received": "2026-03-12",
+    "text": "AT900 was delayed by extraordinary technical circumstances which could not have been avoided. No compensation is payable."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 750,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "escalate",
+    "derivation": [
+      "S1.2(c) filed 20 Jan 2026 against a 14 Jan 2026 departure, well inside 18 months",
+      "S2.1(b) 7h 42m at the final destination",
+      "S3.2(a) technical fault found by the carrier's own maintenance -> carrier-controlled",
+      "S3.4 no manufacturer or regulator directive, so not S3.3(g)",
+      "S5.4 7h 42m is at or over 5 hours -> no taper",
+      "S5.1 7,930 km -> band C -> 750 units",
+      "S9.1(a) the rejection is validly challengeable and has been challenged",
+      "S10.1(b) the challenge was put 35 days ago and the carrier has not replied within 28 days -> escalation is available",
+      "S10.1(a) is independently satisfied at 92 days since filing"
+    ]
+  }
+}

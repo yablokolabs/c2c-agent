@@ -1,0 +1,63 @@
+{
+  "case_id": "R11",
+  "title": "Contradictory arrival times across three documents",
+  "difficulty": "hard",
+  "tags": [
+    "conflicting_documents",
+    "evidence_request"
+  ],
+  "passenger": {
+    "name": "G. Adeyemi",
+    "pnr": "WS4407"
+  },
+  "narrative": "I got in hours late. I have sent everything I have but the numbers do not seem to agree.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING WS4407 — Passenger: G. ADEYEMI (adult)\nCarrier: Westerly (WS)\nWS310  LOS 18 Jul 2026 08:00  ->  LHR 18 Jul 2026 14:05\nGreat-circle distance LOS-LHR: 5,000 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS WS310 18JUL2026 — ADEYEMI/G — seat 40B — boarded 08:12Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "WESTERLY PASSENGER SERVICES LETTER, 26 Jul 2026\n'Our records show WS310 on 18 July arrived at London Heathrow at 16:00 local, a delay of 1 hour 55 minutes.'"
+    },
+    {
+      "doc_id": "D4",
+      "type": "passenger_evidence",
+      "content": "Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing 'WS310 LAGOS — LANDED 19:40'."
+    },
+    {
+      "doc_id": "D5",
+      "type": "operational_record",
+      "content": "WESTERLY OPS LOG — WS310 / 18JUL2026\nStatus: DELAYED\nCause code: TECH-UNSCH\nCause text: APU replacement at LOS, WS line maintenance.\nOn-blocks LHR: FIELD CORRUPTED IN EXTRACT — value not readable."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": null,
+    "cause_class": "carrier_controlled",
+    "eligible": null,
+    "compensation_units": null,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": false,
+    "missing_evidence": [
+      "S8.3 material contradiction on actual arrival time at LHR: carrier letter D3 states 16:00 (1h55m), passenger evidence D4 indicates 19:40 (5h35m), and the operational record D5 arrival field is unreadable"
+    ],
+    "next_action": "request_evidence",
+    "derivation": [
+      "S3.2(a) cause is carrier-controlled and is not in dispute",
+      "The contradiction is material: 1h55m does not qualify under S2.1(b), 5h35m qualifies at the full amount under S5.4",
+      "S3.6 resolves conflicts about the stated cause only, not about arrival times, so it does not apply here",
+      "S8.3 a material contradiction with no resolving rule -> request_evidence naming the contradiction",
+      "Picking either figure would be an unsupported claim"
+    ]
+  }
+}

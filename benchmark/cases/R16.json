@@ -1,0 +1,76 @@
+{
+  "case_id": "R16",
+  "title": "Partial settlement: duty of care paid, compensation wrongly refused",
+  "difficulty": "hard",
+  "tags": [
+    "partial_settlement",
+    "invalid_rejection",
+    "challenge"
+  ],
+  "passenger": {
+    "name": "F. Lindqvist",
+    "pnr": "OR6614"
+  },
+  "narrative": "They paid my hotel bill but said the cancellation itself was weather so no compensation. Should I just take it?",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING OR6614 — Passenger: F. LINDQVIST (adult)\nCarrier: Orion Reach (OR)\nOR480  VIE 08 Oct 2026 19:45  ->  IST 08 Oct 2026 23:20\nGreat-circle distance VIE-IST: 2,900 km. Onward none.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@orionreach.example\nSent: 08 Oct 2026 17:10 UTC\nSubject: OR480 cancelled\n\nOR480 tonight is cancelled. You are rebooked on OR482 tomorrow at 19:45."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "ORION REACH OPS LOG — OR480 / 08OCT2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: OR crew-rostering and dispatch platform outage 08OCT 14:00-23:00Z. Internal.\nWeather VIE and IST: no restriction, both stations CAVOK. No ATC regulation applied to this rotation."
+    },
+    {
+      "doc_id": "D4",
+      "type": "receipts",
+      "content": "ITEMISED RECEIPTS: airport hotel 08-09 Oct 245.00 units, evening meal 38.00 units, breakfast 17.00 units. TOTAL 300.00 units."
+    },
+    {
+      "doc_id": "D5",
+      "type": "settlement_record",
+      "content": "ORION REACH SETTLEMENT NOTE, 02 Nov 2026: duty-of-care reimbursement of 300.00 units paid to F. LINDQVIST in respect of OR480. Compensation element refused, see decision letter."
+    },
+    {
+      "doc_id": "D6",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION OR480 08OCT2026 — LINDQVIST/F — accepted for travel 17:02Z. Flight subsequently cancelled."
+    }
+  ],
+  "carrier_response": {
+    "type": "partial_settlement",
+    "received": "2026-11-02",
+    "text": "We have reimbursed your expenses of 300.00 units in full. Compensation is however not payable, as OR480 was cancelled due to adverse weather conditions constituting an extraordinary circumstance."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 300,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "challenge_rejection",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.6 the operational record governs over the carrier's stated weather ground",
+      "S3.2(c) carrier's own rostering and dispatch platform outage -> carrier-controlled",
+      "S4.1 notice 08 Oct 17:10 -> 08 Oct 19:45 is under 7 days -> 100%",
+      "S4.4 the re-route arrived roughly 24 hours late, far outside the 2h window -> no exemption",
+      "S5.1 2,900 km -> band B -> 420 units",
+      "S6.3 duty of care of 300.00 units is at the cap and has been settled correctly",
+      "S9.3 a partial settlement is challengeable on the refused portion only",
+      "S9.1(a) the refused compensation element cites S3.3 against a record showing S3.2 -> challenge",
+      "S10.1(b) escalation is not yet available; the challenge must be put to the carrier first"
+    ]
+  }
+}

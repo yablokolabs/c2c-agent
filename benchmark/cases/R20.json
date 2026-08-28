@@ -1,0 +1,63 @@
+{
+  "case_id": "R20",
+  "title": "Passenger overstates the delay; evidence shows just under threshold",
+  "difficulty": "hard",
+  "tags": [
+    "adversarial",
+    "unsupported_claim",
+    "valid_negative"
+  ],
+  "passenger": {
+    "name": "V. Moreau",
+    "pnr": "LU3390"
+  },
+  "narrative": "We were six hours late, easily. It was a nightmare. I want the full amount for the distance.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING LU3390 — Passenger: V. MOREAU (adult)\nCarrier: Lumen Air (LU)\nLU740  LYS 06 Apr 2026 07:30  ->  IST 06 Apr 2026 11:50\nGreat-circle distance LYS-IST: 1,970 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS LU740 06APR2026 — MOREAU/V — seat 18E — boarded 10:20Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "IST ARRIVALS — LU740 06APR2026\nScheduled on-blocks 11:50 local\nActual on-blocks 15:10 local\nDelay at final destination: 3h 20m\nSource: airport arrivals database extract, 06 Apr 2026."
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "LUMEN AIR OPS LOG — LU740 / 06APR2026\nStatus: DELAYED 03:20\nCause code: CRW-LATE\nCause text: Operating crew delayed in transit, LU-controlled. Departure 03:15 late, 5 minutes further lost in taxi at IST.\nNo weather or ATC restriction."
+    },
+    {
+      "doc_id": "D5",
+      "type": "passenger_statement",
+      "content": "We sat on the ground for what felt like forever and I did not get to my hotel until the evening. It was at least six hours from when we should have landed."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": false,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S2.1(b) requires 3 hours 30 minutes or more at the final destination",
+      "S2.2 the measurement is at the final destination IST, from the arrivals record",
+      "The documented delay is 3h 20m, ten minutes under the threshold, so the disruption does not qualify",
+      "The cause is carrier-controlled but that is irrelevant once Part 2 is not satisfied",
+      "The passenger's own estimate of six hours is contradicted by D3 and D4 and must not be relied on",
+      "Evidence is sufficient; this is a determination, not an evidence request"
+    ]
+  }
+}

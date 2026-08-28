@@ -1,0 +1,54 @@
+{
+  "case_id": "R10",
+  "title": "Cancellation with no notification timestamp",
+  "difficulty": "medium",
+  "tags": [
+    "missing_evidence",
+    "evidence_request",
+    "advance_notice"
+  ],
+  "passenger": {
+    "name": "R. Delacroix",
+    "pnr": "KV9013"
+  },
+  "narrative": "They cancelled it and I am fairly sure they only told me a couple of days before, but I deleted the email.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING KV9013 — Passenger: R. DELACROIX (adult)\nCarrier: Kestrel Vale (KV)\nKV77  CDG 09 Feb 2026 10:30  ->  ATH 09 Feb 2026 14:40\nGreat-circle distance CDG-ATH: 2,100 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "operational_record",
+      "content": "KESTREL VALE OPS LOG — KV77 / 09FEB2026\nStatus: CANCELLED\nCause code: CRW-SICK\nCause text: Captain reported unfit to fly, no standby captain at CDG.\nPassenger notification dispatch log not included in this extract."
+    },
+    {
+      "doc_id": "D3",
+      "type": "passenger_statement",
+      "content": "I am fairly sure the email came in on the 7th, maybe the 6th. I no longer have it. I did not travel and I took the refund."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": null,
+    "compensation_units": null,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": false,
+    "missing_evidence": [
+      "S8.1(e) the carrier's cancellation notification showing its timestamp"
+    ],
+    "next_action": "request_evidence",
+    "derivation": [
+      "S2.1(a) cancellation is established",
+      "S3.2(b) crew sickness with no standby -> carrier-controlled",
+      "S4.1 the notice ladder is measured from the moment of notification",
+      "S8.1(e) without the notification timestamp the Part 4 ladder cannot be applied",
+      "S8.2 the passenger's recollection is not evidence of a timestamp; request it rather than assume it"
+    ]
+  }
+}

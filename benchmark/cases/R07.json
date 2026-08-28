@@ -1,0 +1,58 @@
+{
+  "case_id": "R07",
+  "title": "Fourteen days notice, non-compliant re-route, exact band boundary",
+  "difficulty": "hard",
+  "tags": [
+    "advance_notice",
+    "rerouting_exemption",
+    "band_boundary"
+  ],
+  "passenger": {
+    "name": "L. Haddad",
+    "pnr": "ZR7781"
+  },
+  "narrative": "Cancelled two weeks ahead. The replacement flight got me in more than five hours later than I was meant to arrive.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING ZR7781 — Passenger: L. HADDAD (adult)\nCarrier: Zephyr Regional (ZR)\nZR260  DUB 01 Oct 2026 16:45  ->  MXP 01 Oct 2026 20:15\nGreat-circle distance DUB-MXP: 1,200 km exactly (per carrier tariff table).\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: schedules@zephyr-regional.example\nSent: 17 Sep 2026 08:00 UTC\nSubject: ZR260 01 Oct cancelled\n\nZR260 on 01 October is cancelled. We can re-route you on ZR266, departing DUB 01 Oct 18:20 and arriving MXP 01 Oct 01:35 on 02 October."
+    },
+    {
+      "doc_id": "D3",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS ZR266 01OCT2026 — HADDAD/L — seat 14F — travelled as re-routed"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "ZEPHYR REGIONAL OPS LOG — ZR260 / 01OCT2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: Crew rostering system failure, ZR internal. Roster could not be published for 01 Oct DUB rotations."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 90,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(c) carrier's own IT/scheduling failure -> carrier-controlled",
+      "S4.1 notice 17 Sep 08:00 -> 01 Oct 16:45 is 14 days, inside the 7-20 day band -> 50%",
+      "S4.3 re-route arrived 01:35 on 02 Oct against an original 20:15 on 01 Oct, 5h 20m late, over the 4h limit -> exemption does not apply",
+      "S5.1 and S5.3 distance is exactly 1,200 km, and at exactly 1,200 km the lower band applies -> band A -> 180 units",
+      "S4.2 180 x 0.50 = 90 units"
+    ]
+  }
+}
