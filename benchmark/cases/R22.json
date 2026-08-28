@@ -1,0 +1,58 @@
+{
+  "case_id": "R22",
+  "title": "Two composed reductions at an exact band boundary",
+  "difficulty": "hard",
+  "tags": [
+    "delay_taper",
+    "band_boundary",
+    "arithmetic_chain"
+  ],
+  "passenger": {
+    "name": "A. Chaudhry",
+    "pnr": "EM7745"
+  },
+  "narrative": "Three and three quarter hours late into Amman. What is the figure?",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING EM7745 — Passenger: A. CHAUDHRY (adult)\nCarrier: Emerald Meridian (EM)\nEM604  LHR 28 Aug 2026 11:25  ->  AMM 28 Aug 2026 19:40\nGreat-circle distance LHR-AMM: 4,000 km exactly (per carrier tariff table).\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS EM604 28AUG2026 — CHAUDHRY/A — seat 30A — boarded 11:10Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "AMM ARRIVALS — EM604 28AUG2026\nScheduled on-blocks 19:40 local\nActual on-blocks 23:25 local\nDelay at final destination: 3h 45m"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "EMERALD MERIDIAN OPS LOG — EM604 / 28AUG2026\nStatus: DELAYED 03:45\nCause code: ROT-INB\nCause text: Late inbound aircraft. Inbound EM603 delayed by EM engineering hold at AMM. No weather, no ATC regulation.\nNo cancellation. No re-routing; the passenger travelled on the booked flight."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 210,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(b) 3h 45m at the final destination, at or over 3h30m",
+      "S3.2(e) late inbound aircraft, inbound delay itself carrier-controlled",
+      "S5.3 at exactly 4,000 km band B applies, not band C",
+      "S5.1 band B -> 420 units",
+      "S5.4 3h 45m is at or over 3h30m but under 5 hours -> 50% taper -> 210 units",
+      "S4.6 the notice ladder does not apply to delays, so no second reduction"
+    ]
+  }
+}

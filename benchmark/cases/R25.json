@@ -1,0 +1,69 @@
+{
+  "case_id": "R25",
+  "title": "Receipts with a non-reimbursable item and a cap",
+  "difficulty": "hard",
+  "tags": [
+    "weather_extraordinary",
+    "duty_of_care",
+    "arithmetic_chain",
+    "partial_entitlement"
+  ],
+  "passenger": {
+    "name": "Z. Almeida",
+    "pnr": "NC5518"
+  },
+  "narrative": "Volcanic ash, everything shut down, I was stranded for two nights and spent a fortune. Here is everything I paid for.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING NC5518 — Passenger: Z. ALMEIDA (adult)\nCarrier: Northcape (NC)\nNC410  KEF 03 Mar 2026 16:00  ->  CPH 03 Mar 2026 21:20\nGreat-circle distance KEF-CPH: 2,100 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@northcape.example\nSent: 03 Mar 2026 11:30 UTC\nSubject: NC410 cancelled\n\nNC410 is cancelled. Icelandic airspace is closed. We will rebook you as soon as the airspace reopens."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "NORTHCAPE OPS LOG — NC410 / 03MAR2026\nStatus: CANCELLED\nCause code: ATC-CLOSE\nCause text: Airspace closed by the air navigation service provider following a volcanic ash advisory. Closure 03MAR 10:00Z to 05MAR 06:00Z. All operators grounded.\nPassenger rebooked onto NC414, departing 05 Mar 14:00."
+    },
+    {
+      "doc_id": "D4",
+      "type": "receipts",
+      "content": "ITEMISED EXPENSES SUBMITTED BY PASSENGER\n1. Airport hotel, 2 nights 03-05 Mar ......................... 210.00 units (receipt 7781)\n2. Meals, 3 Mar evening ...................................... 31.00 units (receipt 7782)\n3. Meals, 4 Mar, three meals ................................. 58.00 units (receipt 7783)\n4. Taxi, airport to hotel and return ......................... 21.00 units (receipt 7784)\n5. Replacement clothing and toiletries ....................... 95.00 units (receipt 7785)\nTOTAL SUBMITTED 415.00 units"
+    },
+    {
+      "doc_id": "D5",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION NC410 03MAR2026 — ALMEIDA/Z — accepted for travel 14:38Z, seat 6A. Flight subsequently cancelled."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "extraordinary",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 300,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.3(b) airspace closure by the air navigation service provider, not caused by the carrier -> extraordinary",
+      "S3.5 does not apply: the closure was still in force at the scheduled departure time",
+      "No Part 5 compensation is payable",
+      "S6.1 duty of care is owed regardless of cause",
+      "S6.2(b) hotel 210.00 and airport transfer 21.00 are reimbursable",
+      "S6.2(a) meals 31.00 and 58.00 are reimbursable",
+      "Replacement clothing is not among the categories in S6.2 and is not reimbursable, so 95.00 is excluded",
+      "Reimbursable subtotal is 210 + 31 + 58 + 21 = 320.00 units",
+      "S6.3 the cap is 300 units per passenger per disruption -> 300 units payable",
+      "S6.4 itemised receipts are present for every line"
+    ]
+  }
+}

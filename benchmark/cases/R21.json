@@ -1,0 +1,87 @@
+{
+  "case_id": "R21",
+  "title": "Decisive fact buried at document eight of nine",
+  "difficulty": "hard",
+  "tags": [
+    "advance_notice",
+    "rerouting_exemption",
+    "buried_fact",
+    "valid_negative",
+    "distractors"
+  ],
+  "passenger": {
+    "name": "I. Petrova",
+    "pnr": "GM4471"
+  },
+  "narrative": "Cancelled four days before I flew. I ended up travelling anyway but I am sure I am owed something. I have sent you the whole file.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING GM4471 — Passenger: I. PETROVA (adult)\nCarrier: Gulfmark (GM)\nGM212  TLV 12 May 2026 08:00  ->  ATH 12 May 2026 10:45\nGreat-circle distance TLV-ATH: 1,230 km.\nStatus: CONFIRMED. Fare paid: 178.00 units."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@gulfmark.example\nSent: 08 May 2026 13:20 UTC\nSubject: GM212 on 12 May is cancelled\n\nGM212 on 12 May will not operate. Our team will contact you separately about your options."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "GULFMARK OPS LOG — GM212 / 12MAY2026\nStatus: CANCELLED\nCause code: CRW-DUTY\nCause text: Operating crew duty limit breach projected. No standby crew at TLV.\nNo weather restriction. No ATC regulation."
+    },
+    {
+      "doc_id": "D4",
+      "type": "third_party_record",
+      "content": "TLV METEOROLOGICAL SUMMARY 12MAY2026: CAVOK throughout. Surface wind 8 kt. No operational impact recorded at any point during the day."
+    },
+    {
+      "doc_id": "D5",
+      "type": "passenger_statement",
+      "content": "I remember being extremely annoyed. I had a meeting in Athens at lunchtime and I very nearly missed it."
+    },
+    {
+      "doc_id": "D6",
+      "type": "correspondence",
+      "content": "From: i.petrova@example.org\nTo: claims@gulfmark.example\nSent: 20 May 2026\n\nI would like to claim compensation for GM212 on 12 May, which you cancelled."
+    },
+    {
+      "doc_id": "D7",
+      "type": "third_party_record",
+      "content": "ATH AIRPORT ARRIVALS EXTRACT 12MAY2026 — 47 arrivals recorded between 09:00 and 13:00, no delays over 25 minutes attributable to airport handling. Provided for completeness."
+    },
+    {
+      "doc_id": "D8",
+      "type": "correspondence",
+      "content": "GULFMARK CUSTOMER SERVICE CONTACT NOTE\nRef GM212 / GM4471 / PETROVA\nLogged 08 May 2026 14:05 UTC by agent 3391.\n\nCalled passenger following the cancellation notice. Offered re-routing on GM216, departing TLV 12 May at 07:30 and arriving ATH 12 May at 12:20. Passenger accepted this offer on the call and was reticketed the same day. Confirmation reissued 08 May 14:11 UTC."
+    },
+    {
+      "doc_id": "D9",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS GM216 12MAY2026 — PETROVA/I — seat 11C — boarded 07:16Z"
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(b) crew duty limit -> carrier-controlled",
+      "S4.1 notice 08 May 13:20 -> 12 May 08:00 is under 7 days, so S4.4 governs",
+      "S4.4 re-route in D8 departed 07:30, 30 minutes before the original 08:00, within the 1 hour limit",
+      "S4.4 re-route arrived 12:20 against an original 10:45, 1h 35m late, under the 2 hour limit",
+      "S4.4 exemption applies -> no compensation",
+      "S6.2(a) the wait was 1h 35m, under the 2 hour threshold, so no meals entitlement arises",
+      "The decisive fact is the re-routing offer recorded in D8; D4, D5 and D7 are not material"
+    ]
+  }
+}

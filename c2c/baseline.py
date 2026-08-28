@@ -13,6 +13,8 @@ from c2c.llm import LLM, LLMResult, extract_json
 from c2c.models import Case, Verdict
 from c2c.trajectory import Recorder
 
+BASELINE_PROMPT = "baseline_v2"
+
 
 def _coerce(raw: dict) -> Verdict:
     """Accept what the model actually returns rather than demanding perfection.
@@ -35,7 +37,7 @@ def _coerce(raw: dict) -> Verdict:
 
 
 def run_case(case: Case, llm: LLM, rec: Optional[Recorder] = None) -> tuple[Optional[Verdict], list[LLMResult]]:
-    template = prompts.load("baseline_v1")
+    template = prompts.load(BASELINE_PROMPT)
     system, user = template.split("## THE CASE", 1)[0], case.dossier()
     system = system.replace("{policy}", prompts.policy()).replace("## THE POLICY", "## THE POLICY").strip()
     user = "## THE CASE\n\n" + user

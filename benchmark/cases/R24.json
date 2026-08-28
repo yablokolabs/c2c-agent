@@ -1,0 +1,63 @@
+{
+  "case_id": "R24",
+  "title": "Strong claim filed nineteen months late",
+  "difficulty": "hard",
+  "tags": [
+    "out_of_scope",
+    "valid_negative",
+    "distractors",
+    "adversarial"
+  ],
+  "passenger": {
+    "name": "Q. Mensah",
+    "pnr": "BR3312"
+  },
+  "narrative": "I only just found out I could claim for this. It was a clear-cut case, they admitted it was their fault at the time.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING BR3312 — Passenger: Q. MENSAH (adult)\nCarrier: Boreal Rift (BR)\nBR150  YYZ 04 Feb 2025 18:20  ->  LHR 05 Feb 2025 06:30\nGreat-circle distance YYZ-LHR: 5,720 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@borealrift.example\nSent: 04 Feb 2025 12:00 UTC\nSubject: BR150 cancelled\n\nBR150 this evening is cancelled. We are sorry; this was caused by a fault on our aircraft and no replacement is available tonight."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "BOREAL RIFT OPS LOG — BR150 / 04FEB2025\nStatus: CANCELLED\nCause code: TECH-UNSCH\nCause text: Nose gear steering fault found by BR line maintenance at YYZ. No manufacturer directive. BR accepts this as within its control.\nNo weather, no ATC restriction."
+    },
+    {
+      "doc_id": "D4",
+      "type": "claim_record",
+      "content": "Claim prepared for filing with Boreal Rift on 12 Sep 2026.\nScheduled departure of the first affected segment: 04 Feb 2025 18:20.\nElapsed between scheduled departure and filing: 19 months and 8 days."
+    },
+    {
+      "doc_id": "D5",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION BR150 04FEB2025 — MENSAH/Q — accepted for travel 16:44Z, seat 44J. Flight subsequently cancelled."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": false,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S1.2(c) a claim must be filed within 18 months of the scheduled departure of the first affected segment",
+      "Scheduled departure 04 Feb 2025, filing 12 Sep 2026, an elapsed 19 months and 8 days",
+      "S1.3 a claim failing any limb of S1.2 is out of scope and receives no compensation and no duty of care",
+      "The merits are strong and the carrier admits fault, and none of that survives S1.3",
+      "S2 and S3 are reached in the analysis but cannot rescue an out-of-scope claim"
+    ]
+  }
+}

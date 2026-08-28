@@ -42,7 +42,7 @@ class CarrierResponse(BaseModel):
 
 
 class GroundTruth(BaseModel):
-    in_scope: bool
+    in_scope: Optional[bool]
     qualifies: Optional[bool]
     cause_class: CauseClass
     eligible: Optional[bool]
@@ -94,7 +94,7 @@ class Case(BaseModel):
 class Verdict(BaseModel):
     """What the baseline or the agent concluded about a case."""
 
-    in_scope: bool
+    in_scope: Optional[bool] = None
     qualifies: Optional[bool] = None
     cause_class: CauseClass = "unknown"
     eligible: Optional[bool] = None
