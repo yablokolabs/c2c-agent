@@ -1,0 +1,82 @@
+{
+  "case_id": "R27",
+  "title": "Stated cause contradicted by the record, where the policy resolves it",
+  "difficulty": "hard",
+  "tags": [
+    "conflicting_documents",
+    "rule_scope",
+    "operational_disruption",
+    "distractors"
+  ],
+  "passenger": {
+    "name": "L. Fontaine",
+    "pnr": "CV1140"
+  },
+  "narrative": "The letter they sent blames air traffic control. Their own log says something completely different. I have not filed anything yet.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING CV1140 — Passenger: L. FONTAINE (adult)\nCarrier: Corvid Atlantic (CV)\nCV720  MAD 09 Sep 2026 06:40  ->  DUB 09 Sep 2026 08:55\nGreat-circle distance MAD-DUB: 1,450 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "correspondence",
+      "content": "From: care@corvidatlantic.example\nSent: 09 Sep 2026 09:30 UTC\nSubject: About your flight CV720\n\nWe are sorry your flight was cancelled this morning. This was the result of an air traffic control restriction outside our control."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "CORVID ATLANTIC OPS LOG — CV720 / 09SEP2026\nStatus: CANCELLED\nCause code: CRW-SICK\nCause text: First officer reported unfit at 04:10Z. No standby first officer at MAD base. Aircraft and slot both available and unaffected.\nATC: no regulation applied to CV720 or to any MAD departure in the 06:00-09:00Z window.\nWeather: CAVOK MAD and DUB."
+    },
+    {
+      "doc_id": "D4",
+      "type": "third_party_record",
+      "content": "EUROPEAN NETWORK MANAGER DAILY REGULATION EXTRACT, 09SEP2026: no ATC regulation in force affecting MAD departures between 04:00Z and 12:00Z. Two regulations recorded elsewhere in the network, affecting ACC Marseille and ACC Vienna, neither on the MAD-DUB routing."
+    },
+    {
+      "doc_id": "D5",
+      "type": "carrier_notification",
+      "content": "From: ops@corvidatlantic.example\nSent: 09 Sep 2026 04:50 UTC\nSubject: CV720 cancelled\n\nCV720 this morning is cancelled. Please contact us to rebook."
+    },
+    {
+      "doc_id": "D6",
+      "type": "passenger_statement",
+      "content": "I did not travel in the end. I took the refund and cancelled the trip. I did not spend anything at the airport; I went straight home."
+    },
+    {
+      "doc_id": "D7",
+      "type": "claim_record",
+      "content": "No claim has been filed with Corvid Atlantic. No rejection has been issued."
+    },
+    {
+      "doc_id": "D8",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION CV720 09SEP2026 — FONTAINE/L — accepted for travel 04:31Z. Flight subsequently cancelled."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.6 where the carrier's stated cause and the operational record disagree, the operational record governs, so this conflict is resolved by rule and is not an S8.3 evidence request",
+      "S3.2(b) crew sickness with no standby -> carrier-controlled, corroborated by D4",
+      "S4.1 notice 09 Sep 04:50 -> 09 Sep 06:40 is under 7 days -> 100%",
+      "S4.4 no re-routing offered -> no exemption",
+      "S5.1 1,450 km -> band B -> 420 units",
+      "S6.1 duty of care was owed but D6 records that nothing was incurred",
+      "D2 is a customer-service letter, not a rejection, and no claim has been filed, so the correct action is to submit rather than to challenge",
+      "S10.2 escalation would be premature"
+    ]
+  }
+}

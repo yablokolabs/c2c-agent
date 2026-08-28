@@ -11,9 +11,9 @@ from c2c.models import Verdict, load_cases
 CASES = load_cases()
 
 
-def test_twenty_cases_present():
-    assert len(CASES) == 20
-    assert {c.case_id for c in CASES} == {f"R{i:02d}" for i in range(1, 21)}
+def test_all_cases_present_and_contiguous():
+    assert len(CASES) == 28
+    assert {c.case_id for c in CASES} == {f"R{i:02d}" for i in range(1, 29)}
 
 
 def test_required_coverage():
@@ -96,23 +96,28 @@ def test_perfect_verdicts_score_one():
     assert agg["false_escalations"] == 0
 
 
-def test_constant_guesser_scores_poorly():
-    """A system that always says 'submit the claim for 420 units' must not
-    look good, or the primary metric is not measuring anything."""
-    scores = [
-        score_case(
-            c,
-            Verdict(
-                in_scope=True,
-                eligible=True,
-                compensation_units=420,
-                evidence_sufficient=True,
-                next_action="submit_claim",
-            ),
-        )
-        for c in CASES
-    ]
-    assert aggregate(scores)["case_resolution_accuracy"] <= 0.10
+def test_no_constant_guess_scores_well():
+    """The strongest possible constant answer must still score badly, or the
+    primary metric is not measuring anything. This searches the whole space of
+    constant answers rather than checking one hand-picked guess."""
+    actions = {c.ground_truth.next_action for c in CASES}
+    amounts = {c.ground_truth.compensation_units for c in CASES}
+    doc_amounts = {c.ground_truth.duty_of_care_units for c in CASES}
+    best = 0.0
+    for action in actions:
+        for amount in amounts:
+            for doc in doc_amounts:
+                agg = aggregate([
+                    score_case(c, Verdict(
+                        compensation_units=amount,
+                        duty_of_care_units=doc,
+                        evidence_sufficient=True,
+                        next_action=action,
+                    ))
+                    for c in CASES
+                ])
+                best = max(best, agg["case_resolution_accuracy"])
+    assert best <= 0.30, f"best constant guess scores {best}, benchmark is too guessable"
 
 
 def test_missing_verdict_scores_zero():

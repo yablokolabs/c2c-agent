@@ -8,13 +8,18 @@ PRIMARY METRIC — Case Resolution Accuracy (CRA)
     passenger actually needs right, at once:
       1. the recommended next action,
       2. the compensation figure (including correctly declining to give one),
-      3. the eligibility determination.
+      3. the other entitlements — duty of care and downgrade reimbursement.
     Partial credit is not given, because a case handled with the right action
     and the wrong amount is still a case handled wrongly.
 
 The three-way conjunction is deliberate. Any of the components on its own is
 easy to score well on by guessing the majority class, and a passenger is not
-helped by a system that is right about eligibility and wrong about what to do.
+helped by a system that is right about the amount and wrong about what to do.
+
+The third term was originally the eligibility flag. It was replaced after the
+first baseline run showed that flag to be exactly `compensation_units > 0` in
+every case in the benchmark, so it added noise to the conjunction rather than
+strictness. See FAILURES.md F-002. Eligibility survives as a secondary rate.
 """
 
 from __future__ import annotations
@@ -86,16 +91,22 @@ def score_case(case: Case, v: Optional[Verdict]) -> CaseScore:
     false_escalation = v.next_action == "escalate" and gt.next_action != "escalate"
     missed_escalation = gt.next_action == "escalate" and v.next_action != "escalate"
 
+    duty_of_care_correct = v.duty_of_care_units == gt.duty_of_care_units
+    downgrade_correct = v.downgrade_reimbursement_units == gt.downgrade_reimbursement_units
+
     return CaseScore(
         case_id=case.case_id,
-        resolved=action_correct and compensation_correct and eligibility_correct,
+        resolved=(
+            action_correct and compensation_correct
+            and duty_of_care_correct and downgrade_correct
+        ),
         action_correct=action_correct,
         compensation_correct=compensation_correct,
         eligibility_correct=eligibility_correct,
         cause_correct=v.cause_class == gt.cause_class,
         evidence_correct=v.evidence_sufficient == gt.evidence_sufficient,
-        duty_of_care_correct=v.duty_of_care_units == gt.duty_of_care_units,
-        downgrade_correct=v.downgrade_reimbursement_units == gt.downgrade_reimbursement_units,
+        duty_of_care_correct=duty_of_care_correct,
+        downgrade_correct=downgrade_correct,
         unsupported_claim=unsupported_claim,
         unsupported_challenge=unsupported_challenge,
         false_escalation=false_escalation,

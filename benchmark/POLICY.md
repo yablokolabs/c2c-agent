@@ -1,6 +1,6 @@
 # C2C Synthetic Hackathon Compensation Policy
 
-**Version:** SHCP v1.0
+**Version:** SHCP v1.1
 **Status:** SYNTHETIC. This document is invented for a hackathon benchmark.
 
 > This is **not** the law or policy of any real airline, regulator or
@@ -241,6 +241,10 @@ contradiction, unless S3.6 resolves it.
 **S9.2** A rejection is **valid and must not be challenged** where the
 operational record supports the carrier's stated ground. Challenging a valid
 rejection is an error.
+
+**S9.4** A settlement offer that **meets or exceeds** the passenger's full
+entitlement, calculated across Parts 5, 6 and 7 together, should be accepted. An
+offer **below** that total is a partial settlement and is governed by S9.3.
 
 **S9.3** A partial settlement — the carrier paying duty of care but refusing
 compensation, or paying a lower band — is challengeable on the refused portion

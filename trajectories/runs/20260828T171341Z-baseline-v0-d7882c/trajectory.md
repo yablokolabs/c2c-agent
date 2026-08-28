@@ -1,0 +1,1572 @@
+# Trajectory — baseline-v0 (baseline)
+
+- Run: `20260828T171341Z-baseline-v0-d7882c`
+- Commit: `6471db68c41534301c0f409343788febd60fb725`
+- Events: 82
+- Span: 2026-08-28T17:13:41.839086+00:00 to 2026-08-28T17:20:34.858299+00:00
+
+
+## Case (no case)
+
+### **person**
+<sub>2026-08-28T17:13:41.839086+00:00</sub>
+
+*input*
+
+```
+{
+  "system": "baseline",
+  "stage": "baseline-v0",
+  "model": "claude-haiku-4-5-20251001",
+  "backend": "cli",
+  "n_cases": 20,
+  "note": "Fair baseline: one direct prompt, full policy, full dossier, no tools, no verification, no workflow."
+}
+```
+
+
+## Case R01
+
+### **start** · `baseline`
+<sub>2026-08-28T17:13:41.839379+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:13:41.839469+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R01\nPassenger: A. Mendes  (booking QX7T4L)\n\nWHAT THE PASSENGER SAYS\nMy flight from Lisbon to Vienna was cancelled. They emailed me on the 3rd, the flight was on the 6th. I had to buy a train ticket in the end. I want to know what I am owed.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING QX7T4L — Passenger: A. MENDES (adult)\nCarrier: Meridian Air (MR)\nMR414  LIS 06 Mar 2026 07:40  ->  VIE 06 Mar 2026 11:55\nSingle booking reference. Great-circle distance LIS-VIE: 2,090 km.\nStatus: CONFIRMED. Fare paid: 214.00 units.\n\n--- D2 [carrier_notification] ---\nFrom: notifications@meridian-air.example\nTo: a.mendes@example.org\nSent: 03 Mar 2026 09:12 UTC\nSubject: Cancellation of MR414 on 06 Mar 2026\n\nWe regret to inform you that MR414 (LIS-VIE, 06 Mar) has been cancelled. Your booking has been refunded in full. No alternative flight was offered on this routing.\n\n--- D3 [operational_record] ---\nMERIDIAN AIR OPS LOG — MR414 / 06MAR2026\nStatus: CANCELLED\nCause code: CRW-DUTY\nCause text: Operating crew unavailable; standby crew exceeded permitted duty hours. No reserve crew at LIS base.\nNo weather restriction in force at LIS or VIE.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+### **model out** · `baseline` · 69687 ms
+<sub>2026-08-28T17:14:51.527474+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.2(b)", "S4.2", "S5.1"],
+  "rationale": "Flight was cancelled due to crew duty-hour exhaustion (S3.2(b), carrier-controlled). Notification was 03 Mar at 09:12 for a 06 Mar departure—approximately 2.9 days, less than 7 days under S4.2. No re-routing exemption applies; the carrier offered no alternative (D2). Distance 2,090 km places this in Band B (420 units). Full compensation is payable. Duty of care (0 units) would require itemised receipts of incurred expenses; the passenger mentioned a train ticket but did not formally claim reimbursement or provide documentation. The claim is ready to submit to the carrier."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:14:51.527781+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.2(b)",
+    "S4.2",
+    "S5.1"
+  ],
+  "rationale": "Flight was cancelled due to crew duty-hour exhaustion (S3.2(b), carrier-controlled). Notification was 03 Mar at 09:12 for a 06 Mar departure—approximately 2.9 days, less than 7 days under S4.2. No re-routing exemption applies; the carrier offered no alternative (D2). Distance 2,090 km places this in Band B (420 units). Full compensation is payable. Duty of care (0 units) would require itemised receipts of incurred expenses; the passenger mentioned a train ticket but did not formally claim reimbursement or provide documentation. The claim is ready to submit to the carrier."
+}
+```
+
+
+## Case R02
+
+### **start** · `baseline`
+<sub>2026-08-28T17:14:51.528739+00:00</sub>
+
+
+## Case R03
+
+### **start** · `baseline`
+<sub>2026-08-28T17:14:51.528597+00:00</sub>
+
+
+## Case R04
+
+### **start** · `baseline`
+<sub>2026-08-28T17:14:51.529482+00:00</sub>
+
+
+## Case R03
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:14:51.529756+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R03\nPassenger: S. Ivanova  (booking LP08KD)\n\nWHAT THE PASSENGER SAYS\nSix hours late into Nairobi because something broke on the plane. The airline told me sudden technical faults are outside their control.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING LP08KD — Passenger: S. IVANOVA (adult)\nCarrier: Lyra Pacific (LP)\nLP771  AMS 02 Sep 2026 21:15  ->  NBO 03 Sep 2026 07:40\nSingle booking reference. Great-circle distance AMS-NBO: 6,635 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS LP771 02SEP2026 — IVANOVA/S — seat 34K — boarded 21:02Z\n\n--- D3 [arrival_record] ---\nNBO ARRIVALS — LP771 03SEP2026\nScheduled on-blocks 07:40 local\nActual on-blocks 13:46 local\nDelay at final destination: 6h 06m\n\n--- D4 [operational_record] ---\nLYRA PACIFIC OPS LOG — LP771 / 02SEP2026\nStatus: DELAYED 06:06\nCause code: TECH-UNSCH\nCause text: Unscheduled maintenance. Bleed air valve fault detected by LP line maintenance during pre-departure checks at AMS. Part sourced from LP stores, replaced, aircraft returned to service.\nNo manufacturer or regulator directive associated with this defect.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R02
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:14:51.529270+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R02\nPassenger: H. Okonkwo  (booking BB2M91)\n\nWHAT THE PASSENGER SAYS\nSnowstorm, flight cancelled, I was stuck overnight and paid for a hotel and dinner myself. The airline says weather means they owe me nothing at all. Is that right?\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING BB2M91 — Passenger: H. OKONKWO (adult)\nCarrier: Northwind (NW)\nNW220  OSL 14 Jan 2026 18:30  ->  MAN 14 Jan 2026 20:05\nSingle booking reference. Great-circle distance OSL-MAN: 1,045 km.\nStatus: CONFIRMED. Fare paid: 96.00 units.\n\n--- D2 [carrier_notification] ---\nFrom: ops@northwind.example\nSent: 14 Jan 2026 16:02 UTC\nSubject: NW220 cancelled\n\nNW220 OSL-MAN on 14 Jan is cancelled. You have been rebooked on NW222 departing 15 Jan 2026 09:15.\n\n--- D3 [operational_record] ---\nNORTHWIND OPS LOG — NW220 / 14JAN2026\nStatus: CANCELLED\nCause code: WX-MIN\nCause text: OSL below operating minima. RVR 275m, freezing snow, airport departure rate reduced to zero 15:40-22:00Z. Airport authority declared ground stop.\n\n--- D4 [receipts] ---\nITEMISED RECEIPTS SUBMITTED BY PASSENGER\n1. Clarion Hotel Oslo Airport, 1 night 14-15 Jan, room only .... 190.00 units (receipt no. 44812)\n2. Airport restaurant, evening meal 14 Jan ................... 34.00 units (receipt no. 9911)\n3. Breakfast 15 Jan .......................................... 16.00 units (receipt no. 9974)\nTOTAL 240.00 units\n\n--- D5 [boarding_pass] ---\nCHECK-IN CONFIRMATION NW220 14JAN2026 — OKONKWO/H — accepted for travel 15:55Z, seat 12C. Flight subsequently cancelled.\n\nCARRIER RESPONSE (rejection, received 2026-01-20)\nYour claim is declined. NW220 was cancelled due to extraordinary circumstances (severe weather) outside our control. No compensation is payable and we are unable to reimburse your expenses.\n"
+}
+```
+
+
+## Case R06
+
+### **start** · `baseline`
+<sub>2026-08-28T17:14:51.529696+00:00</sub>
+
+
+## Case R04
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:14:51.529881+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R04\nPassenger: D. Ferreira  (booking MT5590)\n\nWHAT THE PASSENGER SAYS\nMy first flight was late so I missed my connection in Doha and got in to Sydney the next morning. I was told the delay only counts on the leg that was late.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING MT5590 — Passenger: D. FERREIRA (adult)\nCarrier: Meridian Transcontinental (MT)\nMT119  MAD 11 Nov 2026 14:20  ->  DOH 11 Nov 2026 23:10\nMT402  DOH 12 Nov 2026 01:55  ->  SYD 12 Nov 2026 21:30\nBOTH SEGMENTS ON THIS SINGLE BOOKING REFERENCE.\nGreat-circle distance MAD-SYD (origin to final destination): 17,680 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS MT119 11NOV2026 — FERREIRA/D — seat 21A — boarded 14:05Z\n\n--- D3 [operational_record] ---\nMT OPS LOG — MT119 / 11NOV2026\nStatus: DELAYED 02:35 departure\nCause code: ROT-INB\nCause text: Late inbound aircraft. Inbound MT118 delayed by MT ground handling shortfall at MAD. No weather or ATC restriction.\nConsequence: 14 passengers misconnected at DOH onto MT404.\n\n--- D4 [arrival_record] ---\nSYD ARRIVALS\nOriginally ticketed arrival (MT402): 12 Nov 2026 21:30 local\nPassenger FERREIRA/D rebooked onto MT404, actual on-blocks 13 Nov 2026 01:40 local\nDelay at final destination: 4h 10m\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R05
+
+### **start** · `baseline`
+<sub>2026-08-28T17:14:51.530303+00:00</sub>
+
+
+## Case R06
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:14:51.530126+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R06\nPassenger: P. Nakamura  (booking VN33QW)\n\nWHAT THE PASSENGER SAYS\nThey cancelled my flight twelve days out and put me on an earlier departure that got in a bit later. I took it. Do I still get paid?\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING VN33QW — Passenger: P. NAKAMURA (adult)\nCarrier: Vantage (VN)\nVN515  BCN 20 Jun 2026 09:00  ->  CPH 20 Jun 2026 12:30\nGreat-circle distance BCN-CPH: 1,760 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: changes@vantage.example\nSent: 08 Jun 2026 11:40 UTC\nSubject: Change to your booking VN33QW\n\nVN515 on 20 June is cancelled. We have re-routed you onto VN517, departing BCN 20 Jun 08:00 and arriving CPH 20 Jun 16:00 via a stop at FRA. This is confirmed unless you tell us otherwise.\n\n--- D3 [boarding_pass] ---\nBOARDING PASS VN517 20JUN2026 — NAKAMURA/P — seat 7D — travelled as re-routed\n\n--- D4 [operational_record] ---\nVANTAGE OPS LOG — VN515 / 20JUN2026\nStatus: CANCELLED (scheduled consolidation, decision date 08JUN)\nCause code: COM-CONS\nCause text: Commercial consolidation of VN515 and VN517.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R05
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:14:51.530856+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R05\nPassenger: K. Rasmussen  (booking JJ1002 / TT4419)\n\nWHAT THE PASSENGER SAYS\nI booked the two legs separately to save money. The first flight was an hour late and I missed the second one, then had to buy a whole new ticket. Surely they still owe me for getting me there fifteen hours late.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING JJ1002 — Passenger: K. RASMUSSEN (adult)\nCarrier: Jetline (JJ)\nJJ88  CPH 04 Apr 2026 06:00  ->  FRA 04 Apr 2026 07:35\nGreat-circle distance CPH-FRA: 670 km.\nStatus: CONFIRMED.\n\n--- D2 [booking_confirmation] ---\nBOOKING TT4419 — Passenger: K. RASMUSSEN (adult)\nCarrier: Tarn Air (TT) — SEPARATE BOOKING, PURCHASED INDEPENDENTLY\nTT610  FRA 04 Apr 2026 09:10  ->  IST 04 Apr 2026 13:05\nStatus: CONFIRMED. Not through-ticketed with JJ1002. No interline agreement recorded.\n\n--- D3 [arrival_record] ---\nFRA ARRIVALS — JJ88 04APR2026\nScheduled on-blocks 07:35\nActual on-blocks 08:30\nDelay: 0h 55m\n\n--- D4 [operational_record] ---\nJETLINE OPS LOG — JJ88 / 04APR2026\nStatus: DELAYED 00:55\nCause code: CRW-LATE\nCause text: Crew positioning delay, JJ-controlled.\n\n--- D5 [passenger_statement] ---\nI reached IST at 04:20 on 5 April, about fifteen hours after I was supposed to, because TT would not rebook me and I had to buy a new ticket for the next morning.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R03
+
+### **model out** · `baseline` · 46715 ms
+<sub>2026-08-28T17:15:38.245310+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 750,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.2", "S2.1(b)", "S3.2(a)", "S3.4", "S3.6", "S5.1", "S5.4"],
+  "rationale": "Flight delayed 6h 06m at final destination (Nairobi), exceeding the 3h 30m qualifying threshold under S2.1(b). The unscheduled bleed-air valve fault detected and repaired by LP's own line maintenance during pre-departure checks is a carrier-controlled cause under S3.2(a), not an extraordinary circumstance—the operational record (D4) confirms no manufacturer or regulator directive applies, and per S3.6 the operational record governs over the carrier's assertion. Great-circle distance of 6,635 km places the booking in Band C (750 units). Delay of 6h 06m (≥5 hours) incurs no taper under S5.4, and S4.6 exempts delays from the advance-notice reduction ladder. Passenger should formally submit this claim to Lyra Pacific with the evidence on file; no receipts are required for compensation. Duty of care for meals would be owed if the passenger provides itemised receipts, but is not required for the core compensation to be processed."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:15:38.245743+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 750,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(b)",
+    "S3.2(a)",
+    "S3.4",
+    "S3.6",
+    "S5.1",
+    "S5.4"
+  ],
+  "rationale": "Flight delayed 6h 06m at final destination (Nairobi), exceeding the 3h 30m qualifying threshold under S2.1(b). The unscheduled bleed-air valve fault detected and repaired by LP's own line maintenance during pre-departure checks is a carrier-controlled cause under S3.2(a), not an extraordinary circumstance—the operational record (D4) confirms no manufacturer or regulator directive applies, and per S3.6 the operational record governs over the carrier's assertion. Great-circle distance of 6,635 km places the booking in Band C (750 units). Delay of 6h 06m (≥5 hours) incurs no taper under S5.4, and S4.6 exempts delays from the advance-notice reduction ladder. Passenger should formally submit this claim to Lyra Pacific with the evidence on file; no receipts are required for compensation. Duty of care for meals would be owed if the passenger provides itemised receipts, but is not required for the core compensation to be processed."
+}
+```
+
+
+## Case R07
+
+### **start** · `baseline`
+<sub>2026-08-28T17:15:38.245938+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:15:38.246032+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R07\nPassenger: L. Haddad  (booking ZR7781)\n\nWHAT THE PASSENGER SAYS\nCancelled two weeks ahead. The replacement flight got me in more than five hours later than I was meant to arrive.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING ZR7781 — Passenger: L. HADDAD (adult)\nCarrier: Zephyr Regional (ZR)\nZR260  DUB 01 Oct 2026 16:45  ->  MXP 01 Oct 2026 20:15\nGreat-circle distance DUB-MXP: 1,200 km exactly (per carrier tariff table).\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: schedules@zephyr-regional.example\nSent: 17 Sep 2026 08:00 UTC\nSubject: ZR260 01 Oct cancelled\n\nZR260 on 01 October is cancelled. We can re-route you on ZR266, departing DUB 01 Oct 18:20 and arriving MXP 01 Oct 01:35 on 02 October.\n\n--- D3 [boarding_pass] ---\nBOARDING PASS ZR266 01OCT2026 — HADDAD/L — seat 14F — travelled as re-routed\n\n--- D4 [operational_record] ---\nZEPHYR REGIONAL OPS LOG — ZR260 / 01OCT2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: Crew rostering system failure, ZR internal. Roster could not be published for 01 Oct DUB rotations.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R06
+
+### **model out** · `baseline` · 72102 ms
+<sub>2026-08-28T17:16:03.633167+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": ["S2.1(a)", "S3.2(d)", "S4.2", "S4.3"],
+  "rationale": "The cancelled flight qualifies under S2.1(a), with a carrier-controlled cause (commercial consolidation, S3.2(d)). Notification was given 11.9 days before departure, falling in the 7–20 day band ordinarily attracting 50% compensation (S4.2). However, the re-routing exemption in S4.3 applies: the offered flight departs 1 hour before the original and arrives 3.5 hours after—both within the exemption window (no more than 2 hours before; less than 4 hours after). No compensation is payable."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:16:03.633431+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": [
+    "S2.1(a)",
+    "S3.2(d)",
+    "S4.2",
+    "S4.3"
+  ],
+  "rationale": "The cancelled flight qualifies under S2.1(a), with a carrier-controlled cause (commercial consolidation, S3.2(d)). Notification was given 11.9 days before departure, falling in the 7–20 day band ordinarily attracting 50% compensation (S4.2). However, the re-routing exemption in S4.3 applies: the offered flight departs 1 hour before the original and arrives 3.5 hours after—both within the exemption window (no more than 2 hours before; less than 4 hours after). No compensation is payable."
+}
+```
+
+
+## Case R08
+
+### **start** · `baseline`
+<sub>2026-08-28T17:16:03.633580+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:16:03.633648+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R08\nPassenger: M. Sørensen  (booking AC6620)\n\nWHAT THE PASSENGER SAYS\nThey cancelled my flight almost a month ahead and refunded me. I have read that I am owed compensation for any cancellation.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING AC6620 — Passenger: M. SORENSEN (adult)\nCarrier: Auroral (AC)\nAC910  ARN 12 Dec 2026 07:25  ->  LHR 12 Dec 2026 09:05\nGreat-circle distance ARN-LHR: 1,455 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: notices@auroral.example\nSent: 16 Nov 2026 14:00 UTC\nSubject: AC910 12 Dec cancelled\n\nAC910 on 12 December will not operate. Your booking has been cancelled and refunded in full.\n\n--- D3 [operational_record] ---\nAURORAL OPS LOG — AC910 / 12DEC2026\nStatus: CANCELLED (winter schedule reduction, decision date 16NOV)\nCause code: COM-SCHED\nCause text: Route suspended for the winter season. Commercial decision.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R04
+
+### **model out** · `baseline` · 100435 ms
+<sub>2026-08-28T17:16:31.966456+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 375,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.2", "S2.1(b)", "S3.2(e)", "S5.1", "S5.4"],
+  "rationale": "Passenger held confirmed single-reference booking and boarded MT119. The flight was delayed 2h 35m due to Meridian's ground-handling shortfall at Madrid (S3.2(e): carrier-controlled), causing a missed connection in Doha. Final arrival at Sydney was 4h 10m late, qualifying under S2.1(b). The 17,680 km distance triggers Band C (750 units), tapered to 50% under S5.4 because delay was 3h30m–5h, yielding 375 units. Submit claim to carrier."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:16:31.966739+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 375,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(b)",
+    "S3.2(e)",
+    "S5.1",
+    "S5.4"
+  ],
+  "rationale": "Passenger held confirmed single-reference booking and boarded MT119. The flight was delayed 2h 35m due to Meridian's ground-handling shortfall at Madrid (S3.2(e): carrier-controlled), causing a missed connection in Doha. Final arrival at Sydney was 4h 10m late, qualifying under S2.1(b). The 17,680 km distance triggers Band C (750 units), tapered to 50% under S5.4 because delay was 3h30m–5h, yielding 375 units. Submit claim to carrier."
+}
+```
+
+
+## Case R09
+
+### **start** · `baseline`
+<sub>2026-08-28T17:16:31.966885+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:16:31.966968+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R09\nPassenger: T. Bergström  (booking NF2244)\n\nWHAT THE PASSENGER SAYS\nI was very late into Doha, I think about four or five hours. I do not have anything showing when we actually landed.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING NF2244 — Passenger: T. BERGSTROM (adult)\nCarrier: Nordfly (NF)\nNF800  HEL 22 May 2026 13:10  ->  DOH 22 May 2026 20:45\nGreat-circle distance HEL-DOH: 4,140 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS NF800 22MAY2026 — BERGSTROM/T — seat 9C — boarded 13:44Z\n\n--- D3 [operational_record] ---\nNORDFLY OPS LOG — NF800 / 22MAY2026\nStatus: DELAYED departure 02:10\nCause code: TECH-UNSCH\nCause text: Hydraulic pump replacement, NF line maintenance at HEL.\nArrival record for this rotation not attached to this extract.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R02
+
+### **model out** · `baseline` · 106162 ms
+<sub>2026-08-28T17:16:37.692269+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "extraordinary",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 240,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "challenge_rejection",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.3(a)", "S3.1", "S6.1", "S6.2", "S6.3", "S6.4"],
+  "rationale": "The cancellation qualifies but was caused by extraordinary weather (operating minima at OSL), so Part 5 compensation is not payable under S3.1. However, duty of care is owed regardless of cause under S6.1. The passenger provided itemised receipts for hotel (190 units) and meals (50 units), totalling 240 units, within the 300-unit cap. The carrier's refusal of reimbursement is incorrect and must be challenged."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:16:37.692533+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "extraordinary",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 240,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "challenge_rejection",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.3(a)",
+    "S3.1",
+    "S6.1",
+    "S6.2",
+    "S6.3",
+    "S6.4"
+  ],
+  "rationale": "The cancellation qualifies but was caused by extraordinary weather (operating minima at OSL), so Part 5 compensation is not payable under S3.1. However, duty of care is owed regardless of cause under S6.1. The passenger provided itemised receipts for hotel (190 units) and meals (50 units), totalling 240 units, within the 300-unit cap. The carrier's refusal of reimbursement is incorrect and must be challenged."
+}
+```
+
+
+## Case R10
+
+### **start** · `baseline`
+<sub>2026-08-28T17:16:37.692789+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:16:37.692874+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R10\nPassenger: R. Delacroix  (booking KV9013)\n\nWHAT THE PASSENGER SAYS\nThey cancelled it and I am fairly sure they only told me a couple of days before, but I deleted the email.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING KV9013 — Passenger: R. DELACROIX (adult)\nCarrier: Kestrel Vale (KV)\nKV77  CDG 09 Feb 2026 10:30  ->  ATH 09 Feb 2026 14:40\nGreat-circle distance CDG-ATH: 2,100 km.\nStatus: CONFIRMED.\n\n--- D2 [operational_record] ---\nKESTREL VALE OPS LOG — KV77 / 09FEB2026\nStatus: CANCELLED\nCause code: CRW-SICK\nCause text: Captain reported unfit to fly, no standby captain at CDG.\nPassenger notification dispatch log not included in this extract.\n\n--- D3 [passenger_statement] ---\nI am fairly sure the email came in on the 7th, maybe the 6th. I no longer have it. I did not travel and I took the refund.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R05
+
+### **model out** · `baseline` · 122504 ms
+<sub>2026-08-28T17:16:54.035315+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": null,
+  "qualifies": false,
+  "cause_class": "unknown",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": [
+    "Boarding pass or check-in confirmation for JJ88 (S8.1(b))",
+    "Claim filing date to verify 18-month timeliness (S1.2(c))"
+  ],
+  "next_action": "request_evidence",
+  "policy_citations": ["S2.3", "S8.1(b)"],
+  "rationale": "The separate booking references (D2) mean the missed connection does not qualify under S2.3, and the 55-minute delay at FRA falls short of the S2.1(b) threshold of 3h 30m. Evidence is insufficient per S8.1(b)—a boarding pass or check-in confirmation for JJ88 and claim filing date are required."
+}
+```
+```
+
+### **ERROR** · `baseline` · FAILED
+<sub>2026-08-28T17:16:54.035599+00:00</sub>
+
+*output*
+
+```
+verdict did not validate: 1 validation error for Verdict
+in_scope
+  Input should be a valid boolean [type=bool_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.13/v/bool_type
+```
+
+
+## Case R11
+
+### **start** · `baseline`
+<sub>2026-08-28T17:16:54.035810+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:16:54.035900+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R11\nPassenger: G. Adeyemi  (booking WS4407)\n\nWHAT THE PASSENGER SAYS\nI got in hours late. I have sent everything I have but the numbers do not seem to agree.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING WS4407 — Passenger: G. ADEYEMI (adult)\nCarrier: Westerly (WS)\nWS310  LOS 18 Jul 2026 08:00  ->  LHR 18 Jul 2026 14:05\nGreat-circle distance LOS-LHR: 5,000 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS WS310 18JUL2026 — ADEYEMI/G — seat 40B — boarded 08:12Z\n\n--- D3 [arrival_record] ---\nWESTERLY PASSENGER SERVICES LETTER, 26 Jul 2026\n'Our records show WS310 on 18 July arrived at London Heathrow at 16:00 local, a delay of 1 hour 55 minutes.'\n\n--- D4 [passenger_evidence] ---\nPhotograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing 'WS310 LAGOS — LANDED 19:40'.\n\n--- D5 [operational_record] ---\nWESTERLY OPS LOG — WS310 / 18JUL2026\nStatus: DELAYED\nCause code: TECH-UNSCH\nCause text: APU replacement at LOS, WS line maintenance.\nOn-blocks LHR: FIELD CORRUPTED IN EXTRACT — value not readable.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R10
+
+### **model out** · `baseline` · 56103 ms
+<sub>2026-08-28T17:17:33.796410+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": null,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": ["Carrier's cancellation notification to passenger with timestamp (required to determine notice period under S4.2 and S8.1(e))"],
+  "next_action": "request_evidence",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.2(b)", "S4.2", "S8.1(e)", "S8.2"],
+  "rationale": "The flight was cancelled due to crew sickness (carrier-controlled, S3.2(b)), so compensation is eligible under Band B (2,100 km = 420 units base). However, S8.1(e) requires the carrier's cancellation notification with timestamp to apply the Part 4 notice ladder (S4.2), and this document is missing. The passenger's vague recollection ('maybe 6th or 7th') cannot substitute for a dated document. Request the notification timestamp from the passenger or Kestrel Vale."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:17:33.796700+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": null,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": [
+    "Carrier's cancellation notification to passenger with timestamp (required to determine notice period under S4.2 and S8.1(e))"
+  ],
+  "next_action": "request_evidence",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.2(b)",
+    "S4.2",
+    "S8.1(e)",
+    "S8.2"
+  ],
+  "rationale": "The flight was cancelled due to crew sickness (carrier-controlled, S3.2(b)), so compensation is eligible under Band B (2,100 km = 420 units base). However, S8.1(e) requires the carrier's cancellation notification with timestamp to apply the Part 4 notice ladder (S4.2), and this document is missing. The passenger's vague recollection ('maybe 6th or 7th') cannot substitute for a dated document. Request the notification timestamp from the passenger or Kestrel Vale."
+}
+```
+
+
+## Case R12
+
+### **start** · `baseline`
+<sub>2026-08-28T17:17:33.796845+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:17:33.796910+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R12\nPassenger: E. Kowalski  (booking HB1188)\n\nWHAT THE PASSENGER SAYS\nThey turned me down saying it was the weather. It was a beautiful day. I do not know what to do next.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING HB1188 — Passenger: E. KOWALSKI (adult)\nCarrier: Halcyon (HB)\nHB640  WAW 03 Aug 2026 17:20  ->  LIS 03 Aug 2026 21:00\nGreat-circle distance WAW-LIS: 2,750 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: ops@halcyon.example\nSent: 01 Aug 2026 19:30 UTC\nSubject: HB640 03 Aug cancelled\n\nHB640 on 03 August is cancelled. No alternative is available on this routing. Your fare has been refunded.\n\n--- D3 [operational_record] ---\nHALCYON OPS LOG — HB640 / 03AUG2026\nStatus: CANCELLED\nCause code: CRW-DUTY\nCause text: Operating crew timed out following an earlier HB-controlled rotation delay. No reserve crew available at WAW.\nWeather: WAW and LIS both CAVOK for the entire operating window. No ATC restriction in force.\n\n--- D4 [claim_record] ---\nClaim filed with Halcyon on 10 Aug 2026, reference HB-CLM-55210.\n\nCARRIER RESPONSE (rejection, received 2026-08-24)\nHalcyon has assessed your claim HB-CLM-55210. HB640 on 3 August was cancelled owing to extraordinary circumstances, namely adverse weather conditions beyond our control. Under the applicable policy no compensation is payable. This is our final response.\n"
+}
+```
+
+
+## Case R07
+
+### **model out** · `baseline` · 121463 ms
+<sub>2026-08-28T17:17:39.709515+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 90,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": ["itemised receipts for duty-of-care reimbursement (S6.4)"],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.2(c)", "S4.2", "S4.3", "S5.1", "S5.3", "S6.1"],
+  "rationale": "Flight cancelled with ~14 days' notice (within 7–20 days band, S4.2). Crew rostering system failure is carrier-controlled under S3.2(c). Band A applies at 1,200 km exactly per S5.3 = 180 units. Notice reduction of 50% applies; re-routing exemption fails because offered flight departed after original and arrived 5h 20m after original (exceeds 4-hour limit, S4.3). Compensation = 180 × 0.5 = 90 units. Duty of care owed regardless of cause (S6.1) but claimable only with receipts."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:17:39.709820+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 90,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [
+    "itemised receipts for duty-of-care reimbursement (S6.4)"
+  ],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.2(c)",
+    "S4.2",
+    "S4.3",
+    "S5.1",
+    "S5.3",
+    "S6.1"
+  ],
+  "rationale": "Flight cancelled with ~14 days' notice (within 7–20 days band, S4.2). Crew rostering system failure is carrier-controlled under S3.2(c). Band A applies at 1,200 km exactly per S5.3 = 180 units. Notice reduction of 50% applies; re-routing exemption fails because offered flight departed after original and arrived 5h 20m after original (exceeds 4-hour limit, S4.3). Compensation = 180 × 0.5 = 90 units. Duty of care owed regardless of cause (S6.1) but claimable only with receipts."
+}
+```
+
+
+## Case R13
+
+### **start** · `baseline`
+<sub>2026-08-28T17:17:39.710046+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:17:39.710116+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R13\nPassenger: C. Whitfield  (booking PL0455)\n\nWHAT THE PASSENGER SAYS\nI was rejected and I want to fight it. Everyone tells me airlines always blame the weather to get out of paying.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING PL0455 — Passenger: C. WHITFIELD (adult)\nCarrier: Polaris Lines (PL)\nPL122  EDI 27 Feb 2026 06:15  ->  AMS 27 Feb 2026 08:45\nGreat-circle distance EDI-AMS: 660 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: ops@polarislines.example\nSent: 27 Feb 2026 04:05 UTC\nSubject: PL122 cancelled\n\nPL122 this morning is cancelled.\n\n--- D3 [operational_record] ---\nPOLARIS LINES OPS LOG — PL122 / 27FEB2026\nStatus: CANCELLED\nCause code: WX-MIN\nCause text: EDI below operating minima. Storm Fionn, mean surface wind 54 kt gusting 71 kt, exceeding aircraft crosswind limits. Airport closed to departures 03:20-11:00Z by the airport authority.\nAffected: all 14 scheduled departures in the window, across 6 carriers.\n\n--- D4 [third_party_record] ---\nEDI AIRPORT AUTHORITY OPERATIONS BULLETIN 27FEB2026 04:00Z: Airfield closed to all departures until further notice due to wind exceeding safe ground-handling limits. Reopened 11:00Z.\n\n--- D5 [claim_record] ---\nClaim filed with Polaris Lines on 02 Mar 2026, reference PL-CLM-71034. No duty-of-care expenses were incurred or claimed; the passenger returned home and travelled the following day.\n\nCARRIER RESPONSE (rejection, received 2026-03-14)\nPL122 on 27 February was cancelled because Edinburgh Airport was closed to departures by the airport authority during Storm Fionn. This is an extraordinary circumstance outside our control and no compensation is payable.\n"
+}
+```
+
+
+## Case R09
+
+### **model out** · `baseline` · 83700 ms
+<sub>2026-08-28T17:17:55.667398+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": null,
+  "cause_class": "carrier_controlled",
+  "eligible": null,
+  "compensation_units": null,
+  "duty_of_care_units": null,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": [
+    "Actual arrival time at DOH (required by S8.1(c) to verify S2.1(b) delay threshold and determine S5.4 tapering)",
+    "Itemised receipts for duty-of-care expenses (required by S8.1(d) per S6.4)"
+  ],
+  "next_action": "request_evidence",
+  "policy_citations": ["S1.2", "S2.1(b)", "S3.2(a)", "S5.1", "S5.4", "S6.1", "S6.4", "S8.1(c)", "S8.1(d)", "S8.2"],
+  "rationale": "The passenger was delayed on a 4,140 km flight (Band C, 750 units base); the cause (hydraulic pump replacement by NF maintenance at HEL) is carrier-controlled under S3.2(a). The passenger's estimate of 4–5 hours late at final destination suggests S2.1(b) qualification, but actual arrival time is not documented (required by S8.1(c)), preventing verification and S5.4 tapering calculation. Itemised receipts for duty-of-care expenses are also missing (S8.1(d)). Per S8.2, request these specific missing items rather than rejecting the claim."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:17:55.667722+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": null,
+  "cause_class": "carrier_controlled",
+  "eligible": null,
+  "compensation_units": null,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": [
+    "Actual arrival time at DOH (required by S8.1(c) to verify S2.1(b) delay threshold and determine S5.4 tapering)",
+    "Itemised receipts for duty-of-care expenses (required by S8.1(d) per S6.4)"
+  ],
+  "next_action": "request_evidence",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(b)",
+    "S3.2(a)",
+    "S5.1",
+    "S5.4",
+    "S6.1",
+    "S6.4",
+    "S8.1(c)",
+    "S8.1(d)",
+    "S8.2"
+  ],
+  "rationale": "The passenger was delayed on a 4,140 km flight (Band C, 750 units base); the cause (hydraulic pump replacement by NF maintenance at HEL) is carrier-controlled under S3.2(a). The passenger's estimate of 4–5 hours late at final destination suggests S2.1(b) qualification, but actual arrival time is not documented (required by S8.1(c)), preventing verification and S5.4 tapering calculation. Itemised receipts for duty-of-care expenses are also missing (S8.1(d)). Per S8.2, request these specific missing items rather than rejecting the claim."
+}
+```
+
+
+## Case R14
+
+### **start** · `baseline`
+<sub>2026-08-28T17:17:55.667893+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:17:55.667986+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R14\nPassenger: J. Okafor  (booking SR9902)\n\nWHAT THE PASSENGER SAYS\nIt has been three weeks and they have completely ignored me. I want this taken to the regulator today. I am done waiting.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING SR9902 — Passenger: J. OKAFOR (adult)\nCarrier: Sable Air (SR)\nSR505  MAD 05 May 2026 11:00  ->  IST 05 May 2026 15:40\nGreat-circle distance MAD-IST: 2,730 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: ops@sableair.example\nSent: 04 May 2026 22:15 UTC\nSubject: SR505 cancelled\n\nSR505 on 05 May is cancelled. Nothing further is available today.\n\n--- D3 [operational_record] ---\nSABLE AIR OPS LOG — SR505 / 05MAY2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: SR departure control system outage, 04MAY 20:00Z to 05MAY 09:00Z. Internal systems failure.\nNo weather or ATC restriction.\n\n--- D4 [claim_record] ---\nClaim filed with Sable Air on 08 Jun 2026, reference SR-CLM-30119.\nCarrier acknowledgement received 08 Jun 2026. No substantive response since.\nToday's date for the purposes of this case: 28 Jun 2026. Days elapsed since filing: 20.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R11
+
+### **model out** · `baseline` · 64761 ms
+<sub>2026-08-28T17:17:58.797651+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": null,
+  "cause_class": "carrier_controlled",
+  "eligible": null,
+  "compensation_units": null,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": [
+    "Clarification of actual gate arrival time at LHR (contradictory evidence: D3 states 16:00 local, D4 airport display photograph shows 'LANDED 19:40'; ops log on-blocks field corrupted; wheels-down time cannot precede gate arrival)",
+    "Itemised receipts for duty-of-care reimbursement (meals, accommodation, communications required by S6.4)"
+  ],
+  "next_action": "request_evidence",
+  "policy_citations": ["S1.2", "S2.1(b)", "S3.2(a)", "S5.1", "S8.1", "S8.2", "S8.3", "S6.4"],
+  "rationale": "Claim is in scope (confirmed booking, boarded, within 18 months). Cause is carrier-controlled (APU replacement at WS line maintenance, S3.2(a)). However, evidence contradicts on a material fact: D3 (carrier letter) states arrival 16:00 local (1h55m delay, non-qualifying under S2.1(b)); D4 (airport display photo) shows 19:40 landing (5h35m delay, qualifying). Per S8.3, contradictions require clarification, not assumption. Also, duty-of-care reimbursement requires itemised receipts (S6.4) which are absent. Distance band C (5,000 km) applies if qualifying, but cannot calculate compensation without resolving arrival time."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:17:58.797962+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": null,
+  "cause_class": "carrier_controlled",
+  "eligible": null,
+  "compensation_units": null,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": false,
+  "missing_evidence": [
+    "Clarification of actual gate arrival time at LHR (contradictory evidence: D3 states 16:00 local, D4 airport display photograph shows 'LANDED 19:40'; ops log on-blocks field corrupted; wheels-down time cannot precede gate arrival)",
+    "Itemised receipts for duty-of-care reimbursement (meals, accommodation, communications required by S6.4)"
+  ],
+  "next_action": "request_evidence",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(b)",
+    "S3.2(a)",
+    "S5.1",
+    "S8.1",
+    "S8.2",
+    "S8.3",
+    "S6.4"
+  ],
+  "rationale": "Claim is in scope (confirmed booking, boarded, within 18 months). Cause is carrier-controlled (APU replacement at WS line maintenance, S3.2(a)). However, evidence contradicts on a material fact: D3 (carrier letter) states arrival 16:00 local (1h55m delay, non-qualifying under S2.1(b)); D4 (airport display photo) shows 19:40 landing (5h35m delay, qualifying). Per S8.3, contradictions require clarification, not assumption. Also, duty-of-care reimbursement requires itemised receipts (S6.4) which are absent. Distance band C (5,000 km) applies if qualifying, but cannot calculate compensation without resolving arrival time."
+}
+```
+
+
+## Case R15
+
+### **start** · `baseline`
+<sub>2026-08-28T17:17:58.798105+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:17:58.798167+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R15\nPassenger: N. Villalobos  (booking AT7326)\n\nWHAT THE PASSENGER SAYS\nI challenged their rejection over a month ago with the ops record attached and they have gone silent again.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING AT7326 — Passenger: N. VILLALOBOS (adult)\nCarrier: Altair (AT)\nAT900  GRU 14 Jan 2026 23:50  ->  LIS 15 Jan 2026 13:30\nGreat-circle distance GRU-LIS: 7,930 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS AT900 14JAN2026 — VILLALOBOS/N — seat 28D — boarded 23:31Z\n\n--- D3 [arrival_record] ---\nLIS ARRIVALS — AT900 15JAN2026\nScheduled on-blocks 13:30 local\nActual on-blocks 21:12 local\nDelay at final destination: 7h 42m\n\n--- D4 [operational_record] ---\nALTAIR OPS LOG — AT900 / 14JAN2026\nStatus: DELAYED 07:42\nCause code: TECH-UNSCH\nCause text: Engine oil filter contamination found on arrival inspection by AT maintenance at GRU. Rectification 06:40. No manufacturer directive involved.\nNo weather or ATC restriction.\n\n--- D5 [claim_record] ---\nClaim filed with Altair 20 Jan 2026, reference AT-CLM-88420.\nAltair rejection received 12 Mar 2026 citing 'extraordinary technical circumstances'.\nPassenger challenge sent to Altair 18 Mar 2026, attaching the operational record.\nNo response from Altair since.\nToday's date for the purposes of this case: 22 Apr 2026. Days since challenge: 35. Days since filing: 92.\n\nCARRIER RESPONSE (rejection, received 2026-03-12)\nAT900 was delayed by extraordinary technical circumstances which could not have been avoided. No compensation is payable.\n"
+}
+```
+
+### **model out** · `baseline` · 31583 ms
+<sub>2026-08-28T17:18:30.381555+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 750,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "escalate",
+  "policy_citations": ["S1.2", "S2.1(b)", "S3.2(a)", "S3.6", "S5.1", "S5.4", "S9.1(a)", "S10.1(b)"],
+  "rationale": "The operational record (D4) shows engine oil filter contamination found by Altair's own maintenance at GRU with no manufacturer directive—this is carrier-controlled under S3.2(a), not extraordinary. By S3.6, the operational record governs and the rejection citing 'extraordinary' circumstances is validly challengeable under S9.1(a). With 7h42m delay at final destination, the claim qualifies under S2.1(b) for Band C compensation (750 units); delay tapering does not apply at ≥5 hours. The passenger challenged the rejection 35 days ago (18 Mar) with the ops record; the carrier has not replied within 28 days, meeting S10.1(b) escalation criteria."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:18:30.381854+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 750,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "escalate",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(b)",
+    "S3.2(a)",
+    "S3.6",
+    "S5.1",
+    "S5.4",
+    "S9.1(a)",
+    "S10.1(b)"
+  ],
+  "rationale": "The operational record (D4) shows engine oil filter contamination found by Altair's own maintenance at GRU with no manufacturer directive—this is carrier-controlled under S3.2(a), not extraordinary. By S3.6, the operational record governs and the rejection citing 'extraordinary' circumstances is validly challengeable under S9.1(a). With 7h42m delay at final destination, the claim qualifies under S2.1(b) for Band C compensation (750 units); delay tapering does not apply at ≥5 hours. The passenger challenged the rejection 35 days ago (18 Mar) with the ops record; the carrier has not replied within 28 days, meeting S10.1(b) escalation criteria."
+}
+```
+
+
+## Case R16
+
+### **start** · `baseline`
+<sub>2026-08-28T17:18:30.382003+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:18:30.382065+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R16\nPassenger: F. Lindqvist  (booking OR6614)\n\nWHAT THE PASSENGER SAYS\nThey paid my hotel bill but said the cancellation itself was weather so no compensation. Should I just take it?\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING OR6614 — Passenger: F. LINDQVIST (adult)\nCarrier: Orion Reach (OR)\nOR480  VIE 08 Oct 2026 19:45  ->  IST 08 Oct 2026 23:20\nGreat-circle distance VIE-IST: 2,900 km. Onward none.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: ops@orionreach.example\nSent: 08 Oct 2026 17:10 UTC\nSubject: OR480 cancelled\n\nOR480 tonight is cancelled. You are rebooked on OR482 tomorrow at 19:45.\n\n--- D3 [operational_record] ---\nORION REACH OPS LOG — OR480 / 08OCT2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: OR crew-rostering and dispatch platform outage 08OCT 14:00-23:00Z. Internal.\nWeather VIE and IST: no restriction, both stations CAVOK. No ATC regulation applied to this rotation.\n\n--- D4 [receipts] ---\nITEMISED RECEIPTS: airport hotel 08-09 Oct 245.00 units, evening meal 38.00 units, breakfast 17.00 units. TOTAL 300.00 units.\n\n--- D5 [settlement_record] ---\nORION REACH SETTLEMENT NOTE, 02 Nov 2026: duty-of-care reimbursement of 300.00 units paid to F. LINDQVIST in respect of OR480. Compensation element refused, see decision letter.\n\n--- D6 [boarding_pass] ---\nCHECK-IN CONFIRMATION OR480 08OCT2026 — LINDQVIST/F — accepted for travel 17:02Z. Flight subsequently cancelled.\n\nCARRIER RESPONSE (partial_settlement, received 2026-11-02)\nWe have reimbursed your expenses of 300.00 units in full. Compensation is however not payable, as OR480 was cancelled due to adverse weather conditions constituting an extraordinary circumstance.\n"
+}
+```
+
+
+## Case R12
+
+### **model out** · `baseline` · 59952 ms
+<sub>2026-08-28T17:18:33.749807+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "challenge_rejection",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.2(b)", "S3.6", "S4.2", "S5.1", "S9.1(a)"],
+  "rationale": "The carrier's rejection citing extraordinary weather is invalid. The operational record (D3) explicitly states CAVOK at both airports and identifies the actual cause as crew duty exhaustion following an earlier carrier-controlled delay—a carrier-controlled cause under S3.2(b). Under S3.6, the operational record governs. The claim qualifies for cancellation (S2.1(a)), attracts 420 units compensation for Band B distance (S5.1) with no advance-notice reduction for less than 7 days notice (S4.2, no re-routing offered), and the rejection is validly challengeable under S9.1(a)."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:18:33.750174+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "challenge_rejection",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.2(b)",
+    "S3.6",
+    "S4.2",
+    "S5.1",
+    "S9.1(a)"
+  ],
+  "rationale": "The carrier's rejection citing extraordinary weather is invalid. The operational record (D3) explicitly states CAVOK at both airports and identifies the actual cause as crew duty exhaustion following an earlier carrier-controlled delay—a carrier-controlled cause under S3.2(b). Under S3.6, the operational record governs. The claim qualifies for cancellation (S2.1(a)), attracts 420 units compensation for Band B distance (S5.1) with no advance-notice reduction for less than 7 days notice (S4.2, no re-routing offered), and the rejection is validly challengeable under S9.1(a)."
+}
+```
+
+
+## Case R17
+
+### **start** · `baseline`
+<sub>2026-08-28T17:18:33.750359+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:18:33.750435+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R17\nPassenger: B. Nardelli  (booking CE2081)\n\nWHAT THE PASSENGER SAYS\nI paid for business class on a long flight and they put me in economy at the gate. The flight was on time. I assume I get the long-haul compensation amount.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING CE2081 — Passenger: B. NARDELLI (adult)\nCarrier: Cerulean Eastern (CE)\nCE118  FCO 19 Mar 2026 10:40  ->  SIN 20 Mar 2026 05:15\nCabin booked: BUSINESS. Fare paid for this segment: 800.00 units.\nGreat-circle distance FCO-SIN: 10,030 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS CE118 19MAR2026 — NARDELLI/B — REISSUED AT GATE — seat 51H — cabin: ECONOMY (downgraded from 2A BUSINESS)\n\n--- D3 [arrival_record] ---\nSIN ARRIVALS — CE118 20MAR2026\nScheduled on-blocks 05:15 local\nActual on-blocks 05:09 local\nDelay at final destination: none, arrived 6 minutes early.\n\n--- D4 [operational_record] ---\nCERULEAN EASTERN OPS LOG — CE118 / 19MAR2026\nStatus: OPERATED ON TIME\nNote: aircraft substitution, J-cabin 12 seats vs 30 booked. 18 passengers involuntarily downgraded to Y. Commercial decision, CE-controlled.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R14
+
+### **model out** · `baseline` · 65033 ms
+<sub>2026-08-28T17:19:00.701853+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "await_carrier",
+  "policy_citations": ["S2.1(a)", "S3.2(c)", "S4.2", "S4.4", "S5.1", "S10.1", "S10.2"],
+  "rationale": "The flight was cancelled (S2.1(a)), a carrier-controlled cause (internal IT systems failure, S3.2(c)). Less than 7 days' notice was given with no re-routing offer (S4.2, S4.4), so 100% compensation applies. The 2,730 km distance is Band B (S5.1), yielding 420 units. Escalation to the regulator is not yet permissible per S10.2; only 20 days have elapsed since filing and 56 days are required absent a challengeable rejection. The passenger should await the carrier's substantive response or escalate after 56 days (approximately 03 August 2026) if no response is received."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:19:00.702142+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "await_carrier",
+  "policy_citations": [
+    "S2.1(a)",
+    "S3.2(c)",
+    "S4.2",
+    "S4.4",
+    "S5.1",
+    "S10.1",
+    "S10.2"
+  ],
+  "rationale": "The flight was cancelled (S2.1(a)), a carrier-controlled cause (internal IT systems failure, S3.2(c)). Less than 7 days' notice was given with no re-routing offer (S4.2, S4.4), so 100% compensation applies. The 2,730 km distance is Band B (S5.1), yielding 420 units. Escalation to the regulator is not yet permissible per S10.2; only 20 days have elapsed since filing and 56 days are required absent a challengeable rejection. The passenger should await the carrier's substantive response or escalate after 56 days (approximately 03 August 2026) if no response is received."
+}
+```
+
+
+## Case R18
+
+### **start** · `baseline`
+<sub>2026-08-28T17:19:00.702281+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:19:00.702354+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R18\nPassenger: Y. Tanaka  (booking IN5540)\n\nWHAT THE PASSENGER SAYS\nThey say a bird strike the day before means they owe me nothing, even though my flight was not until the following evening.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING IN5540 — Passenger: Y. TANAKA (adult)\nCarrier: Indigo North (IN)\nIN300  HEL 23 Jun 2026 20:10  ->  IST 24 Jun 2026 00:05\nGreat-circle distance HEL-IST: 2,190 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: ops@indigonorth.example\nSent: 22 Jun 2026 23:40 UTC\nSubject: IN300 23 Jun cancelled\n\nIN300 on 23 June is cancelled following damage to the assigned aircraft. Your fare has been refunded. No alternative was offered.\n\n--- D3 [operational_record] ---\nINDIGO NORTH OPS LOG — aircraft OH-INC\n22JUN2026 00:50Z  Bird strike on approach HEL, inbound IN299. Aircraft removed from service.\n22JUN2026 01:10Z  Extraordinary event concluded; aircraft on stand, damage assessment begins.\n22JUN2026 01:10Z to 23JUN2026 18:00Z  Aircraft under repair. IN held two serviceable spare airframes at HEL throughout this period and did not assign either to IN300.\n23JUN2026 18:00Z  IN300 (STD 23JUN 20:10 local, 17:10Z) cancelled.\nElapsed from the end of the extraordinary event to scheduled departure of IN300: approximately 40 hours.\n\n--- D4 [claim_record] ---\nNo claim filed yet.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R13
+
+### **model out** · `baseline` · 86499 ms
+<sub>2026-08-28T17:19:06.209397+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "extraordinary",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.1", "S3.3(d)"],
+  "rationale": "Flight PL122 cancelled on 27 Feb due to Storm Fionn exceeding aircraft crosswind limits and resulting airport authority closure (03:20–11:00Z). The operational record (D3, D4) confirms this extraordinary circumstance under S3.3(d) (order of a public authority). Compensation is payable only for carrier-controlled causes (S3.1), so none is due. The carrier's rejection is valid and unchallengeable under S9.2."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:19:06.209721+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "extraordinary",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.1",
+    "S3.3(d)"
+  ],
+  "rationale": "Flight PL122 cancelled on 27 Feb due to Storm Fionn exceeding aircraft crosswind limits and resulting airport authority closure (03:20–11:00Z). The operational record (D3, D4) confirms this extraordinary circumstance under S3.3(d) (order of a public authority). Compensation is payable only for carrier-controlled causes (S3.1), so none is due. The carrier's rejection is valid and unchallengeable under S9.2."
+}
+```
+
+
+## Case R19
+
+### **start** · `baseline`
+<sub>2026-08-28T17:19:06.209867+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:19:06.209936+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R19\nPassenger: O. Baptiste  (booking TF1907)\n\nWHAT THE PASSENGER SAYS\nA technical problem grounded the plane and my flight was cancelled. A friend told me technical problems always mean compensation.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING TF1907 — Passenger: O. BAPTISTE (adult)\nCarrier: Tradewind Federal (TF)\nTF260  LHR 15 Sep 2026 12:15  ->  JFK 15 Sep 2026 15:05\nGreat-circle distance LHR-JFK: 5,555 km.\nStatus: CONFIRMED.\n\n--- D2 [carrier_notification] ---\nFrom: ops@tradewindfederal.example\nSent: 15 Sep 2026 06:30 UTC\nSubject: TF260 cancelled\n\nTF260 today is cancelled. We are rebooking you onto TF262 tomorrow, 16 Sep, departing 12:15.\n\n--- D3 [operational_record] ---\nTRADEWIND FEDERAL OPS LOG — TF260 / 15SEP2026\nStatus: CANCELLED\nCause code: AD-MANDATORY\nCause text: Emergency Airworthiness Directive AD-2026-1841 issued by the airworthiness regulator at 15SEP 04:15Z, effective immediately, mandating inspection of the pylon attachment fitting on all aircraft of this type before further flight. Latent manufacturing defect notified by the manufacturer. TF grounded its entire fleet of 11 such aircraft. 9 other operators worldwide affected.\nThis defect was not detectable by, and was not found by, TF line maintenance.\n\n--- D4 [receipts] ---\nITEMISED RECEIPTS: airport hotel 15-16 Sep 140.00 units (receipt 20114), evening meal 27.00 units (receipt 20115), breakfast 13.00 units (receipt 20116). TOTAL 180.00 units.\n\n--- D5 [boarding_pass] ---\nCHECK-IN CONFIRMATION TF260 15SEP2026 — BAPTISTE/O — accepted for travel 06:05Z, seat 22A. Flight subsequently cancelled.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R08
+
+### **model out** · `baseline` · 191642 ms
+<sub>2026-08-28T17:19:15.276117+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.1", "S4.2"],
+  "rationale": "The booking is confirmed (S1.2(a–c) satisfied); the flight was cancelled (qualifies under S2.1(a)). The cause—commercial route suspension—is a carrier-controlled disruption under S3 (the carrier's operational decision, not an extraordinary circumstance). However, S4.2 establishes that cancellations with 21 or more days' notice receive no compensation. Notice was sent 26 days before departure, eliminating compensation. Duty of care is owed under S6.1 regardless of cause, but no receipts for expenses were submitted."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:19:15.276410+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.1",
+    "S4.2"
+  ],
+  "rationale": "The booking is confirmed (S1.2(a–c) satisfied); the flight was cancelled (qualifies under S2.1(a)). The cause—commercial route suspension—is a carrier-controlled disruption under S3 (the carrier's operational decision, not an extraordinary circumstance). However, S4.2 establishes that cancellations with 21 or more days' notice receive no compensation. Notice was sent 26 days before departure, eliminating compensation. Duty of care is owed under S6.1 regardless of cause, but no receipts for expenses were submitted."
+}
+```
+
+
+## Case R20
+
+### **start** · `baseline`
+<sub>2026-08-28T17:19:15.276658+00:00</sub>
+
+### **model in** · `baseline`
+<sub>2026-08-28T17:19:15.276776+00:00</sub>
+
+*input*
+
+```
+{
+  "system_digest": "626aa96d1a4c",
+  "user": "## THE CASE\n\nCASE R20\nPassenger: V. Moreau  (booking LU3390)\n\nWHAT THE PASSENGER SAYS\nWe were six hours late, easily. It was a nightmare. I want the full amount for the distance.\n\nDOCUMENTS ON FILE\n--- D1 [booking_confirmation] ---\nBOOKING LU3390 — Passenger: V. MOREAU (adult)\nCarrier: Lumen Air (LU)\nLU740  LYS 06 Apr 2026 07:30  ->  IST 06 Apr 2026 11:50\nGreat-circle distance LYS-IST: 1,970 km.\nStatus: CONFIRMED.\n\n--- D2 [boarding_pass] ---\nBOARDING PASS LU740 06APR2026 — MOREAU/V — seat 18E — boarded 10:20Z\n\n--- D3 [arrival_record] ---\nIST ARRIVALS — LU740 06APR2026\nScheduled on-blocks 11:50 local\nActual on-blocks 15:10 local\nDelay at final destination: 3h 20m\nSource: airport arrivals database extract, 06 Apr 2026.\n\n--- D4 [operational_record] ---\nLUMEN AIR OPS LOG — LU740 / 06APR2026\nStatus: DELAYED 03:20\nCause code: CRW-LATE\nCause text: Operating crew delayed in transit, LU-controlled. Departure 03:15 late, 5 minutes further lost in taxi at IST.\nNo weather or ATC restriction.\n\n--- D5 [passenger_statement] ---\nWe sat on the ground for what felt like forever and I did not get to my hotel until the evening. It was at least six hours from when we should have landed.\n\nCARRIER RESPONSE\nNone on file.\n"
+}
+```
+
+
+## Case R17
+
+### **model out** · `baseline` · 56354 ms
+<sub>2026-08-28T17:19:30.105443+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": false,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 320,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.1", "S1.2", "S7.1", "S7.2"],
+  "rationale": "The passenger was involuntarily downgraded from business (2A) to economy (51H), an in-scope disruption under S1.1. However, S7.2 explicitly states downgrades are not Part 5 compensation events; instead S7.1 applies: 40% reimbursement of the segment fare paid (40% of 800 units = 320 units). No duty of care is owed because S6.1 limits it to Part 2 disruptions, and the flight operated on time with no delay. Submit the claim to the carrier."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:19:30.105726+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": false,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 320,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.1",
+    "S1.2",
+    "S7.1",
+    "S7.2"
+  ],
+  "rationale": "The passenger was involuntarily downgraded from business (2A) to economy (51H), an in-scope disruption under S1.1. However, S7.2 explicitly states downgrades are not Part 5 compensation events; instead S7.1 applies: 40% reimbursement of the segment fare paid (40% of 800 units = 320 units). No duty of care is owed because S6.1 limits it to Part 2 disruptions, and the flight operated on time with no delay. Submit the claim to the carrier."
+}
+```
+
+
+## Case R16
+
+### **model out** · `baseline` · 63747 ms
+<sub>2026-08-28T17:19:34.129548+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "challenge_rejection",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.2(c)", "S3.6", "S4.2", "S4.4", "S5.1", "S6.1", "S9.1(a)"],
+  "rationale": "Cancellation qualifies under S2.1(a). The carrier cites weather (extraordinary under S3.3), but the operational record shows the cause was the carrier's crew-rostering IT system outage (carrier-controlled under S3.2(c)). Under S3.6, the operational record governs, making this rejection validly challengeable under S9.1(a). Full compensation of 420 units (distance band B, 2,900 km) is payable; no exemptions apply. The duty-of-care payment of 300 units already made was correct and complete."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:19:34.129842+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "challenge_rejection",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.2(c)",
+    "S3.6",
+    "S4.2",
+    "S4.4",
+    "S5.1",
+    "S6.1",
+    "S9.1(a)"
+  ],
+  "rationale": "Cancellation qualifies under S2.1(a). The carrier cites weather (extraordinary under S3.3), but the operational record shows the cause was the carrier's crew-rostering IT system outage (carrier-controlled under S3.2(c)). Under S3.6, the operational record governs, making this rejection validly challengeable under S9.1(a). Full compensation of 420 units (distance band B, 2,900 km) is payable; no exemptions apply. The duty-of-care payment of 300 units already made was correct and complete."
+}
+```
+
+
+## Case R19
+
+### **model out** · `baseline` · 62484 ms
+<sub>2026-08-28T17:20:08.694269+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "extraordinary",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 180,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.1", "S3.3(g)", "S3.4", "S6.1", "S6.2(a)", "S6.2(b)", "S6.3", "S8.1"],
+  "rationale": "The flight was cancelled due to a latent manufacturing defect notified by the aircraft regulator via Airworthiness Directive AD-2026-1841, not discovered by the carrier's own maintenance. This is extraordinary under S3.3(g), excluding Part 5 compensation. However, duty of care is owed regardless of cause under S6.1. The passenger's itemised receipts (hotel 140 + meals 40 = 180 units) are fully reimbursable under S6.2(a)–(b) and within the 300-unit cap."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:20:08.694574+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "extraordinary",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 180,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.1",
+    "S3.3(g)",
+    "S3.4",
+    "S6.1",
+    "S6.2(a)",
+    "S6.2(b)",
+    "S6.3",
+    "S8.1"
+  ],
+  "rationale": "The flight was cancelled due to a latent manufacturing defect notified by the aircraft regulator via Airworthiness Directive AD-2026-1841, not discovered by the carrier's own maintenance. This is extraordinary under S3.3(g), excluding Part 5 compensation. However, duty of care is owed regardless of cause under S6.1. The passenger's itemised receipts (hotel 140 + meals 40 = 180 units) are fully reimbursable under S6.2(a)–(b) and within the 300-unit cap."
+}
+```
+
+
+## Case R20
+
+### **model out** · `baseline` · 54199 ms
+<sub>2026-08-28T17:20:09.476558+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": false,
+  "cause_class": "carrier_controlled",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": ["S2.1(b)", "S2.2", "S6.1"],
+  "rationale": "The passenger arrived at IST 3 hours 20 minutes late (D3), falling 10 minutes short of the S2.1(b) qualifying threshold of 3h30m. The operational record (D3, D4) governs over the passenger's recollection of 'six hours' (S3.6). Since the disruption does not qualify, no compensation is payable, and duty of care—owed only for qualifying disruptions under S6.1—is not owed."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:20:09.476887+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": false,
+  "cause_class": "carrier_controlled",
+  "eligible": false,
+  "compensation_units": 0,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "close_no_claim",
+  "policy_citations": [
+    "S2.1(b)",
+    "S2.2",
+    "S6.1"
+  ],
+  "rationale": "The passenger arrived at IST 3 hours 20 minutes late (D3), falling 10 minutes short of the S2.1(b) qualifying threshold of 3h30m. The operational record (D3, D4) governs over the passenger's recollection of 'six hours' (S3.6). Since the disruption does not qualify, no compensation is payable, and duty of care—owed only for qualifying disruptions under S6.1—is not owed."
+}
+```
+
+
+## Case R18
+
+### **model out** · `baseline` · 94151 ms
+<sub>2026-08-28T17:20:34.853615+00:00</sub>
+
+*output*
+
+```
+```json
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": ["S1.2", "S2.1(a)", "S3.3(e)", "S3.5", "S4.2", "S5.1", "S6.1"],
+  "rationale": "The flight qualifies as a cancellation under S2.1(a). Although a bird strike is extraordinary under S3.3(e), S3.5 reverts the cause to carrier-controlled because the carrier had spare airframes available for 40+ hours (far exceeding the 12-hour threshold) but chose not to use them for IN300. With less than 7 days' notice (17.5 hours) and no re-routing offer, full 420-unit compensation is due under Band B (2,190 km). Duty of care is separately available pending receipts."
+}
+```
+```
+
+### **final** · `baseline`
+<sub>2026-08-28T17:20:34.853931+00:00</sub>
+
+*output*
+
+```
+{
+  "in_scope": true,
+  "qualifies": true,
+  "cause_class": "carrier_controlled",
+  "eligible": true,
+  "compensation_units": 420,
+  "duty_of_care_units": 0,
+  "downgrade_reimbursement_units": 0,
+  "evidence_sufficient": true,
+  "missing_evidence": [],
+  "next_action": "submit_claim",
+  "policy_citations": [
+    "S1.2",
+    "S2.1(a)",
+    "S3.3(e)",
+    "S3.5",
+    "S4.2",
+    "S5.1",
+    "S6.1"
+  ],
+  "rationale": "The flight qualifies as a cancellation under S2.1(a). Although a bird strike is extraordinary under S3.3(e), S3.5 reverts the cause to carrier-controlled because the carrier had spare airframes available for 40+ hours (far exceeding the 12-hour threshold) but chose not to use them for IN300. With less than 7 days' notice (17.5 hours) and no re-routing offer, full 420-unit compensation is due under Band B (2,190 km). Duty of care is separately available pending receipts."
+}
+```
+
+
+## Case (no case)
+
+### **final**
+<sub>2026-08-28T17:20:34.858299+00:00</sub>
+
+*output*
+
+```
+{
+  "metrics": {
+    "n_cases": 20,
+    "case_resolution_accuracy": 0.75,
+    "action_accuracy": 0.95,
+    "compensation_accuracy": 0.95,
+    "eligibility_accuracy": 0.75,
+    "cause_accuracy": 0.95,
+    "evidence_sufficiency_accuracy": 0.95,
+    "duty_of_care_accuracy": 0.9,
+    "downgrade_accuracy": 0.95,
+    "unsupported_claims": 0,
+    "unsupported_rejection_challenges": 0,
+    "false_escalations": 0,
+    "missed_escalations": 0,
+    "failed_cases": [
+      "R05",
+      "R06",
+      "R08",
+      "R10",
+      "R17"
+    ]
+  },
+  "totals": {
+    "model_calls": 20,
+    "task_input_tokens": 86848,
+    "output_tokens": 152630,
+    "cache_creation_tokens": 46599,
+    "cache_read_tokens": 291809,
+    "harness_overhead_tokens": 251740,
+    "cost_usd": 0.9144,
+    "wall_clock_s": 413.0,
+    "mean_calls_per_case": 1.0
+  }
+}
+```

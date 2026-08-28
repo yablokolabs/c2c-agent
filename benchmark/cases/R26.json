@@ -1,0 +1,59 @@
+{
+  "case_id": "R26",
+  "title": "Denied boarding, four hours late, no taper",
+  "difficulty": "hard",
+  "tags": [
+    "denied_boarding",
+    "rule_scope",
+    "operational_disruption"
+  ],
+  "passenger": {
+    "name": "W. Osei",
+    "pnr": "AR9084"
+  },
+  "narrative": "They would not let me on even though I had a confirmed seat and had checked in. I got there four hours late on the next one.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING AR9084 — Passenger: W. OSEI (adult)\nCarrier: Aurelian (AR)\nAR330  BRU 21 Jul 2026 07:05  ->  LIS 21 Jul 2026 09:15\nGreat-circle distance BRU-LIS: 1,720 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "denied_boarding_notice",
+      "content": "AURELIAN INVOLUNTARY DENIED BOARDING NOTICE\nFlight AR330, 21 Jul 2026. Passenger OSEI/W, PNR AR9084.\nPassenger held a confirmed booking and completed check-in at 06:11Z. Boarding was refused at the gate because the flight was oversold by 4 seats.\nPassenger was rebooked onto AR336, departing 11:40, arriving LIS 13:35."
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "LIS ARRIVALS 21JUL2026\nOriginally ticketed arrival (AR330): 09:15 local\nPassenger OSEI/W travelled on AR336, actual on-blocks 13:35 local\nDelay at final destination: 4h 20m"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "AURELIAN OPS LOG — AR330 / 21JUL2026\nStatus: OPERATED, OVERSOLD\nCause code: COM-OVERSOLD\nCause text: Revenue management oversold the cabin by 4 seats. 4 passengers involuntarily denied boarding.\nAR330 itself departed and arrived on schedule."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S1.2(b) the passenger was denied boarding, which satisfies the limb directly",
+      "S2.1(c) involuntary denied boarding on a confirmed booking qualifies in its own right",
+      "S3.2(d) overbooking -> carrier-controlled",
+      "S5.1 1,720 km -> band B -> 420 units",
+      "S4.6 the notice ladder does not apply to denied boarding; it is compensated at 100% subject to S5.4",
+      "S5.4 the taper is confined to claims qualifying under S2.1(b) only; this claim qualifies under S2.1(c), so the 4h 20m arrival delay does not reduce the amount",
+      "420 units payable in full"
+    ]
+  }
+}

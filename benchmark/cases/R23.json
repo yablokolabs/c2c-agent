@@ -1,0 +1,69 @@
+{
+  "case_id": "R23",
+  "title": "Rejection resting on a re-routing offer that is not in the record",
+  "difficulty": "hard",
+  "tags": [
+    "invalid_rejection",
+    "challenge",
+    "absence_detection"
+  ],
+  "passenger": {
+    "name": "U. Lindgren",
+    "pnr": "SV2266"
+  },
+  "narrative": "They refused me because they say they offered me another flight. Nobody offered me anything. I found my own way there two days later.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING SV2266 — Passenger: U. LINDGREN (adult)\nCarrier: Silver Vector (SV)\nSV880  ARN 17 Nov 2026 15:50  ->  DXB 17 Nov 2026 23:55\nGreat-circle distance ARN-DXB: 4,590 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@silvervector.example\nSent: 14 Nov 2026 09:00 UTC\nSubject: SV880 on 17 Nov cancelled\n\nSV880 on 17 November is cancelled. Your fare has been refunded to the original form of payment."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "SILVER VECTOR OPS LOG — SV880 / 17NOV2026\nStatus: CANCELLED\nCause code: COM-CONS\nCause text: Load-driven consolidation onto SV882 on 19 Nov. Commercial decision taken 14NOV.\nRebooking actions recorded against this cancellation: none.\nNo weather, no ATC, no security event."
+    },
+    {
+      "doc_id": "D4",
+      "type": "correspondence",
+      "content": "COMPLETE PASSENGER CONTACT HISTORY FOR PNR SV2266, exported from the carrier's CRM 02 Dec 2026:\n14 Nov 09:00Z  outbound email: cancellation notice (D2)\n26 Nov 11:40Z  inbound email: claim from passenger\n01 Dec 08:15Z  outbound email: decision letter\nNo other contacts of any kind are recorded against this booking."
+    },
+    {
+      "doc_id": "D5",
+      "type": "claim_record",
+      "content": "Claim filed with Silver Vector 26 Nov 2026, reference SV-CLM-40881."
+    }
+  ],
+  "carrier_response": {
+    "type": "rejection",
+    "received": "2026-12-01",
+    "text": "We offered you re-routing at the time of cancellation and you did not take it up. As re-routing was offered, no compensation is payable under the applicable policy."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 750,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "challenge_rejection",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(d) commercial consolidation -> carrier-controlled",
+      "S4.1 notice 14 Nov 09:00 -> 17 Nov 15:50 is 3 days, under 7 days -> S4.4 governs",
+      "S4.4 the exemption requires an offer that was actually made; D3 records no rebooking actions and D4 records no such contact",
+      "S4.5 a declined offer would still count, but only if it was made, and nothing in the record shows one",
+      "S5.1 4,590 km -> band C -> 750 units",
+      "S9.1(c) the rejection cites a re-routing exemption with no re-routing offer in the record -> validly challengeable",
+      "The decisive observation is the absence of a document, not the content of one"
+    ]
+  }
+}

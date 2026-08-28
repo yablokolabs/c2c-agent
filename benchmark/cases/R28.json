@@ -1,0 +1,75 @@
+{
+  "case_id": "R28",
+  "title": "Settlement offer that matches the full entitlement",
+  "difficulty": "hard",
+  "tags": [
+    "settlement",
+    "accept_settlement",
+    "arithmetic_chain"
+  ],
+  "passenger": {
+    "name": "M. Haugen",
+    "pnr": "VT8203"
+  },
+  "narrative": "They have come back with an offer. I do not know whether it is a good one or whether I should push for more.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING VT8203 — Passenger: M. HAUGEN (adult)\nCarrier: Vireo Transalpine (VT)\nVT640  ZRH 06 Dec 2026 17:30  ->  LIS 06 Dec 2026 19:55\nGreat-circle distance ZRH-LIS: 1,600 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@vireotransalpine.example\nSent: 06 Dec 2026 15:05 UTC\nSubject: VT640 cancelled\n\nVT640 this evening is cancelled. You are rebooked onto VT644 tomorrow at 17:30."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "VIREO TRANSALPINE OPS LOG — VT640 / 06DEC2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: VT flight-planning system outage 06DEC 13:00-22:00Z. Internal to VT.\nWeather ZRH and LIS: no restriction. No ATC regulation."
+    },
+    {
+      "doc_id": "D4",
+      "type": "receipts",
+      "content": "ITEMISED RECEIPTS: airport hotel 06-07 Dec 132.00 units (receipt 3301), evening meal 24.00 units (receipt 3302), breakfast 14.00 units (receipt 3303). TOTAL 170.00 units."
+    },
+    {
+      "doc_id": "D5",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION VT640 06DEC2026 — HAUGEN/M — accepted for travel 15:01Z, seat 9F. Flight subsequently cancelled."
+    },
+    {
+      "doc_id": "D6",
+      "type": "claim_record",
+      "content": "Claim filed with Vireo Transalpine 11 Dec 2026, reference VT-CLM-66120, seeking compensation and duty of care."
+    }
+  ],
+  "carrier_response": {
+    "type": "settlement_offer",
+    "received": "2027-01-08",
+    "text": "Without admission of liability we offer to settle your claim VT-CLM-66120 in full for 590.00 units, comprising 420.00 units of compensation and 170.00 units in respect of your receipted expenses. Please confirm whether you accept."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 170,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "accept_settlement",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(c) carrier's own flight-planning system outage -> carrier-controlled",
+      "S4.1 notice 06 Dec 15:05 -> 06 Dec 17:30 is under 7 days -> 100%",
+      "S4.4 the re-route arrived roughly 24 hours late, far outside the 2 hour window -> no exemption",
+      "S5.1 1,600 km -> band B -> 420 units",
+      "S6.2(a)+(b) overnight wait with meals and hotel, S6.4 receipts present, S6.3 170.00 is under the 300 cap -> 170 units",
+      "Full entitlement across Parts 5, 6 and 7 is 420 + 170 + 0 = 590.00 units",
+      "S9.4 the offer of 590.00 units meets the full entitlement and should be accepted",
+      "S9.3 does not apply because nothing is being refused"
+    ]
+  }
+}
