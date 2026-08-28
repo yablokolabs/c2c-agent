@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.env.local
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+node_modules/
+trajectories/runs/tmp-*/
+.DS_Store
