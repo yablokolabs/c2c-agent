@@ -1,0 +1,51 @@
+{
+  "case_id": "R08",
+  "title": "Cancellation with twenty-five days notice",
+  "difficulty": "easy",
+  "tags": [
+    "advance_notice",
+    "valid_negative"
+  ],
+  "passenger": {
+    "name": "M. Sørensen",
+    "pnr": "AC6620"
+  },
+  "narrative": "They cancelled my flight almost a month ahead and refunded me. I have read that I am owed compensation for any cancellation.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING AC6620 — Passenger: M. SORENSEN (adult)\nCarrier: Auroral (AC)\nAC910  ARN 12 Dec 2026 07:25  ->  LHR 12 Dec 2026 09:05\nGreat-circle distance ARN-LHR: 1,455 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: notices@auroral.example\nSent: 16 Nov 2026 14:00 UTC\nSubject: AC910 12 Dec cancelled\n\nAC910 on 12 December will not operate. Your booking has been cancelled and refunded in full."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "AURORAL OPS LOG — AC910 / 12DEC2026\nStatus: CANCELLED (winter schedule reduction, decision date 16NOV)\nCause code: COM-SCHED\nCause text: Route suspended for the winter season. Commercial decision."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(d) commercial decision -> carrier-controlled",
+      "S4.1 notice 16 Nov 14:00 -> 12 Dec 07:25 is 25 days",
+      "S4.2 21 days or more -> no compensation",
+      "Cause being carrier-controlled does not survive the notice ladder"
+    ]
+  }
+}

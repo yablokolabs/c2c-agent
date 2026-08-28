@@ -1,0 +1,58 @@
+{
+  "case_id": "R06",
+  "title": "Twelve days notice with a compliant re-routing offer",
+  "difficulty": "medium",
+  "tags": [
+    "advance_notice",
+    "rerouting_exemption",
+    "valid_negative"
+  ],
+  "passenger": {
+    "name": "P. Nakamura",
+    "pnr": "VN33QW"
+  },
+  "narrative": "They cancelled my flight twelve days out and put me on an earlier departure that got in a bit later. I took it. Do I still get paid?",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING VN33QW — Passenger: P. NAKAMURA (adult)\nCarrier: Vantage (VN)\nVN515  BCN 20 Jun 2026 09:00  ->  CPH 20 Jun 2026 12:30\nGreat-circle distance BCN-CPH: 1,760 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: changes@vantage.example\nSent: 08 Jun 2026 11:40 UTC\nSubject: Change to your booking VN33QW\n\nVN515 on 20 June is cancelled. We have re-routed you onto VN517, departing BCN 20 Jun 08:00 and arriving CPH 20 Jun 16:00 via a stop at FRA. This is confirmed unless you tell us otherwise."
+    },
+    {
+      "doc_id": "D3",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS VN517 20JUN2026 — NAKAMURA/P — seat 7D — travelled as re-routed"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "VANTAGE OPS LOG — VN515 / 20JUN2026\nStatus: CANCELLED (scheduled consolidation, decision date 08JUN)\nCause code: COM-CONS\nCause text: Commercial consolidation of VN515 and VN517."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(d) commercial consolidation -> carrier-controlled",
+      "S4.1 notice 08 Jun 11:40 -> 20 Jun 09:00 is 11 days 21h, inside the 7-20 day band",
+      "S4.3 re-route departed 08:00, 1h before the original 09:00, within the 2h limit",
+      "S4.3 re-route arrived 16:00 against an original 12:30, 3h30m late, under the 4h limit",
+      "S4.3 exemption applies in full -> no compensation despite a carrier-controlled cause"
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "case_id": "R02",
+  "title": "Weather cancellation with overnight duty of care",
+  "difficulty": "medium",
+  "tags": [
+    "weather_extraordinary",
+    "partial_entitlement"
+  ],
+  "passenger": {
+    "name": "H. Okonkwo",
+    "pnr": "BB2M91"
+  },
+  "narrative": "Snowstorm, flight cancelled, I was stuck overnight and paid for a hotel and dinner myself. The airline says weather means they owe me nothing at all. Is that right?",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING BB2M91 — Passenger: H. OKONKWO (adult)\nCarrier: Northwind (NW)\nNW220  OSL 14 Jan 2026 18:30  ->  MAN 14 Jan 2026 20:05\nSingle booking reference. Great-circle distance OSL-MAN: 1,045 km.\nStatus: CONFIRMED. Fare paid: 96.00 units."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@northwind.example\nSent: 14 Jan 2026 16:02 UTC\nSubject: NW220 cancelled\n\nNW220 OSL-MAN on 14 Jan is cancelled. You have been rebooked on NW222 departing 15 Jan 2026 09:15."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "NORTHWIND OPS LOG — NW220 / 14JAN2026\nStatus: CANCELLED\nCause code: WX-MIN\nCause text: OSL below operating minima. RVR 275m, freezing snow, airport departure rate reduced to zero 15:40-22:00Z. Airport authority declared ground stop."
+    },
+    {
+      "doc_id": "D4",
+      "type": "receipts",
+      "content": "ITEMISED RECEIPTS SUBMITTED BY PASSENGER\n1. Clarion Hotel Oslo Airport, 1 night 14-15 Jan, room only .... 190.00 units (receipt no. 44812)\n2. Airport restaurant, evening meal 14 Jan ................... 34.00 units (receipt no. 9911)\n3. Breakfast 15 Jan .......................................... 16.00 units (receipt no. 9974)\nTOTAL 240.00 units"
+    },
+    {
+      "doc_id": "D5",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION NW220 14JAN2026 — OKONKWO/H — accepted for travel 15:55Z, seat 12C. Flight subsequently cancelled."
+    }
+  ],
+  "carrier_response": {
+    "type": "rejection",
+    "received": "2026-01-20",
+    "text": "Your claim is declined. NW220 was cancelled due to extraordinary circumstances (severe weather) outside our control. No compensation is payable and we are unable to reimburse your expenses."
+  },
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "extraordinary",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 240,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "challenge_rejection",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.3(a) weather below minima -> extraordinary -> no Part 5 compensation",
+      "S6.1 duty of care owed regardless of cause",
+      "S6.2(a)+(b) overnight wait, meals and hotel",
+      "S6.4 itemised receipts present",
+      "S6.3 240 units is under the 300 cap -> 240 payable",
+      "S9.1(e) rejection is silent on / refuses duty of care where S6.1 applies -> validly challengeable"
+    ]
+  }
+}

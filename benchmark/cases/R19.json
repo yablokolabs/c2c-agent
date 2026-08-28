@@ -1,0 +1,67 @@
+{
+  "case_id": "R19",
+  "title": "Fleet-wide airworthiness directive, duty of care only",
+  "difficulty": "hard",
+  "tags": [
+    "weather_extraordinary",
+    "grounding_over_recall",
+    "partial_entitlement"
+  ],
+  "passenger": {
+    "name": "O. Baptiste",
+    "pnr": "TF1907"
+  },
+  "narrative": "A technical problem grounded the plane and my flight was cancelled. A friend told me technical problems always mean compensation.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING TF1907 — Passenger: O. BAPTISTE (adult)\nCarrier: Tradewind Federal (TF)\nTF260  LHR 15 Sep 2026 12:15  ->  JFK 15 Sep 2026 15:05\nGreat-circle distance LHR-JFK: 5,555 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@tradewindfederal.example\nSent: 15 Sep 2026 06:30 UTC\nSubject: TF260 cancelled\n\nTF260 today is cancelled. We are rebooking you onto TF262 tomorrow, 16 Sep, departing 12:15."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "TRADEWIND FEDERAL OPS LOG — TF260 / 15SEP2026\nStatus: CANCELLED\nCause code: AD-MANDATORY\nCause text: Emergency Airworthiness Directive AD-2026-1841 issued by the airworthiness regulator at 15SEP 04:15Z, effective immediately, mandating inspection of the pylon attachment fitting on all aircraft of this type before further flight. Latent manufacturing defect notified by the manufacturer. TF grounded its entire fleet of 11 such aircraft. 9 other operators worldwide affected.\nThis defect was not detectable by, and was not found by, TF line maintenance."
+    },
+    {
+      "doc_id": "D4",
+      "type": "receipts",
+      "content": "ITEMISED RECEIPTS: airport hotel 15-16 Sep 140.00 units (receipt 20114), evening meal 27.00 units (receipt 20115), breakfast 13.00 units (receipt 20116). TOTAL 180.00 units."
+    },
+    {
+      "doc_id": "D5",
+      "type": "boarding_pass",
+      "content": "CHECK-IN CONFIRMATION TF260 15SEP2026 — BAPTISTE/O — accepted for travel 06:05Z, seat 22A. Flight subsequently cancelled."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "extraordinary",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 180,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.4 the distinguishing test is who identified the defect: here the manufacturer and regulator, not TF maintenance",
+      "S3.3(g) hidden manufacturing defect under a regulator airworthiness directive -> extraordinary -> no Part 5 compensation",
+      "S3.2(a) does not apply, which is the trap in this case",
+      "S3.5 does not apply: the directive was issued 8 hours before departure, under the 12-hour threshold",
+      "S6.1 duty of care is owed regardless of cause",
+      "S6.2(a)+(b) overnight wait with meals and hotel",
+      "S6.4 itemised receipts present",
+      "S6.3 180 units is under the 300 cap -> 180 payable",
+      "The claim should be submitted for duty of care only"
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "case_id": "R17",
+  "title": "Involuntary downgrade with no delay and no cancellation",
+  "difficulty": "medium",
+  "tags": [
+    "downgrade",
+    "not_a_part5_event",
+    "adversarial"
+  ],
+  "passenger": {
+    "name": "B. Nardelli",
+    "pnr": "CE2081"
+  },
+  "narrative": "I paid for business class on a long flight and they put me in economy at the gate. The flight was on time. I assume I get the long-haul compensation amount.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING CE2081 — Passenger: B. NARDELLI (adult)\nCarrier: Cerulean Eastern (CE)\nCE118  FCO 19 Mar 2026 10:40  ->  SIN 20 Mar 2026 05:15\nCabin booked: BUSINESS. Fare paid for this segment: 800.00 units.\nGreat-circle distance FCO-SIN: 10,030 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS CE118 19MAR2026 — NARDELLI/B — REISSUED AT GATE — seat 51H — cabin: ECONOMY (downgraded from 2A BUSINESS)"
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "SIN ARRIVALS — CE118 20MAR2026\nScheduled on-blocks 05:15 local\nActual on-blocks 05:09 local\nDelay at final destination: none, arrived 6 minutes early."
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "CERULEAN EASTERN OPS LOG — CE118 / 19MAR2026\nStatus: OPERATED ON TIME\nNote: aircraft substitution, J-cabin 12 seats vs 30 booked. 18 passengers involuntarily downgraded to Y. Commercial decision, CE-controlled."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": false,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 320,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1 no cancellation, no denied boarding, and the flight arrived early, so no Part 2 disruption qualifies",
+      "S7.2 a downgrade is not a Part 5 compensation event and Parts 4 and 5 do not apply to it",
+      "S7.1 reimbursement is 40% of the fare paid for the affected segment: 800.00 x 0.40 = 320 units",
+      "S6.1 duty of care is not engaged because no Part 2 disruption occurred",
+      "The claim is still worth submitting, for the S7.1 reimbursement only"
+    ]
+  }
+}

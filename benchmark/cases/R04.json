@@ -1,0 +1,57 @@
+{
+  "case_id": "R04",
+  "title": "Missed connection on one booking, tapered delay",
+  "difficulty": "hard",
+  "tags": [
+    "missed_connection",
+    "delay_taper"
+  ],
+  "passenger": {
+    "name": "D. Ferreira",
+    "pnr": "MT5590"
+  },
+  "narrative": "My first flight was late so I missed my connection in Doha and got in to Sydney the next morning. I was told the delay only counts on the leg that was late.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING MT5590 — Passenger: D. FERREIRA (adult)\nCarrier: Meridian Transcontinental (MT)\nMT119  MAD 11 Nov 2026 14:20  ->  DOH 11 Nov 2026 23:10\nMT402  DOH 12 Nov 2026 01:55  ->  SYD 12 Nov 2026 21:30\nBOTH SEGMENTS ON THIS SINGLE BOOKING REFERENCE.\nGreat-circle distance MAD-SYD (origin to final destination): 17,680 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS MT119 11NOV2026 — FERREIRA/D — seat 21A — boarded 14:05Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "MT OPS LOG — MT119 / 11NOV2026\nStatus: DELAYED 02:35 departure\nCause code: ROT-INB\nCause text: Late inbound aircraft. Inbound MT118 delayed by MT ground handling shortfall at MAD. No weather or ATC restriction.\nConsequence: 14 passengers misconnected at DOH onto MT404."
+    },
+    {
+      "doc_id": "D4",
+      "type": "arrival_record",
+      "content": "SYD ARRIVALS\nOriginally ticketed arrival (MT402): 12 Nov 2026 21:30 local\nPassenger FERREIRA/D rebooked onto MT404, actual on-blocks 13 Nov 2026 01:40 local\nDelay at final destination: 4h 10m"
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 375,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.3 both segments on a single booking reference -> missed connection qualifies",
+      "S2.2 delay measured at final destination SYD, not at DOH",
+      "S2.1(b) 4h 10m is at or over 3h30m",
+      "S3.2(e) late inbound aircraft, inbound delay itself carrier-controlled",
+      "S5.1 17,680 km -> band C -> 750 units",
+      "S5.4 4h 10m is at or over 3h30m but under 5 hours -> 50% taper -> 375 units"
+    ]
+  }
+}

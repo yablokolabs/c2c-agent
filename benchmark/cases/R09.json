@@ -1,0 +1,53 @@
+{
+  "case_id": "R09",
+  "title": "Delay claim with no arrival-time evidence",
+  "difficulty": "medium",
+  "tags": [
+    "missing_evidence",
+    "evidence_request"
+  ],
+  "passenger": {
+    "name": "T. Bergström",
+    "pnr": "NF2244"
+  },
+  "narrative": "I was very late into Doha, I think about four or five hours. I do not have anything showing when we actually landed.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING NF2244 — Passenger: T. BERGSTROM (adult)\nCarrier: Nordfly (NF)\nNF800  HEL 22 May 2026 13:10  ->  DOH 22 May 2026 20:45\nGreat-circle distance HEL-DOH: 4,140 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "boarding_pass",
+      "content": "BOARDING PASS NF800 22MAY2026 — BERGSTROM/T — seat 9C — boarded 13:44Z"
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "NORDFLY OPS LOG — NF800 / 22MAY2026\nStatus: DELAYED departure 02:10\nCause code: TECH-UNSCH\nCause text: Hydraulic pump replacement, NF line maintenance at HEL.\nArrival record for this rotation not attached to this extract."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": null,
+    "cause_class": "carrier_controlled",
+    "eligible": null,
+    "compensation_units": null,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": false,
+    "missing_evidence": [
+      "S8.1(c) evidence of the actual arrival time at the final destination DOH"
+    ],
+    "next_action": "request_evidence",
+    "derivation": [
+      "S3.2(a) cause is carrier-controlled and is established",
+      "S2.1(b) requires the delay at the final destination, and a 2h10m departure delay does not establish the arrival delay",
+      "S8.1(c) a delay claim needs actual arrival-time evidence; it is absent",
+      "S8.2 the correct outcome is request_evidence naming the missing item",
+      "S8.2 assuming an arrival time in order to produce a number would be an unsupported claim"
+    ]
+  }
+}

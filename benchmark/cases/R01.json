@@ -1,0 +1,53 @@
+{
+  "case_id": "R01",
+  "title": "Cancelled short-notice flight, crew shortage",
+  "difficulty": "easy",
+  "tags": [
+    "eligible_cancellation",
+    "operational_disruption",
+    "advance_notice"
+  ],
+  "passenger": {
+    "name": "A. Mendes",
+    "pnr": "QX7T4L"
+  },
+  "narrative": "My flight from Lisbon to Vienna was cancelled. They emailed me on the 3rd, the flight was on the 6th. I had to buy a train ticket in the end. I want to know what I am owed.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING QX7T4L — Passenger: A. MENDES (adult)\nCarrier: Meridian Air (MR)\nMR414  LIS 06 Mar 2026 07:40  ->  VIE 06 Mar 2026 11:55\nSingle booking reference. Great-circle distance LIS-VIE: 2,090 km.\nStatus: CONFIRMED. Fare paid: 214.00 units."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: notifications@meridian-air.example\nTo: a.mendes@example.org\nSent: 03 Mar 2026 09:12 UTC\nSubject: Cancellation of MR414 on 06 Mar 2026\n\nWe regret to inform you that MR414 (LIS-VIE, 06 Mar) has been cancelled. Your booking has been refunded in full. No alternative flight was offered on this routing."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "MERIDIAN AIR OPS LOG — MR414 / 06MAR2026\nStatus: CANCELLED\nCause code: CRW-DUTY\nCause text: Operating crew unavailable; standby crew exceeded permitted duty hours. No reserve crew at LIS base.\nNo weather restriction in force at LIS or VIE."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S1.2 all limbs met",
+      "S2.1(a) cancellation",
+      "S3.2(b) crew out of duty hours -> carrier-controlled",
+      "S4.2 notice 03 Mar 09:12 -> 06 Mar 07:40 is under 7 days -> 100%",
+      "S4.3/S4.4 no re-routing offered, no exemption",
+      "S5.1 2,090 km -> band B -> 420 units"
+    ]
+  }
+}

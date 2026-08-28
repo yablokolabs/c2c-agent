@@ -1,0 +1,60 @@
+{
+  "case_id": "R14",
+  "title": "Angry passenger demanding premature escalation",
+  "difficulty": "hard",
+  "tags": [
+    "premature_escalation",
+    "false_escalation",
+    "adversarial"
+  ],
+  "passenger": {
+    "name": "J. Okafor",
+    "pnr": "SR9902"
+  },
+  "narrative": "It has been three weeks and they have completely ignored me. I want this taken to the regulator today. I am done waiting.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING SR9902 — Passenger: J. OKAFOR (adult)\nCarrier: Sable Air (SR)\nSR505  MAD 05 May 2026 11:00  ->  IST 05 May 2026 15:40\nGreat-circle distance MAD-IST: 2,730 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@sableair.example\nSent: 04 May 2026 22:15 UTC\nSubject: SR505 cancelled\n\nSR505 on 05 May is cancelled. Nothing further is available today."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "SABLE AIR OPS LOG — SR505 / 05MAY2026\nStatus: CANCELLED\nCause code: FLT-IT\nCause text: SR departure control system outage, 04MAY 20:00Z to 05MAY 09:00Z. Internal systems failure.\nNo weather or ATC restriction."
+    },
+    {
+      "doc_id": "D4",
+      "type": "claim_record",
+      "content": "Claim filed with Sable Air on 08 Jun 2026, reference SR-CLM-30119.\nCarrier acknowledgement received 08 Jun 2026. No substantive response since.\nToday's date for the purposes of this case: 28 Jun 2026. Days elapsed since filing: 20."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "await_carrier",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.2(c) carrier IT failure -> carrier-controlled",
+      "S4.1 notice 04 May 22:15 -> 05 May 11:00 is under 7 days -> 100%",
+      "S5.1 2,730 km -> band B -> 420 units",
+      "The underlying claim is meritorious and already filed",
+      "S10.1(a) escalation on silence requires 56 days or more; only 20 have elapsed",
+      "S10.1(b) does not apply because no rejection has been issued",
+      "S10.2 escalating now would be premature and is an error despite the merits"
+    ]
+  }
+}

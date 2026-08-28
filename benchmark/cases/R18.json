@@ -1,0 +1,59 @@
+{
+  "case_id": "R18",
+  "title": "Extraordinary cause with forty hours to recover",
+  "difficulty": "hard",
+  "tags": [
+    "knock_on_effect",
+    "weather_extraordinary",
+    "reverts_to_carrier"
+  ],
+  "passenger": {
+    "name": "Y. Tanaka",
+    "pnr": "IN5540"
+  },
+  "narrative": "They say a bird strike the day before means they owe me nothing, even though my flight was not until the following evening.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING IN5540 — Passenger: Y. TANAKA (adult)\nCarrier: Indigo North (IN)\nIN300  HEL 23 Jun 2026 20:10  ->  IST 24 Jun 2026 00:05\nGreat-circle distance HEL-IST: 2,190 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "carrier_notification",
+      "content": "From: ops@indigonorth.example\nSent: 22 Jun 2026 23:40 UTC\nSubject: IN300 23 Jun cancelled\n\nIN300 on 23 June is cancelled following damage to the assigned aircraft. Your fare has been refunded. No alternative was offered."
+    },
+    {
+      "doc_id": "D3",
+      "type": "operational_record",
+      "content": "INDIGO NORTH OPS LOG — aircraft OH-INC\n22JUN2026 00:50Z  Bird strike on approach HEL, inbound IN299. Aircraft removed from service.\n22JUN2026 01:10Z  Extraordinary event concluded; aircraft on stand, damage assessment begins.\n22JUN2026 01:10Z to 23JUN2026 18:00Z  Aircraft under repair. IN held two serviceable spare airframes at HEL throughout this period and did not assign either to IN300.\n23JUN2026 18:00Z  IN300 (STD 23JUN 20:10 local, 17:10Z) cancelled.\nElapsed from the end of the extraordinary event to scheduled departure of IN300: approximately 40 hours."
+    },
+    {
+      "doc_id": "D4",
+      "type": "claim_record",
+      "content": "No claim filed yet."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": true,
+    "cause_class": "carrier_controlled",
+    "eligible": true,
+    "compensation_units": 420,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "submit_claim",
+    "derivation": [
+      "S2.1(a) cancellation",
+      "S3.3(e) the bird strike is itself an extraordinary cause",
+      "S3.5 the extraordinary event ended 22 Jun 01:10Z and scheduled departure was 23 Jun 17:10Z, roughly 40 hours later",
+      "S3.5 more than 12 hours elapsed, and spare airframes were available, so the cause reverts to carrier-controlled",
+      "S4.1 notice 22 Jun 23:40 -> 23 Jun 17:10Z is under 7 days -> 100%",
+      "S4.4 no re-routing offered -> no exemption",
+      "S5.1 2,190 km -> band B -> 420 units"
+    ]
+  }
+}

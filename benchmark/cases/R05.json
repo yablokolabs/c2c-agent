@@ -1,0 +1,61 @@
+{
+  "case_id": "R05",
+  "title": "Missed connection across two separate bookings",
+  "difficulty": "hard",
+  "tags": [
+    "missed_connection",
+    "valid_negative",
+    "adversarial"
+  ],
+  "passenger": {
+    "name": "K. Rasmussen",
+    "pnr": "JJ1002 / TT4419"
+  },
+  "narrative": "I booked the two legs separately to save money. The first flight was an hour late and I missed the second one, then had to buy a whole new ticket. Surely they still owe me for getting me there fifteen hours late.",
+  "documents": [
+    {
+      "doc_id": "D1",
+      "type": "booking_confirmation",
+      "content": "BOOKING JJ1002 — Passenger: K. RASMUSSEN (adult)\nCarrier: Jetline (JJ)\nJJ88  CPH 04 Apr 2026 06:00  ->  FRA 04 Apr 2026 07:35\nGreat-circle distance CPH-FRA: 670 km.\nStatus: CONFIRMED."
+    },
+    {
+      "doc_id": "D2",
+      "type": "booking_confirmation",
+      "content": "BOOKING TT4419 — Passenger: K. RASMUSSEN (adult)\nCarrier: Tarn Air (TT) — SEPARATE BOOKING, PURCHASED INDEPENDENTLY\nTT610  FRA 04 Apr 2026 09:10  ->  IST 04 Apr 2026 13:05\nStatus: CONFIRMED. Not through-ticketed with JJ1002. No interline agreement recorded."
+    },
+    {
+      "doc_id": "D3",
+      "type": "arrival_record",
+      "content": "FRA ARRIVALS — JJ88 04APR2026\nScheduled on-blocks 07:35\nActual on-blocks 08:30\nDelay: 0h 55m"
+    },
+    {
+      "doc_id": "D4",
+      "type": "operational_record",
+      "content": "JETLINE OPS LOG — JJ88 / 04APR2026\nStatus: DELAYED 00:55\nCause code: CRW-LATE\nCause text: Crew positioning delay, JJ-controlled."
+    },
+    {
+      "doc_id": "D5",
+      "type": "passenger_statement",
+      "content": "I reached IST at 04:20 on 5 April, about fifteen hours after I was supposed to, because TT would not rebook me and I had to buy a new ticket for the next morning."
+    }
+  ],
+  "carrier_response": null,
+  "ground_truth": {
+    "in_scope": true,
+    "qualifies": false,
+    "cause_class": "carrier_controlled",
+    "eligible": false,
+    "compensation_units": 0,
+    "duty_of_care_units": 0,
+    "downgrade_reimbursement_units": 0,
+    "evidence_sufficient": true,
+    "missing_evidence": [],
+    "next_action": "close_no_claim",
+    "derivation": [
+      "S2.3 segments sold on separate booking references are separate journeys",
+      "S2.3 the final destination of the JJ journey is therefore FRA, the connecting airport",
+      "S2.1(b) delay at FRA was 0h 55m, under 3h30m -> does not qualify",
+      "The 15-hour outcome at IST is real but falls outside the scope of the JJ booking under S2.3"
+    ]
+  }
+}
