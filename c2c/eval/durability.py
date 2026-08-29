@@ -205,17 +205,19 @@ def d01_carrier_api_503(c: httpx.Client, svc: Service) -> Scenario:
     state = wait_for_state(c, case, {"SUBMITTED", "AWAITING_CARRIER"})
 
     landed = effective(c, "submit_claim", case)
-    tried = attempts(c, "submit_claim", case)
+    reached = audit(c)["call_counts"].get("submit_claim", 0)
     s.workflow_completed = state in ("SUBMITTED", "AWAITING_CARRIER")
     s.recovered = s.workflow_completed
     s.duplicate_actions = max(0, landed - 1)
     s.state_preserved = bool(status(c, case).get("claim_id"))
     s.final_outcome = state
-    s.detail = {"submit_attempts_at_carrier": tried, "submissions_that_landed": landed,
-                "injected_503s": 3}
-    s.passed = landed == 1 and s.workflow_completed
-    s.notes = (f"the carrier saw {tried} attempt(s); {landed} landed. Restate retried the "
-               "durable step past three 503s and the step succeeded once.")
+    s.detail = {"calls_that_reached_the_carrier": reached, "injected_503s": 3,
+                "submissions_that_landed": landed}
+    # 4 calls: three rejected with 503, one that succeeded. Fewer would mean the
+    # injection never fired and the scenario proved nothing.
+    s.passed = landed == 1 and s.workflow_completed and reached == 4
+    s.notes = (f"the carrier endpoint was called {reached} times: three answered 503 and one "
+               f"succeeded. Restate retried the durable step and {landed} submission landed.")
     return s
 
 
