@@ -21,10 +21,12 @@ def run_case(
     llm: LLM,
     rec: Optional[Recorder] = None,
     use_verifier: bool = True,
+    enforce_arithmetic: bool = False,
 ) -> tuple[Optional[Verdict], list[LLMResult]]:
     calls: list[LLMResult] = []
 
-    verdict, cw_calls, _box = caseworker.run(case, llm, rec)
+    verdict, cw_calls, _box = caseworker.run(
+        case, llm, rec, enforce_arithmetic=enforce_arithmetic)
     calls += cw_calls
     if verdict is None or not use_verifier:
         return verdict, calls
@@ -35,7 +37,8 @@ def run_case(
         return verdict, calls
 
     revised, r_calls, _box2 = caseworker.run(
-        case, llm, rec, feedback=verifier.format_feedback(report)
+        case, llm, rec, feedback=verifier.format_feedback(report),
+        enforce_arithmetic=enforce_arithmetic,
     )
     calls += r_calls
     if revised is None:
