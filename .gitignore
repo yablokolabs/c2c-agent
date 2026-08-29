@@ -10,3 +10,4 @@ venv/
 node_modules/
 trajectories/runs/tmp-*/
 .DS_Store
+.run/
