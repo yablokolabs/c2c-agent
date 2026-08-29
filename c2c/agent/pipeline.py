@@ -16,17 +16,17 @@ from c2c.llm import LLM, LLMResult
 from c2c.models import Case, Verdict
 from c2c.trajectory import Recorder
 
-USE_VERIFIER = True
-
-
 def run_case(
-    case: Case, llm: LLM, rec: Optional[Recorder] = None
+    case: Case,
+    llm: LLM,
+    rec: Optional[Recorder] = None,
+    use_verifier: bool = True,
 ) -> tuple[Optional[Verdict], list[LLMResult]]:
     calls: list[LLMResult] = []
 
     verdict, cw_calls, _box = caseworker.run(case, llm, rec)
     calls += cw_calls
-    if verdict is None or not USE_VERIFIER:
+    if verdict is None or not use_verifier:
         return verdict, calls
 
     report, v_calls = verifier.run(case, verdict, llm, rec)
