@@ -36,38 +36,43 @@ def _coerce(raw: dict) -> Verdict:
     return Verdict.model_validate(cleaned)
 
 
-def run_case(case: Case, llm: LLM, rec: Optional[Recorder] = None) -> tuple[Optional[Verdict], list[LLMResult]]:
-    template = prompts.load(BASELINE_PROMPT)
-    system, user = template.split("## THE CASE", 1)[0], case.dossier()
-    system = system.replace("{policy}", prompts.policy()).replace("## THE POLICY", "## THE POLICY").strip()
-    user = "## THE CASE\n\n" + user
+def run_case(case: Case, llm: LLM, rec: Optional[Recorder] = None,
+             prompt_name: Optional[str] = None) -> tuple[Optional[Verdict], list[LLMResult]]:
+    """One direct prompt, one call. `prompt_name` selects which instructions to
+    use, so the same single-shot machinery serves both the baseline and the
+    caseworker-prompt control in EXP-001."""
+    name = prompt_name or BASELINE_PROMPT
+    template = prompts.load(name)
+    system = template.split("## THE CASE", 1)[0].replace("{policy}", prompts.policy()).strip()
+    user = "## THE CASE\n\n" + case.dossier()
+    agent = "baseline" if name.startswith("baseline") else "caseworker-direct"
 
     if rec:
-        rec.emit("AGENT_START", case_id=case.case_id, agent="baseline")
-        rec.emit("MODEL_REQUEST", case_id=case.case_id, agent="baseline",
+        rec.emit("AGENT_START", case_id=case.case_id, agent=agent)
+        rec.emit("MODEL_REQUEST", case_id=case.case_id, agent=agent,
                  input={"system_digest": prompts.digest(system), "user": user})
 
     result = llm.complete(system, user)
 
     if rec:
-        rec.emit("MODEL_RESPONSE", case_id=case.case_id, agent="baseline",
+        rec.emit("MODEL_RESPONSE", case_id=case.case_id, agent=agent,
                  output=result.text, duration_ms=result.duration_ms, usage=result.usage())
 
     raw = extract_json(result.text)
     if raw is None:
         if rec:
-            rec.emit("ERROR", case_id=case.case_id, agent="baseline", success=False,
+            rec.emit("ERROR", case_id=case.case_id, agent=agent, success=False,
                      output="response contained no parseable JSON verdict")
         return None, [result]
     try:
         verdict = _coerce(raw)
     except Exception as exc:  # noqa: BLE001
         if rec:
-            rec.emit("ERROR", case_id=case.case_id, agent="baseline", success=False,
+            rec.emit("ERROR", case_id=case.case_id, agent=agent, success=False,
                      output=f"verdict did not validate: {exc}")
         return None, [result]
 
     if rec:
-        rec.emit("FINAL_DECISION", case_id=case.case_id, agent="baseline",
+        rec.emit("FINAL_DECISION", case_id=case.case_id, agent=agent,
                  output=verdict.model_dump())
     return verdict, [result]

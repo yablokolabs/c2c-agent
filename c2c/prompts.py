@@ -18,6 +18,7 @@ PROMPTS = {
     "baseline_v1": ROOT / "prompts" / "baseline_v1.md",
     "baseline_v2": ROOT / "prompts" / "baseline_v2.md",
     "caseworker": ROOT / "agents" / "caseworker" / "SYSTEM_PROMPT.md",
+    "caseworker_direct": ROOT / "prompts" / "caseworker_direct.md",
     "verifier": ROOT / "agents" / "verifier" / "SYSTEM_PROMPT.md",
 }
 
