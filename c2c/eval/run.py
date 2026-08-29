@@ -44,11 +44,20 @@ def _baseline(case, llm, rec):
     return run_case(case, llm, rec)
 
 
-@register("agent")
-def _agent(case, llm, rec):
+@register("agent-tools")
+def _agent_tools(case, llm, rec):
+    """Caseworker with tools, no verifier. Isolates the tool loop's effect."""
     from c2c.agent.pipeline import run_case
 
-    return run_case(case, llm, rec)
+    return run_case(case, llm, rec, use_verifier=False)
+
+
+@register("agent")
+def _agent(case, llm, rec):
+    """Caseworker with tools, plus the independent verifier."""
+    from c2c.agent.pipeline import run_case
+
+    return run_case(case, llm, rec, use_verifier=True)
 
 
 def benchmark_digest() -> str:
