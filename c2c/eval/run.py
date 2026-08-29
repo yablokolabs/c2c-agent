@@ -44,6 +44,15 @@ def _baseline(case, llm, rec):
     return run_case(case, llm, rec)
 
 
+@register("caseworker-direct")
+def _caseworker_direct(case, llm, rec):
+    """The caseworker's prompt, one turn, no tools. The control for EXP-001:
+    separates the prompt's contribution from the loop's and the tools'."""
+    from c2c.baseline import run_case
+
+    return run_case(case, llm, rec, prompt_name="caseworker_direct")
+
+
 @register("agent-tools")
 def _agent_tools(case, llm, rec):
     """Caseworker with tools, no verifier. Isolates the tool loop's effect."""
