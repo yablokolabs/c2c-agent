@@ -118,6 +118,21 @@ is what a competent person would do first. Its prompt is version-controlled at
 
 ---
 
+## Contamination check
+
+C2C is developed inside a repository whose own `CLAUDE.md` is full of project
+context. If any of that reached a benchmark call, every number here would be
+measuring a contaminated prompt.
+
+Benchmark calls therefore run from an empty temporary directory, with
+`--setting-sources ""`, `--strict-mcp-config` and an explicit `--system-prompt`
+that replaces the harness default rather than appending to it.
+
+Verified directly: asked in an isolated call to list any project instructions,
+CLAUDE.md content or repository context it had been given, the model replied
+`NONE`. `tests/test_isolation.py` keeps the structural half of that guard in the
+default suite and the model-call half behind `C2C_RUN_MODEL_TESTS=1`.
+
 ## Provenance
 
 Every result file records the commit, the model, the backend, the digest of the
