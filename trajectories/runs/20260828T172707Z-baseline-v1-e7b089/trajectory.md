@@ -1,4 +1,4 @@
-# Trajectory — baseline-v1 (baseline)
+# Trajectory — 20260828T172707Z-baseline-v1-e7b089
 
 - Run: `20260828T172707Z-baseline-v1-e7b089`
 - Commit: `9a65f78f1c69f1ded77cfd736f001e76125ec960`
@@ -47,7 +47,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -64,7 +64,7 @@
   "rationale": "The flight was cancelled with approximately 70 hours notice (less than 7 days under S4.2). Crew duty-hour exhaustion is carrier-controlled under S3.2(b), entitling the passenger to full compensation. The 2,090 km distance places the claim in Band B (420 units). No re-routing was offered. All required evidence is on file."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:27:40.941980+00:00</sub>
@@ -222,7 +222,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -239,7 +239,7 @@
   "rationale": "Flight VN515 was cancelled (S2.1(a)) due to commercial consolidation (S3.2(d), carrier-controlled). The carrier notified the passenger 12 days in advance and offered re-routing on VN517 departing 1 hour earlier and arriving 3.5 hours later. This re-routing satisfies the S4.3 exemption (departure within 2 hours, arrival within 4 hours of original), which eliminates compensation otherwise payable at 50% under S4.2 for the 7–20 day notice band. No compensation is due."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:28:57.795328+00:00</sub>
@@ -294,7 +294,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -311,7 +311,7 @@
   "rationale": "Ivanova boarded LP771 with a confirmed booking and arrived 6h06m late at final destination (Nairobi), qualifying under S2.1(b). The operational record documents a bleed-air valve fault detected and repaired by Lyra Pacific's own maintenance—a carrier-controlled technical fault under S3.2(a); the carrier's extraordinary-circumstance claim is overridden by S3.6. Distance 6,635 km places the claim in Band C (750 units); the 6h06m delay exceeds 5 hours, so no taper applies (S5.4), and delays receive 100% compensation without notice reduction (S4.6)."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:29:01.184661+00:00</sub>
@@ -369,7 +369,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -386,7 +386,7 @@
   "rationale": "Flight cancelled due to extraordinary weather at origin below operating minima (S3.3(a)), so no Part 5 compensation is payable. However, duty of care is owed regardless of cause (S6.1), and the passenger submitted itemised receipts for hotel (190 units) and meals (50 units) totalling 240 units within the 300-unit cap. The carrier's blanket denial of reimbursement wrongly ignores that duty of care is owed independently of compensation (S9.1(e)), making the rejection validly challengeable."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:29:09.805873+00:00</sub>
@@ -443,7 +443,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": null,
@@ -463,7 +463,7 @@
   "rationale": "Bookings JJ1002 and TT4419 are separate and not through-ticketed. Under S2.3, missed connections on separate booking references do not qualify—the final destination of JJ1002 is FRA only, where delay was 55 minutes, below the 3h30m threshold in S2.1(b). Proof of check-in and claim filing date are required by S8.1(b) and S1.2(c) but are missing."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:29:14.167040+00:00</sub>
@@ -522,7 +522,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -539,7 +539,7 @@
   "rationale": "Delay of 4h 10m at final destination qualifies under S2.1(b); cause is carrier-controlled under S3.2(e) (ground-handling shortfall on inbound aircraft). Band C distance (17,680 km) yields 750 units, reduced to 50% under S5.4 for delays under 5 hours, equalling 375 units. Duty of care is owed under S6.1 but requires itemised receipts under S6.4; receipts are missing and must be requested before duty-of-care entitlements can be assessed."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:29:34.367652+00:00</sub>
@@ -597,7 +597,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -614,7 +614,7 @@
   "rationale": "Passenger is in scope: confirmed booking, accepted for travel (boarding pass in evidence), and within the 18-month filing window. The operational record confirms a carrier-controlled technical delay (hydraulic pump maintenance). However, the claim cannot proceed: S8.1(c) requires proof of actual arrival time at final destination to qualify under S2.1(b). The passenger's subjective recollection ('about four or five hours') is not documentary evidence; S8.2 forbids assuming a value. Request carrier's landing record for NF800 at DOH or any dated proof of arrival time to determine if the 3h30m threshold was met and apply any delay taper under S5.4."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:29:36.343663+00:00</sub>
@@ -673,7 +673,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -690,7 +690,7 @@
   "rationale": "The operational record (D3) shows crew duty time (CRW-DUTY) with CAVOK weather at both airports; the carrier's rejection wrongly cites extraordinary weather. Under S3.6, the operational record governs, establishing a carrier-controlled cause under S3.2(b). The cancellation qualifies under S2.1(a), and the 2,750 km distance (Band B) attracts 420 units at 100% under S4.2, as notice was given only 1.9 days before departure. The rejection is validly challengeable under S9.1(a)."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:30:19.083233+00:00</sub>
@@ -748,7 +748,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -765,7 +765,7 @@
   "rationale": "The claim is in scope and the flight cancellation qualifies under S2.1(a). However, the operational record (D3, D4) confirms the cause was extraordinary weather—Edinburgh Airport closed to departures at 03:20 UTC due to Storm Fionn winds exceeding safe limits, and did not reopen until 11:00 UTC. This falls squarely under S3.3(a) and is supported by independent airport authority evidence. Under S3.1, Part 5 compensation is payable only for carrier-controlled causes. The carrier's rejection is valid per S9.2. No duty of care expenses were claimed. Escalation or challenge would be an error."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:30:21.453416+00:00</sub>
@@ -822,7 +822,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -841,7 +841,7 @@
   "rationale": "The claim is in scope (confirmed booking, boarded, filed in time per S1.2). The cause is carrier-controlled under S3.2(a) (APU replacement by WS line maintenance). The distance LOS–LHR is 5,000 km, falling into Band C at 750 units. However, D3 and D4 contradict materially on actual arrival time (16:00 versus 19:40), determining whether S2.1(b) qualifies and whether any compensation is payable. Per S8.3, the correct action is to request evidence naming the contradiction, not to assume a value."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:30:21.966324+00:00</sub>
@@ -900,7 +900,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -917,7 +917,7 @@
   "rationale": "Claim qualifies under S2.1(a): flight was cancelled by carrier due to its own IT/rostering system failure, a carrier-controlled cause under S3.2(c). Compensation is based on 1,200 km distance exactly, which falls under Band A by S5.3 (180 units base). With 14 days' notice (7–20 day range per S4.2), compensation is reduced to 50%, yielding 90 units; the S4.3 re-routing exemption does not apply as the offered departure (18:20) was not within 2 hours before the original (16:45)."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:30:30.665927+00:00</sub>
@@ -974,7 +974,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -991,7 +991,7 @@
   "rationale": "The claim is in scope and qualifies as a carrier-controlled cancellation (crew sickness, S3.2(b)) with Band B base compensation of 420 units. However, the carrier's cancellation notification with timestamp is missing (S8.1(e)), preventing determination of the advance-notice period under Part 4. Request the carrier's passenger notification dispatch log to establish when the passenger was informed and proceed with the claim."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:30:34.660352+00:00</sub>
@@ -1049,7 +1049,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1066,7 +1066,7 @@
   "rationale": "The booking was confirmed and the cancellation qualifies under S2.1(a). The carrier made a commercial decision to suspend the route (S3.2, not listed as extraordinary). However, the carrier provided 26 days' advance notice of the cancellation (16 Nov for 12 Dec departure). Under S4.2, notice of 21+ days results in zero compensation, regardless of cause. The claim is in scope and evidence is sufficient, but no compensation is payable."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:30:42.512813+00:00</sub>
@@ -1121,7 +1121,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1138,7 +1138,7 @@
   "rationale": "Passenger held confirmed business-class booking but was involuntarily downgraded to economy at the gate. This is not a Part 2 disruption (no cancellation, delay, or denied boarding), so Part 5 compensation does not apply (S7.2); under S7.1, the passenger is entitled to 40% reimbursement of the business-class fare paid (800 × 40% = 320 units). Duty of care applies only to Part 2 disruptions (S6.1), which did not occur."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:31:12.031913+00:00</sub>
@@ -1193,7 +1193,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1210,7 +1210,7 @@
   "rationale": "The flight was cancelled due to Sable Air's IT systems failure (S3.2(c)), a carrier-controlled cause. Notification was sent 12.75 hours before departure (less than 7 days); no re-routing was offered. Full compensation of 420 units is payable under S4.2 and S5.1 (Band B, 2,730 km). However, escalation to the regulator is premature: only 20 days have elapsed since filing, and S10.1(a) requires 56 days with no response before escalation is permitted."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:31:25.743155+00:00</sub>
@@ -1269,7 +1269,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1286,7 +1286,7 @@
   "rationale": "Cancellation qualifies under S2.1(a). The cause is extraordinary under S3.3(g)—a latent manufacturing defect notified by the regulator via airworthiness directive, not found by the carrier's own maintenance. Part 5 compensation is not payable for extraordinary causes. However, duty of care is owed regardless of cause (S6.1). The passenger's itemised receipts (hotel 140 units, meals 40 units, total 180 units) fall within the 300-unit cap and evidence is complete. Submit the duty-of-care claim to the carrier with receipts."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:31:46.623362+00:00</sub>
@@ -1342,7 +1342,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1359,7 +1359,7 @@
   "rationale": "Flight delayed 7h 42m at final destination, qualifying under S2.1(b). Operational record shows engine contamination found by carrier maintenance (S3.2(a), carrier-controlled), contradicting carrier's extraordinary-cause rejection; S3.6 governs operational record. Distance band C (7,930 km) yields 750 units with no taper (≥5 hours delay). Rejection is validly challengeable under S9.1(a); 35 days elapsed since passenger's challenge with no response, meeting S10.1(b) escalation threshold."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:32:07.050972+00:00</sub>
@@ -1418,7 +1418,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1435,7 +1435,7 @@
   "rationale": "The claim is in scope and evidence is sufficient. However, the passenger arrived at the final destination (IST) only 3 hours 20 minutes late (15:10 actual vs 11:50 scheduled per D3), falling short of the 3 hours 30 minutes minimum required by S2.1(b). No qualifying disruption occurred; consequently, no compensation is payable under Part 5, and no duty of care is owed under S6.1 (which applies only when a Part 2 disruption occurs)."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:32:12.950390+00:00</sub>
@@ -1517,7 +1517,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1534,7 +1534,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
   "rationale": "The carrier's stated cause is weather, but the operational record (D3) shows the actual cause was the carrier's IT system outage (crew-rostering platform failure). Under S3.6, the operational record governs, making this carrier-controlled under S3.2(c). Full compensation of 420 units (Band B distance, less than 7 days' notice) is payable. The partial settlement is validly challengeable under S9.1(a)."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:32:19.759692+00:00</sub>
@@ -1676,7 +1676,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1693,7 +1693,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
   "rationale": "Delay of 3h45m at final destination qualifies under S2.1(b). The inbound aircraft delay was carrier-controlled: EM engineering hold at AMM falls under S3.2(e). Band B applies at exactly 4,000 km (420 units); S5.4 reduces this 50% for delays under 5 hours, yielding 210 units."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:32:38.473156+00:00</sub>
@@ -1730,7 +1730,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": null,
@@ -1747,7 +1747,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
   "rationale": "Admissibility cannot be determined. S1.2(b) requires either check-in, denial of boarding, or cancellation before check-in opened. The cancellation notification (22 Jun 23:40 UTC) was sent after check-in opened (22 Jun 17:10 UTC; 24 hours before scheduled departure of 17:10 UTC). S8.1(b) requires proof of acceptance for travel, which is absent. Per S8.2, request the specific missing evidence rather than reject the claim."
 }
 ```
-```
+````
 
 ### **ERROR** · `baseline` · FAILED
 <sub>2026-08-28T17:32:55.916220+00:00</sub>
@@ -1769,7 +1769,7 @@ cause_class
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1786,7 +1786,7 @@ cause_class
   "rationale": "Flight was cancelled due to commercial consolidation (carrier-controlled under S3.2(d)); notice was less than 7 days, triggering 100% compensation under S4.2. Carrier's rejection relies on the S4.4 re-routing exemption, but D3 (operational record) explicitly states 'Rebooking actions recorded against this cancellation: none', and D4 (complete contact history) records no re-routing offer, contradicting the carrier's claim. The operational record governs per S3.6. This rejection is validly challengeable under S9.1(c). Full compensation of 750 units (Band C for 4,590 km distance) is owed."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:33:28.467025+00:00</sub>
@@ -1826,7 +1826,7 @@ cause_class
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1843,7 +1843,7 @@ cause_class
   "rationale": "Claim qualifies as a carrier-controlled cancellation (crew duty limit breach per S3.2(b)) with notice given less than 7 days before departure. The carrier offered a rerouting departing 30 minutes earlier and arriving 1 hour 35 minutes later, both within the S4.4 exemption criteria. No compensation is payable."
 }
 ```
-```
+````
 
 ### **final** · `baseline`
 <sub>2026-08-28T17:33:42.607967+00:00</sub>
