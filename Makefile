@@ -18,7 +18,7 @@ RUNDIR   := .run
 .DEFAULT_GOAL := help
 .PHONY: help setup test baseline evaluate evaluate-tools compare reproduce \
         trajectories restate-check restate-register restate-deregister \
-        up down failure-tests demo demo-reset demo-advance demo-approve clean
+        up down failure-tests demo demo-reset demo-advance demo-approve clean audit
 
 help:  ## show this help
 	@grep -hE '^[a-z][a-z-]*:.*?## ' $(MAKEFILE_LIST) | \
@@ -127,3 +127,6 @@ demo-approve: setup  ## approve the demo case's pending consequential action
 
 trajectories: setup  ## re-render every recorded run as judge-readable Markdown
 	$(PY) -m c2c.tools.render_trajectories
+
+audit: setup  ## check the repo's claims against its evidence
+	$(PY) -m c2c.tools.audit --write
