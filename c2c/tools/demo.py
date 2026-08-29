@@ -144,7 +144,12 @@ def main(argv=None) -> int:
         wait_for(c, {"CHALLENGED"})
         show_status(c)
 
-        rule("7. What actually reached the carrier")
+        rule("7. What the passenger actually receives")
+        doc = c.get(f"{API}/c2c/cases/{CASE}/document", params={"kind": "summary"}).text
+        print("\n".join("  " + l for l in doc.splitlines()[:26]))
+        print(f"\n  Full letter: {API}/c2c/cases/{CASE}/document?kind=letter")
+
+        rule("8. What actually reached the carrier")
         a = audit(c)
         for e in a["effective"]:
             print(f"  {e['seq']:>3}  {e['action']:<20} {e['case_id']:<8} key={e['idempotency_key'][:8]}…")

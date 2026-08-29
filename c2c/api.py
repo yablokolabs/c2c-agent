@@ -12,11 +12,13 @@ from typing import Optional
 
 import httpx
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
 from c2c.agent.pipeline import run_case
+from c2c.artifact import case_summary, claim_letter
 from c2c.llm import DEFAULT_MODEL, LLM
-from c2c.models import load_cases
+from c2c.models import Verdict, load_cases
 from c2c.trajectory import Recorder
 
 RESTATE_INGRESS = os.environ.get("C2C_RESTATE_INGRESS", "http://localhost:8080")
@@ -118,6 +120,29 @@ async def case_status(case_id: str) -> dict:
         r = await client.post(f"{RESTATE_INGRESS}/{WORKFLOW}/{case_id}/status")
         r.raise_for_status()
         return r.json()
+
+
+@router.get("/cases/{case_id}/document", response_class=PlainTextResponse)
+async def case_document(case_id: str, kind: str = "summary") -> str:
+    """The artifact the passenger actually receives.
+
+    Rendered from the workflow's stored verdict, deterministically. Asking a
+    model to write the letter as well would add a place for a figure to drift
+    away from the one that was assessed and approved.
+    """
+    case = _cases.get(case_id)
+    if case is None:
+        raise HTTPException(404, f"no such benchmark case {case_id!r}")
+    state = await case_status(case_id)
+    raw = state.get("verdict")
+    if not raw:
+        raise HTTPException(409, "this case has not been assessed yet")
+    verdict = Verdict.model_validate({k: v for k, v in raw.items() if k in Verdict.model_fields})
+    if kind == "letter":
+        return claim_letter(case, verdict)
+    if kind == "summary":
+        return case_summary(case, verdict)
+    raise HTTPException(400, "kind must be 'summary' or 'letter'")
 
 
 @router.get("/cases")
