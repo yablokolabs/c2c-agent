@@ -17,6 +17,22 @@ from c2c.trajectory import Recorder
 
 MAX_STEPS = 10
 
+# EXP-005. EXP-001 measured `calculate` being called 3 times across 28 cases,
+# including on neither of the two cases that fail *because of* arithmetic — even
+# though the prompt already says to use it for every arithmetic step. Asking did
+# not work. This enforces it: a verdict asserting money it never computed is
+# handed back once, with the arithmetic it owes.
+#
+# Deliberately narrow. It fires only when there is money to check and the tool
+# was never called at all, it fires at most once per case, and it never supplies
+# or corrects a number — it only makes the agent do the step it skipped.
+ENFORCE_ARITHMETIC = False
+
+
+def _owes_arithmetic(v: Verdict) -> bool:
+    return bool((v.compensation_units or 0) or v.duty_of_care_units
+                or v.downgrade_reimbursement_units)
+
 
 def coerce_verdict(raw: dict) -> Verdict:
     """Shape-only coercion. No value is invented or corrected."""
@@ -44,6 +60,7 @@ def run(
     llm: LLM,
     rec: Optional[Recorder] = None,
     feedback: Optional[str] = None,
+    enforce_arithmetic: bool = ENFORCE_ARITHMETIC,
 ) -> tuple[Optional[Verdict], list[LLMResult], ToolBox]:
     """Work one case. `feedback` carries a verifier rejection into a retry."""
     box = ToolBox(case=case)
@@ -66,6 +83,7 @@ def run(
     transcript = "\n".join(opening)
 
     agent = "caseworker" + ("/revision" if feedback else "")
+    arithmetic_enforced = False
     if rec:
         rec.emit("AGENT_START", case_id=case.case_id, agent=agent,
                  input={"feedback": feedback} if feedback else None)
@@ -96,10 +114,28 @@ def run(
                     rec.emit("RETRY", case_id=case.case_id, agent=agent, step=step,
                              output=f"verdict did not validate: {exc}")
                 continue
+            if (enforce_arithmetic and not arithmetic_enforced
+                    and _owes_arithmetic(verdict)
+                    and not any(c["tool"] == "calculate" for c in box.calls)):
+                arithmetic_enforced = True
+                if rec:
+                    rec.emit("RETRY", case_id=case.case_id, agent=agent, step=step,
+                             output="verdict asserts money without computing it; "
+                                    "arithmetic enforcement triggered")
+                transcript += (
+                    "\n\nYou have given amounts without computing any of them. Use "
+                    "`calculate` to work through every arithmetic step behind those "
+                    "figures: the band amount, each reduction and how they compose, and "
+                    "any sum of receipts against the Part 6 cap. Then give your verdict "
+                    "again.\n\nThe figures may well be right. Check them rather than "
+                    "assume it, and change them only if the arithmetic says so."
+                )
+                continue
             if rec:
                 rec.emit("FINAL_DECISION", case_id=case.case_id, agent=agent,
                          output=verdict.model_dump(), steps=step + 1,
-                         tool_calls=len(box.calls))
+                         tool_calls=len(box.calls),
+                         arithmetic_enforced=arithmetic_enforced)
             return verdict, calls, box
 
         tool = raw.get("tool")

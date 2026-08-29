@@ -188,3 +188,52 @@ def test_coercion_never_invents_a_value():
     assert v.compensation_units is None
     assert v.duty_of_care_units == 0
     assert not hasattr(v, "stray_key")
+
+
+# --- arithmetic enforcement (EXP-005) ---------------------------------------
+
+def test_a_verdict_with_money_and_no_calculation_is_handed_back_once():
+    llm = StubLLM([
+        verdict_reply(compensation_units=420),
+        verdict_reply(compensation_units=420),
+        json.dumps({"decision": "pass", "findings": []}),
+    ])
+    got, _ = pipeline.run_case(CASE, llm, enforce_arithmetic=True)
+    assert got.compensation_units == 420
+    assert "compute" in llm.seen[1]["user"].lower() or "calculate" in llm.seen[1]["user"]
+
+
+def test_enforcement_fires_at_most_once_so_the_loop_cannot_wedge():
+    llm = StubLLM([verdict_reply(compensation_units=420)] * 6
+                  + [json.dumps({"decision": "pass", "findings": []})])
+    got, calls = pipeline.run_case(CASE, llm, enforce_arithmetic=True)
+    assert got is not None
+    assert len(calls) == 3, "one caseworker turn, one enforced retry, one verifier"
+
+
+def test_enforcement_does_not_fire_when_nothing_is_owed():
+    llm = StubLLM([
+        verdict_reply(compensation_units=0, eligible=False, next_action="close_no_claim"),
+        json.dumps({"decision": "pass", "findings": []}),
+    ])
+    got, calls = pipeline.run_case(CASE, llm, enforce_arithmetic=True)
+    assert got.compensation_units == 0
+    assert len(calls) == 2, "no arithmetic is owed, so nothing to enforce"
+
+
+def test_enforcement_does_not_fire_when_calculate_was_used():
+    llm = StubLLM([
+        json.dumps({"tool": "calculate", "args": {"expression": "420 * 1"}}),
+        verdict_reply(compensation_units=420),
+        json.dumps({"decision": "pass", "findings": []}),
+    ])
+    got, calls = pipeline.run_case(CASE, llm, enforce_arithmetic=True)
+    assert got.compensation_units == 420
+    assert len(calls) == 3
+
+
+def test_enforcement_is_off_by_default():
+    llm = StubLLM([verdict_reply(compensation_units=420),
+                   json.dumps({"decision": "pass", "findings": []})])
+    got, calls = pipeline.run_case(CASE, llm)
+    assert len(calls) == 2, "the default path must be unchanged"

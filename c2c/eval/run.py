@@ -69,6 +69,15 @@ def _agent(case, llm, rec):
     return run_case(case, llm, rec, use_verifier=True)
 
 
+@register("agent-enforced")
+def _agent_enforced(case, llm, rec):
+    """As `agent`, but a verdict asserting money it never computed is handed
+    back once with the arithmetic it owes. See EXP-005."""
+    from c2c.agent.pipeline import run_case
+
+    return run_case(case, llm, rec, use_verifier=True, enforce_arithmetic=True)
+
+
 def benchmark_digest() -> str:
     blob = "".join(
         sorted(p.read_text() for p in Path("benchmark/cases").glob("*.json"))
