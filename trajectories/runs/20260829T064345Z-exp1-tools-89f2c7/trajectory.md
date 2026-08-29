@@ -1,4 +1,4 @@
-# Trajectory — exp1-tools (agent-tools)
+# Trajectory — 20260829T064345Z-exp1-tools-89f2c7
 
 - Run: `20260829T064345Z-exp1-tools-89f2c7`
 - Commit: `652410598ada3dee6906f4f77238b325e5c77dd5`
@@ -35,7 +35,7 @@
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -43,12 +43,12 @@
   "why": "examine the complete record to see what evidence is on file and what is missing before reading specific documents"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:43:55.460989+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 examine the complete record to see what evidence is on file and what is missing before reading specific documents
@@ -72,7 +72,7 @@ examine the complete record to see what evidence is on file and what is missing 
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -80,12 +80,12 @@ examine the complete record to see what evidence is on file and what is missing 
   "why": "confirm the advance notice ladder and re-routing exemption for this cancellation claim"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:45:34.706475+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -93,7 +93,7 @@ examine the complete record to see what evidence is on file and what is missing 
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 confirm the advance notice ladder and re-routing exemption for this cancellation claim
@@ -124,7 +124,7 @@ original scheduled arrival.
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -141,14 +141,14 @@ original scheduled arrival.
   "rationale": "Flight MR414 was cancelled due to crew shortage (S3.2(b), carrier-controlled cause). Notified on 03 Mar 09:12 for flight on 06 Mar 07:40—approximately 2 days 22 hours, which is less than 7 days under S4.2. No re-routing was offered (D2), so the re-routing exemption does not apply. At 2,090 km distance, the booking qualifies for Band B compensation (S5.1) of 420 units at 100%. Duty of care is owed (S6.1) but requires itemised receipts to substantiate claims for meals, accommodation, or communications; ask the passenger to provide these if claiming duty of care."
 }
 ```
-```
+````
 
 ### **model out** · `caseworker` · 51664 ms
 <sub>2026-08-29T06:48:32.443923+00:00</sub>
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -158,12 +158,12 @@ original scheduled arrival.
   "why": "need to verify scope (S1.2), qualification (S2.1), cause class (S3.2), band (S5.1), duty of care eligibility (S6.1), and evidence requirements (S8.1)"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:48:32.444124+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -171,7 +171,7 @@ original scheduled arrival.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 need to verify scope (S1.2), qualification (S2.1), cause class (S3.2), band (S5.1), duty of care eligibility (S6.1), and evidence requirements (S8.1)
@@ -218,7 +218,7 @@ occurs. It is **separate from and additional to** compensation.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -237,7 +237,7 @@ occurs. It is **separate from and additional to** compensation.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:49:17.536851+00:00</sub>
@@ -309,16 +309,16 @@ occurs. It is **separate from and additional to** compensation.
 
 *output*
 
-```
+````
 ```json
 {"tool": "list_documents", "args": {}, "why": "see the complete record before analysis; note what documents exist and what is missing"}
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:49:23.190304+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 see the complete record before analysis; note what documents exist and what is missing
@@ -347,7 +347,7 @@ see the complete record before analysis; note what documents exist and what is m
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -355,12 +355,12 @@ see the complete record before analysis; note what documents exist and what is m
   "why": "See the complete record: what is on file and what is absent. The case summary shows D1–D4, but I must verify no documents are missing before deciding."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:49:25.508312+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 See the complete record: what is on file and what is absent. The case summary shows D1–D4, but I must verify no documents are missing before deciding.
@@ -388,7 +388,7 @@ See the complete record: what is on file and what is absent. The case summary sh
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -396,12 +396,12 @@ See the complete record: what is on file and what is absent. The case summary sh
   "why": "See the complete record: what is on file and what is missing before analyzing the claim"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:49:29.122569+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 See the complete record: what is on file and what is missing before analyzing the claim
@@ -429,7 +429,7 @@ See the complete record: what is on file and what is missing before analyzing th
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -437,12 +437,12 @@ See the complete record: what is on file and what is missing before analyzing th
   "why": "to see the complete record and identify what documents exist and what is missing"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:49:49.147539+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 to see the complete record and identify what documents exist and what is missing
@@ -470,7 +470,7 @@ to see the complete record and identify what documents exist and what is missing
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -489,7 +489,7 @@ to see the complete record and identify what documents exist and what is missing
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:50:02.102498+00:00</sub>
@@ -531,7 +531,7 @@ to see the complete record and identify what documents exist and what is missing
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -539,12 +539,12 @@ to see the complete record and identify what documents exist and what is missing
   "why": "See the complete record: what is on file and what is not. The policy requires specific evidence for scope, qualification, and cause."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:50:08.042447+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 See the complete record: what is on file and what is not. The policy requires specific evidence for scope, qualification, and cause.
@@ -571,7 +571,7 @@ See the complete record: what is on file and what is not. The policy requires sp
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -581,12 +581,12 @@ See the complete record: what is on file and what is not. The policy requires sp
   "why": "The case turns on whether the bleed air valve fault is carrier-controlled (S3.2(a), compensable) or extraordinary (S3.3(g), not compensable). S3.4 distinguishes them by who identified the defect—D4 states LP's own maintenance found it, with no manufacturer directive. Need to confirm the classification."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:50:15.012263+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -594,7 +594,7 @@ See the complete record: what is on file and what is not. The policy requires sp
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 The case turns on whether the bleed air valve fault is carrier-controlled (S3.2(a), compensable) or extraordinary (S3.3(g), not compensable). S3.4 distinguishes them by who identified the defect—D4 states LP's own maintenance found it, with no manufacturer directive. Need to confirm the classification.
@@ -627,7 +627,7 @@ not.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -646,7 +646,7 @@ not.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:50:31.396505+00:00</sub>
@@ -687,7 +687,7 @@ not.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -695,12 +695,12 @@ not.
   "why": "verify the exact terms of the cancellation notice: departure time, re-route offer, and timestamp for S4 notice calculation"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:50:35.162949+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -708,7 +708,7 @@ not.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 verify the exact terms of the cancellation notice: departure time, re-route offer, and timestamp for S4 notice calculation
@@ -736,16 +736,16 @@ ZR260 on 01 October is cancelled. We can re-route you on ZR266, departing DUB 01
 
 *output*
 
-```
+````
 ```json
 {"tool": "list_documents", "args": {}, "why": "identify all documents on file and note what is missing before analyzing the claim"}
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:50:42.352538+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 identify all documents on file and note what is missing before analyzing the claim
@@ -772,7 +772,7 @@ identify all documents on file and note what is missing before analyzing the cla
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -780,12 +780,12 @@ identify all documents on file and note what is missing before analyzing the cla
   "why": "The case involves a missed connection on separate bookings. S2.3 is the key rule determining whether this qualifies for compensation."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:50:46.287796+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -793,7 +793,7 @@ identify all documents on file and note what is missing before analyzing the cla
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 The case involves a missed connection on separate bookings. S2.3 is the key rule determining whether this qualifies for compensation.
@@ -824,7 +824,7 @@ final destination of the first journey is the connecting airport.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -832,12 +832,12 @@ final destination of the first journey is the connecting airport.
   "why": "confirm the booking reference, passenger name, route, distance band, and scheduled times"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:50:56.585052+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -845,7 +845,7 @@ final destination of the first journey is the connecting airport.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 confirm the booking reference, passenger name, route, distance band, and scheduled times
@@ -870,7 +870,7 @@ Status: CONFIRMED.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -878,12 +878,12 @@ Status: CONFIRMED.
   "why": "to verify the operational cause and check whether the arrival time is recorded or missing"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:51:02.388058+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -891,7 +891,7 @@ Status: CONFIRMED.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 to verify the operational cause and check whether the arrival time is recorded or missing
@@ -916,7 +916,7 @@ Arrival record for this rotation not attached to this extract.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -935,7 +935,7 @@ Arrival record for this rotation not attached to this extract.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:51:33.354189+00:00</sub>
@@ -979,7 +979,7 @@ Arrival record for this rotation not attached to this extract.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -987,12 +987,12 @@ Arrival record for this rotation not attached to this extract.
   "why": "Need to verify that the missed connection qualifies, that it's measured at final destination, and that ground handling shortfall is carrier-controlled"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:51:52.399354+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -1000,7 +1000,7 @@ Arrival record for this rotation not attached to this extract.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 Need to verify that the missed connection qualifies, that it's measured at final destination, and that ground handling shortfall is carrier-controlled
@@ -1039,16 +1039,16 @@ final destination of the first journey is the connecting airport.
 
 *output*
 
-```
+````
 ```json
 {"tool": "list_documents", "args": {}, "why": "to see the whole record, identify all documents on file, and notice what is missing — especially the carrier's cancellation notification with timestamp (required by S8.1(e)) and any record of when the claim was filed (required by S1.2(c))"}
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:51:53.383031+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 to see the whole record, identify all documents on file, and notice what is missing — especially the carrier's cancellation notification with timestamp (required by S8.1(e)) and any record of when the claim was filed (required by S1.2(c))
@@ -1075,7 +1075,7 @@ to see the whole record, identify all documents on file, and notice what is miss
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -1085,12 +1085,12 @@ to see the whole record, identify all documents on file, and notice what is miss
   "why": "verify re-routing exemption criteria, distance band boundaries, and band allocation for 1,200 km exactly"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:52:08.447163+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -1098,7 +1098,7 @@ to see the whole record, identify all documents on file, and notice what is miss
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 verify re-routing exemption criteria, distance band boundaries, and band allocation for 1,200 km exactly
@@ -1136,7 +1136,7 @@ origin to final destination, ignoring intermediate stops.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -1144,12 +1144,12 @@ origin to final destination, ignoring intermediate stops.
   "why": "Need to verify the exact timestamp of the cancellation notice to calculate days of advance notice under S4.1–4.2"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:52:37.571357+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -1157,7 +1157,7 @@ origin to final destination, ignoring intermediate stops.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 Need to verify the exact timestamp of the cancellation notice to calculate days of advance notice under S4.1–4.2
@@ -1185,7 +1185,7 @@ AC910 on 12 December will not operate. Your booking has been cancelled and refun
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "calculate",
@@ -1195,12 +1195,12 @@ AC910 on 12 December will not operate. Your booking has been cancelled and refun
   "why": "Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls between 3h 30m and 5 hours)"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `calculate`
 <sub>2026-08-29T06:52:39.694329+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -1208,7 +1208,7 @@ AC910 on 12 December will not operate. Your booking has been cancelled and refun
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls between 3h 30m and 5 hours)
@@ -1231,7 +1231,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1250,7 +1250,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:52:55.969759+00:00</sub>
@@ -1297,7 +1297,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1314,7 +1314,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
   "rationale": "The passenger held two bookings on separate, non-interlined references. Under S2.3, these are treated as separate journeys with the first journey's final destination at the connecting airport (FRA). JJ88 arrived 55 minutes late at FRA (D3), below the 3h30m minimum in S2.1(b), so no qualifying disruption occurred."
 }
 ```
-```
+````
 
 
 ## Case R10
@@ -1324,7 +1324,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1345,7 +1345,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:53:02.732332+00:00</sub>
@@ -1392,7 +1392,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1411,7 +1411,7 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:53:02.994852+00:00</sub>
@@ -1456,19 +1456,19 @@ Verify the Band C base amount reduced by S5.4 delay taper (4h 10m delay falls be
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
   "why": "Required first step: see the whole record, note what is on file and what is absent."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:53:26.986561+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 Required first step: see the whole record, note what is on file and what is absent.
@@ -1497,7 +1497,7 @@ Required first step: see the whole record, note what is on file and what is abse
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1516,7 +1516,7 @@ Required first step: see the whole record, note what is on file and what is abse
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:53:32.587215+00:00</sub>
@@ -1558,16 +1558,16 @@ Required first step: see the whole record, note what is on file and what is abse
 
 *output*
 
-```
+````
 ```json
 {"tool": "read_document", "args": {"doc_id": "D3"}, "why": "read the carrier's arrival letter to confirm the stated arrival time and check for any caveats or context"}
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:53:53.780237+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -1575,7 +1575,7 @@ Required first step: see the whole record, note what is on file and what is abse
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 read the carrier's arrival letter to confirm the stated arrival time and check for any caveats or context
@@ -1600,19 +1600,19 @@ WESTERLY PASSENGER SERVICES LETTER, 26 Jul 2026
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
   "why": "I need to see the complete record before assessing the claim and determining whether escalation is warranted. The passenger claims they've been ignored for three weeks, so I must verify what documents exist, especially whether a carrier response, re-routing offer, or duty-of-care receipts are on file."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:54:01.568043+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 I need to see the complete record before assessing the claim and determining whether escalation is warranted. The passenger claims they've been ignored for three weeks, so I must verify what documents exist, especially whether a carrier response, re-routing offer, or duty-of-care receipts are on file.
@@ -1640,7 +1640,7 @@ I need to see the complete record before assessing the claim and determining whe
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1659,7 +1659,7 @@ I need to see the complete record before assessing the claim and determining whe
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:54:09.940123+00:00</sub>
@@ -1705,7 +1705,7 @@ I need to see the complete record before assessing the claim and determining whe
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1722,7 +1722,7 @@ I need to see the complete record before assessing the claim and determining whe
   "rationale": "Flight PL122 was cancelled due to extraordinary weather under S3.3(a). The operational record (D3) and airport authority bulletin (D4) independently confirm that Edinburgh Airport was closed to departures during Storm Fionn due to wind exceeding safe limits. S3.1 excludes extraordinary causes from Part 5 compensation. Duty of care is owed under S6.1 regardless of cause, but the passenger incurred no expenses (D5). The carrier's rejection is factually sound and not validly challengeable."
 }
 ```
-```
+````
 
 
 ## Case R11
@@ -1732,16 +1732,16 @@ I need to see the complete record before assessing the claim and determining whe
 
 *output*
 
-```
+````
 ```json
 {"tool": "read_document", "args": {"doc_id": "D4"}, "why": "to see the passenger's photographic evidence of arrival time"}
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:54:26.181168+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -1749,7 +1749,7 @@ I need to see the complete record before assessing the claim and determining whe
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 to see the passenger's photographic evidence of arrival time
@@ -1773,7 +1773,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1792,7 +1792,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:54:44.643165+00:00</sub>
@@ -1838,7 +1838,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1857,7 +1857,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:55:01.154938+00:00</sub>
@@ -1905,7 +1905,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -1922,7 +1922,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
   "rationale": "Claim is in scope under S1.2 (confirmed booking, filed within 18 months, flight cancelled before check-in). Qualifies under S2.1(a) (flight cancelled). Cause is carrier-controlled under S3.2(c) (D3 records internal IT systems failure, not weather or ATC). Part 5 compensation is 420 units per band B (2,730 km distance, S5.1), payable in full under S4.2 (notification 12 hours before departure, less than 7 days; no re-routing exemption applies per D2). Duty of care owed under S6.1 but cannot be assessed without itemised receipts (S6.4). Escalation to regulator is not yet available: S10.1(a) requires 56 days since filing (only 20 elapsed as of 28 Jun); escalation becomes available 03 Aug 2026 if carrier provides no substantive response."
 }
 ```
-```
+````
 
 
 ## Case R13
@@ -1932,7 +1932,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -1951,7 +1951,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:55:06.063724+00:00</sub>
@@ -1993,7 +1993,7 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -2001,12 +2001,12 @@ Photograph of LHR arrivals display, timestamped 18 Jul 2026 19:52 local, showing
   "why": "see the complete record before proceeding with assessment"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:55:12.115523+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 see the complete record before proceeding with assessment
@@ -2036,7 +2036,7 @@ see the complete record before proceeding with assessment
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -2055,7 +2055,7 @@ see the complete record before proceeding with assessment
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:55:21.136410+00:00</sub>
@@ -2100,7 +2100,7 @@ see the complete record before proceeding with assessment
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -2119,7 +2119,7 @@ see the complete record before proceeding with assessment
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:55:57.189576+00:00</sub>
@@ -2160,19 +2160,19 @@ see the complete record before proceeding with assessment
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
   "why": "S1.2 and S8.1 require me to establish what evidence is on file and what is missing before analyzing the claim."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:55:57.456119+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 S1.2 and S8.1 require me to establish what evidence is on file and what is missing before analyzing the claim.
@@ -2201,7 +2201,7 @@ S1.2 and S8.1 require me to establish what evidence is on file and what is missi
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "calculate",
@@ -2209,12 +2209,12 @@ S1.2 and S8.1 require me to establish what evidence is on file and what is missi
   "why": "confirm the final compensation amount after the 50% Part 4 reduction"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `calculate`
 <sub>2026-08-29T06:56:00.863303+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2222,7 +2222,7 @@ S1.2 and S8.1 require me to establish what evidence is on file and what is missi
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 confirm the final compensation amount after the 50% Part 4 reduction
@@ -2245,7 +2245,7 @@ confirm the final compensation amount after the 50% Part 4 reduction
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -2253,12 +2253,12 @@ confirm the final compensation amount after the 50% Part 4 reduction
   "why": "establish what is in the record before proceeding; critical to notice what is missing"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:56:01.254900+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 establish what is in the record before proceeding; critical to notice what is missing
@@ -2286,16 +2286,16 @@ establish what is in the record before proceeding; critical to notice what is mi
 
 *output*
 
-```
+````
 ```json
 {"tool": "read_document", "args": {"doc_id": "D3"}, "why": "the operational record contains the actual cause and is critical to determine if the carrier's claim of weather is accurate"}
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:56:06.599889+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2303,7 +2303,7 @@ establish what is in the record before proceeding; critical to notice what is mi
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 the operational record contains the actual cause and is critical to determine if the carrier's claim of weather is accurate
@@ -2331,7 +2331,7 @@ Weather VIE and IST: no restriction, both stations CAVOK. No ATC regulation appl
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -2348,14 +2348,14 @@ Weather VIE and IST: no restriction, both stations CAVOK. No ATC regulation appl
   "rationale": "The claim is in scope and qualifies as a cancellation under S2.1(a), caused by the carrier's IT systems failure—a carrier-controlled cause under S3.2(c). The distance of 2,730 km places the claim in Band B, worth 420 units under S5.1. Notification was given 12 hours 45 minutes before departure (less than 7 days); S4.2 prescribes 100% of the base amount, and S4.4's re-routing exemption does not apply because the carrier offered no alternative (D2: 'Nothing further is available today'). Escalation to the regulator is not yet permitted; only 20 days have elapsed since filing on 08 June, and S10.1(a) permits escalation only after 56 days of no substantive carrier response."
 }
 ```
-```
+````
 
 ### **model out** · `caseworker` · 11148 ms
 <sub>2026-08-29T06:56:18.942386+00:00</sub>
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -2365,12 +2365,12 @@ Weather VIE and IST: no restriction, both stations CAVOK. No ATC regulation appl
   "why": "verify booking details: passenger name, route, distance, status"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:56:18.942579+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2378,7 +2378,7 @@ Weather VIE and IST: no restriction, both stations CAVOK. No ATC regulation appl
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 verify booking details: passenger name, route, distance, status
@@ -2406,19 +2406,19 @@ Status: CONFIRMED.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
   "why": "see the whole record and verify what is on file before proceeding"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:56:28.021165+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 see the whole record and verify what is on file before proceeding
@@ -2447,7 +2447,7 @@ see the whole record and verify what is on file before proceeding
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -2455,12 +2455,12 @@ see the whole record and verify what is on file before proceeding
   "why": "D3 contradicts the carrier's stated cause (weather). D2 contains the notification timestamp needed for the Part 4 ladder."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:56:35.873451+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2468,7 +2468,7 @@ see the whole record and verify what is on file before proceeding
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 D3 contradicts the carrier's stated cause (weather). D2 contains the notification timestamp needed for the Part 4 ladder.
@@ -2496,7 +2496,7 @@ OR480 tonight is cancelled. You are rebooked on OR482 tomorrow at 19:45.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "calculate",
@@ -2506,12 +2506,12 @@ OR480 tonight is cancelled. You are rebooked on OR482 tomorrow at 19:45.
   "why": "verify compensation amount: band B base amount with 100% compensation under S4.2 (less than 7 days notice for cancellation, no re-routing exemption)"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `calculate`
 <sub>2026-08-29T06:57:13.750993+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2519,7 +2519,7 @@ OR480 tonight is cancelled. You are rebooked on OR482 tomorrow at 19:45.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 verify compensation amount: band B base amount with 100% compensation under S4.2 (less than 7 days notice for cancellation, no re-routing exemption)
@@ -2542,7 +2542,7 @@ verify compensation amount: band B base amount with 100% compensation under S4.2
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -2550,12 +2550,12 @@ verify compensation amount: band B base amount with 100% compensation under S4.2
   "why": "verifying that operational record governs and confirming the challenge ground when stated cause contradicts operations log"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:57:17.091739+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2563,7 +2563,7 @@ verify compensation amount: band B base amount with 100% compensation under S4.2
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 verifying that operational record governs and confirming the challenge ground when stated cause contradicts operations log
@@ -2596,7 +2596,7 @@ the **operational record governs**.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -2606,12 +2606,12 @@ the **operational record governs**.
   "why": "the claim hinges on whether the delay qualifies under Part 2; need to verify the S2.1(b) threshold and check whether duty of care applies to delays below the threshold"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:57:17.505692+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2619,7 +2619,7 @@ the **operational record governs**.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 the claim hinges on whether the delay qualifies under Part 2; need to verify the S2.1(b) threshold and check whether duty of care applies to delays below the threshold
@@ -2653,7 +2653,7 @@ occurs. It is **separate from and additional to** compensation.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -2672,7 +2672,7 @@ occurs. It is **separate from and additional to** compensation.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:57:18.713847+00:00</sub>
@@ -2721,7 +2721,7 @@ occurs. It is **separate from and additional to** compensation.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "policy_lookup",
@@ -2729,12 +2729,12 @@ occurs. It is **separate from and additional to** compensation.
   "why": "Verify qualification, cause, notice period, and evidence sufficiency across cancellation, delay, and carrier control"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `policy_lookup`
 <sub>2026-08-29T06:57:23.902657+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -2742,7 +2742,7 @@ occurs. It is **separate from and additional to** compensation.
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 Verify qualification, cause, notice period, and evidence sufficiency across cancellation, delay, and carrier control
@@ -2796,7 +2796,7 @@ passenger** to the **scheduled departure time**.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -2815,7 +2815,7 @@ passenger** to the **scheduled departure time**.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:57:31.780189+00:00</sub>
@@ -2860,7 +2860,7 @@ passenger** to the **scheduled departure time**.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -2879,7 +2879,7 @@ passenger** to the **scheduled departure time**.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:57:47.270813+00:00</sub>
@@ -2924,7 +2924,7 @@ passenger** to the **scheduled departure time**.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -2932,12 +2932,12 @@ passenger** to the **scheduled departure time**.
   "why": "establish what is on file before proceeding"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:57:58.886566+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 establish what is on file before proceeding
@@ -2970,7 +2970,7 @@ establish what is on file before proceeding
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -2989,7 +2989,7 @@ establish what is on file before proceeding
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:58:03.314767+00:00</sub>
@@ -3028,7 +3028,7 @@ establish what is on file before proceeding
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
@@ -3036,12 +3036,12 @@ establish what is on file before proceeding
   "why": "See the complete record on file before assessing any part of the claim"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T06:58:16.102934+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 See the complete record on file before assessing any part of the claim
@@ -3070,7 +3070,7 @@ See the complete record on file before assessing any part of the claim
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3089,7 +3089,7 @@ See the complete record on file before assessing any part of the claim
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:58:44.491847+00:00</sub>
@@ -3132,7 +3132,7 @@ See the complete record on file before assessing any part of the claim
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": false,
@@ -3149,7 +3149,7 @@ See the complete record on file before assessing any part of the claim
   "rationale": "The claim was filed 12 Sep 2026, which is 19 months and 8 days after the scheduled departure of 04 Feb 2025 (D4). This exceeds the 18-month filing deadline in S1.2(c) by 39 days. Per S1.3, claims failing any limb of S1.2 are out of scope and receive no compensation or duty-of-care reimbursement."
 }
 ```
-```
+````
 
 
 ## Case R07
@@ -3159,7 +3159,7 @@ See the complete record on file before assessing any part of the claim
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3178,7 +3178,7 @@ See the complete record on file before assessing any part of the claim
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:00.173280+00:00</sub>
@@ -3224,7 +3224,7 @@ See the complete record on file before assessing any part of the claim
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -3232,12 +3232,12 @@ See the complete record on file before assessing any part of the claim
   "why": "need the exact timestamp of the cancellation notification to determine notice period for Part 4 advance notice analysis"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:59:03.038403+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -3245,7 +3245,7 @@ See the complete record on file before assessing any part of the claim
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 need the exact timestamp of the cancellation notification to determine notice period for Part 4 advance notice analysis
@@ -3273,7 +3273,7 @@ GM212 on 12 May will not operate. Our team will contact you separately about you
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "read_document",
@@ -3281,12 +3281,12 @@ GM212 on 12 May will not operate. Our team will contact you separately about you
   "why": "D4 records the claim filing date, which determines whether S1.2(c) (18-month deadline) is satisfied. This is the threshold for scope."
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `read_document`
 <sub>2026-08-29T06:59:04.565578+00:00</sub>
 
-*input*
+*arguments*
 
 ```
 {
@@ -3294,7 +3294,7 @@ GM212 on 12 May will not operate. Our team will contact you separately about you
 }
 ```
 
-*output*
+*why the agent called it*
 
 ```
 D4 records the claim filing date, which determines whether S1.2(c) (18-month deadline) is satisfied. This is the threshold for scope.
@@ -3320,7 +3320,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3339,7 +3339,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:07.213974+00:00</sub>
@@ -3384,7 +3384,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3406,7 +3406,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:18.534712+00:00</sub>
@@ -3447,7 +3447,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3466,7 +3466,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:20.097344+00:00</sub>
@@ -3506,7 +3506,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {"verdict": {
   "in_scope": true,
@@ -3523,7 +3523,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
   "rationale": "The claim is in scope and qualifies under S2.1(a) as VT640 was cancelled. The cause is carrier-controlled per S3.2(c) (VT's IT system failure, per D3 operational record). Compensation is 420 units under Band B (S5.1: 1,600 km distance from D1), payable in full because notice was 2h 25m (less than 7 days per S4.2) and the offered re-routing on 07 Dec does not qualify for S4.4 exemption (more than 1 hour before original). Duty of care is 170 units, fully supported by itemised receipts (D4) and within the 300-unit cap (S6.2, S6.3). The settlement of 590 units exactly meets full entitlement; per S9.4 it should be accepted."
 }}
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:55.876419+00:00</sub>
@@ -3565,7 +3565,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3584,7 +3584,7 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:57.189771+00:00</sub>
@@ -3621,11 +3621,11 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {"verdict": {"in_scope": true, "qualifies": true, "cause_class": "carrier_controlled", "eligible": false, "compensation_units": 0, "duty_of_care_units": 0, "downgrade_reimbursement_units": 0, "evidence_sufficient": true, "missing_evidence": [], "next_action": "close_no_claim", "policy_citations": ["S1.2(a)", "S1.2(b)", "S2.1(a)", "S3.2(b)", "S4.4"], "rationale": "Flight GM212 was cancelled due to crew duty limit breach (S3.2(b), carrier-controlled). Notification sent 08 May at 13:20 for 12 May departure is 3 days 18 hours notice, less than 7 days. The carrier offered re-routing on GM216 departing 07:30 (30 minutes before original 08:00) and arriving 12:20 (1 hour 35 minutes after original 10:45). Both time windows satisfy S4.4 re-routing exemption for cancellations with less than 7 days notice, per D8. No Part 5 compensation is payable. Duty of care would require itemised receipts (S6.4), not provided or claimed."}}
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T06:59:59.296748+00:00</sub>
@@ -3663,19 +3663,19 @@ Elapsed between scheduled departure and filing: 19 months and 8 days.
 
 *output*
 
-```
+````
 ```json
 {
   "tool": "list_documents",
   "why": "verify the complete record and identify any missing documents that might affect the verdict"
 }
 ```
-```
+````
 
 ### **tool** · `caseworker` · tool `list_documents`
 <sub>2026-08-29T07:00:23.814442+00:00</sub>
 
-*output*
+*why the agent called it*
 
 ```
 verify the complete record and identify any missing documents that might affect the verdict
@@ -3707,7 +3707,7 @@ verify the complete record and identify any missing documents that might affect 
 
 *output*
 
-```
+````
 ```json
 {
   "in_scope": true,
@@ -3724,7 +3724,7 @@ verify the complete record and identify any missing documents that might affect 
   "rationale": "Claim qualifies under S2.1(a): NC410 cancelled 03 Mar at 11:30 UTC with confirmed booking and accepted for travel (D2, D5); cause is extraordinary under S3.3(a) (volcanic ash airspace closure 03 Mar 10:00Z–05 Mar 06:00Z per D3), so Part 5 compensation is zero (S3.1). Duty of care owed regardless of cause (S6.1): hotel 210 + meals 89 + taxi 21 = 320 units, capped at 300 per S6.3; clothing/toiletries not reimbursable per S6.2."
 }
 ```
-```
+````
 
 ### **ERROR** · FAILED
 <sub>2026-08-29T07:00:47.734516+00:00</sub>
@@ -3743,7 +3743,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
 
 *output*
 
-```
+````
 ```json
 {
   "verdict": {
@@ -3762,7 +3762,7 @@ LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
   }
 }
 ```
-```
+````
 
 ### **final** · `caseworker`
 <sub>2026-08-29T07:01:16.037065+00:00</sub>

@@ -49,3 +49,19 @@ def test_markdown_flags_verifier_rejection(tmp_path):
     r = Recorder.open("test", root=tmp_path)
     r.emit("VERIFIER_REJECT", case_id="R01", output={"reason": "band B not band C"})
     assert "verify REJECT" in render_markdown(r.read(), "t")
+
+
+def test_a_tool_call_reason_is_not_labelled_as_a_result(tmp_path):
+    r = Recorder.open("test", root=tmp_path)
+    r.emit("TOOL_CALL", case_id="R21", tool="read_document",
+           input={"doc_id": "D8"}, output="the contact note may record an offer")
+    md = render_markdown(r.read(), "t")
+    assert "why the agent called it" in md
+    assert "*output*" not in md
+
+
+def test_fenced_model_output_does_not_break_out_of_its_block(tmp_path):
+    r = Recorder.open("test", root=tmp_path)
+    r.emit("MODEL_RESPONSE", case_id="R01", output='```json\n{"a": 1}\n```')
+    md = render_markdown(r.read(), "t")
+    assert "````" in md, "the outer fence must be longer than the inner one"

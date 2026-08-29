@@ -163,6 +163,25 @@ def render_markdown(events: list[dict], title: str) -> str:
             if val in (None, "", [], {}):
                 continue
             body = val if isinstance(val, str) else json.dumps(val, indent=2, ensure_ascii=False)
-            lines += ["", f"*{key}*", "", "```", body, "```"]
+            lines += ["", f"*{_label(e, key)}*", "", _fence(body), body, _fence(body)]
         lines.append("")
     return "\n".join(lines)
+
+
+def _label(event: dict, key: str) -> str:
+    """A TOOL_CALL records the model's stated reason in `output`, which reads
+    wrongly as a result. Name it for what it is."""
+    if event["event_type"] == "TOOL_CALL":
+        return {"input": "arguments", "output": "why the agent called it"}[key]
+    return key
+
+
+def _fence(body: str) -> str:
+    """Model output routinely contains its own fenced blocks. Pick a longer
+    fence so the nesting renders instead of breaking out."""
+    longest = 0
+    run = 0
+    for ch in body:
+        run = run + 1 if ch == "`" else 0
+        longest = max(longest, run)
+    return "`" * max(3, longest + 1)
