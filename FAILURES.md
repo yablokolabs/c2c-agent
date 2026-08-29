@@ -179,3 +179,87 @@ it is a partial settlement under S9.3. R28 exercises it.
 answer. An unreachable enum value is dead surface that will eventually be
 emitted by accident, at which point nothing in the evaluation can tell you
 whether it was correct.
+
+---
+
+## F-005 — Every durable step journalled an un-awaited coroutine
+
+| | |
+|---|---|
+| **Found** | first durability run |
+| **Commit** | `6524105` |
+| **Evidence** | `TypeError: Object of type coroutine is not JSON serializable  /  Related command: run [assess]` |
+
+**Observed.** The first workflow invocation wedged in a retry loop. Restate's
+service log showed the assess step failing to serialise its result.
+
+**Expected.** `ctx.run("assess", ...)` awaits the async HTTP call and journals
+the response.
+
+**Root cause.** `ctx.run` accepts either a sync or an async callable and
+distinguishes them with `inspect.iscoroutinefunction`. That returns **False for
+a lambda that merely returns a coroutine** — the lambda itself is an ordinary
+function. So the SDK treated `lambda: _post(...)` as synchronous, took the
+coroutine object as the step's result, and tried to journal it.
+
+Every durable side effect in the workflow was written that way: assess, submit,
+challenge, escalate. All four were broken, and none of them had ever run.
+
+**Corrective change.** Real `async def` closures instead of lambdas.
+
+**Outcome.** All six durability scenarios pass.
+
+**Lesson.** An API that accepts "sync or async" is deciding which one you meant
+by inspecting your callable, and a lambda hides the thing it inspects. The
+symptom appeared three layers away from the cause, in a serialiser.
+
+The wider miss is mine: **there was no test that would have caught this.** The
+workflow's durable steps were only ever exercised end to end against a live
+Restate server, so a bug in every one of them survived until the first
+integration run. The unit tests covered the tools, the simulator and the
+orchestration — everything except the layer that turned out to be wrong.
+
+---
+
+## F-006 — The agent was given a calculator and did not use it
+
+| | |
+|---|---|
+| **Found** | EXP-001, `exp1-tools--20260829T070116Z.json` |
+| **Commit** | `bc4e9b8` |
+| **Evidence** | `trajectories/runs/20260829T064345Z-exp1-tools-89f2c7/events.jsonl` |
+
+**Observed.** Across 28 cases the caseworker made **40 tool calls in total** —
+1.4 per case — and called `calculate` **3 times**. Eleven cases made no tool
+call at all and answered in a single step, structurally identical to the
+baseline.
+
+Both of the cases still failing after the tool loop, R16 and R25, fail on
+duty-of-care arithmetic: a partial settlement, and a receipts total with a
+non-reimbursable line and a cap. `calculate` was available on both and called on
+neither.
+
+**Expected.** The prompt already says, in its own numbered list: *"Compute, do
+not estimate. Reductions compose. Use `calculate` for every arithmetic step,
+including sums of receipts and each multiplication."*
+
+**Root cause.** An instruction is a request, not a constraint. The model is
+capable of the arithmetic and confident about it, so it does it in its head, and
+nothing in the loop notices that a figure was asserted rather than computed.
+
+This also undermines the attribution in EXP-001: an improvement measured on a
+system whose tools were mostly unused cannot be credited to the tools.
+
+**Corrective experiment.** EXP-005. A verdict that asserts money without ever
+having called `calculate` is handed back once, with the arithmetic it owes.
+Narrow deliberately: it fires only when there is money to check and the tool was
+never called, at most once per case, and it never supplies or corrects a number.
+
+**Lesson.** **Measure tool use, not just tool availability.** The gap between
+"the agent has a calculator" and "the agent uses the calculator on the cases
+that need arithmetic" is invisible in an aggregate score and obvious in a
+trajectory. Every claim of the form "adding tool X improved the result" should
+be checked against how often X was actually called, and on which cases.
+
+And: if a behaviour matters, enforce it in the loop rather than asking for it in
+the prompt. The prompt had already asked, in bold, with an example.
