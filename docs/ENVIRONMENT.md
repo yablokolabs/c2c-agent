@@ -62,7 +62,8 @@ C2C.
 adds services to the shared server and does not disturb existing ones. C2C
 therefore:
 
-- runs its own SDK service on **port 9091** and registers it at the admin API,
+- runs its own SDK service on **port 9095** and registers it at the admin API
+  (9091 was the first choice and is already taken by a minio container),
 - namespaces every service it owns with a `C2C` prefix (`C2CCase`, `C2CAirline`),
 - never calls `DELETE /deployments/*` for a deployment it did not create,
 - tears down only its own deployment in `make down`.

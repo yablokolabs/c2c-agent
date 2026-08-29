@@ -78,10 +78,10 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     # --- assess -------------------------------------------------------------
     # The agent runs in the control plane, not here. If it throws, Restate
     # retries this block; if it succeeded once, replay never re-runs it.
-    verdict = await ctx.run(
-        "assess",
-        lambda: _post(f"{CONTROL_PLANE}/c2c/assess", json={"case_id": case_id}),
-    )
+    async def do_assess() -> dict:
+        return await _post(f"{CONTROL_PLANE}/c2c/assess", json={"case_id": case_id})
+
+    verdict = await ctx.run("assess", do_assess)
     ctx.set("verdict", verdict)
     await _set_state(ctx, "ASSESSED")
 
@@ -110,9 +110,8 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     # replays. A retry that reaches the carrier twice presents the same key and
     # the second one is deduplicated there.
     idem = await ctx.run("idem_submit", lambda: str(ctx.uuid()))
-    submitted = await ctx.run(
-        "submit",
-        lambda: _post(
+    async def do_submit() -> dict:
+        return await _post(
             f"{AIRLINE}/claims",
             json={
                 "case_id": case_id,
@@ -124,8 +123,9 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
                 "summary": verdict.get("rationale", ""),
             },
             headers={"Idempotency-Key": idem},
-        ),
-    )
+        )
+
+    submitted = await ctx.run("submit", do_submit)
     claim_id = submitted["claim_id"]
     await _set_state(ctx, "SUBMITTED", claim_id=claim_id)
 
@@ -152,12 +152,12 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
                 "rejected_action": "challenge_rejection"}
 
     ch_idem = await ctx.run("idem_challenge", lambda: str(ctx.uuid()))
-    await ctx.run(
-        "challenge",
-        lambda: _post(f"{AIRLINE}/claims/{claim_id}/challenge",
-                      params={"case_id": case_id},
-                      headers={"Idempotency-Key": ch_idem}),
-    )
+    async def do_challenge() -> dict:
+        return await _post(f"{AIRLINE}/claims/{claim_id}/challenge",
+                           params={"case_id": case_id},
+                           headers={"Idempotency-Key": ch_idem})
+
+    await ctx.run("challenge", do_challenge)
     await _set_state(ctx, "CHALLENGED")
 
     after = await _await_carrier(ctx, "challenge_response", CHALLENGE_SILENCE_DAYS)
@@ -192,11 +192,11 @@ async def _escalate(ctx: restate.WorkflowContext, case_id: str, ground: str) -> 
         return {"outcome": "rejected_by_human", "rejected_action": "escalate", "ground": ground}
 
     idem = await ctx.run("idem_escalate", lambda: str(ctx.uuid()))
-    lodged = await ctx.run(
-        "escalate",
-        lambda: _post(f"{AIRLINE}/escalations", params={"case_id": case_id},
-                      headers={"Idempotency-Key": idem}),
-    )
+    async def do_escalate() -> dict:
+        return await _post(f"{AIRLINE}/escalations", params={"case_id": case_id},
+                           headers={"Idempotency-Key": idem})
+
+    lodged = await ctx.run("escalate", do_escalate)
     await _set_state(ctx, "ESCALATED", escalation_reference=lodged.get("reference"))
     return {"outcome": "escalated", "ground": ground,
             "escalation_reference": lodged.get("reference")}
