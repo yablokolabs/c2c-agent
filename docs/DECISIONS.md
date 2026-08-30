@@ -70,7 +70,7 @@ alongside it precisely so the conjunction can be decomposed when diagnosing.
 ## D4 — Two model backends behind one interface
 
 **Decision.** `c2c/llm.py` speaks to either the Anthropic SDK (when
-`ANTHROPIC_API_KEY` is set) or the `claude -p` CLI (otherwise).
+`ANTHROPIC_API_KEY` is set, or when both `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are set for local proxy) or the `claude -p` CLI (otherwise).
 
 **Why.** The build host has no API key; see `docs/ENVIRONMENT.md`. Hiding that
 and reporting numbers as if they came from the SDK would misreport how the

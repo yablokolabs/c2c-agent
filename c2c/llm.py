@@ -71,7 +71,7 @@ def choose_backend() -> str:
     forced = os.environ.get("C2C_LLM_BACKEND")
     if forced:
         return forced
-    return "api" if os.environ.get("ANTHROPIC_API_KEY") else "cli"
+    return "api" if os.environ.get("ANTHROPIC_API_KEY") or (os.environ.get("ANTHROPIC_BASE_URL") and os.environ.get("ANTHROPIC_AUTH_TOKEN")) else "cli"
 
 
 class LLM:
@@ -106,7 +106,17 @@ class LLM:
     def _complete_api(self, system: str, user: str, max_tokens: int) -> LLMResult:
         import anthropic
 
-        client = anthropic.Anthropic()
+        # Determine the API key and base URL for the local proxy
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            # Fallback to AUTH_TOKEN if API key is not set (for local proxy)
+            api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
+        base_url = os.environ.get("ANTHROPIC_BASE_URL")
+
+        client = anthropic.Anthropic(
+            api_key=api_key,
+            base_url=base_url
+        )
         msg = client.messages.create(
             model=self.model,
             max_tokens=max_tokens,

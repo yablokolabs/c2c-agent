@@ -73,15 +73,12 @@ before and after C2C runs, so any collateral damage would be caught.
 
 ## Model access
 
-There is **no `ANTHROPIC_API_KEY`** on this host. Model access is via the
-authenticated Claude Code CLI in headless mode (`claude -p`).
-
-C2C therefore abstracts the model transport behind one interface with two
-backends (`c2c/llm.py`):
+Model access is configured via environment variables. C2C abstracts the model
+transport behind one interface with two backends (`c2c/llm.py`):
 
 | Backend | When used | Notes |
 |---|---|---|
-| `api` | `ANTHROPIC_API_KEY` is set | direct Anthropic SDK. **The documented path for judges.** |
+| `api` | `ANTHROPIC_API_KEY` is set, OR both `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are set | direct Anthropic SDK or local proxy. **The documented path for judges.** |
 | `cli` | otherwise | `claude -p --output-format json`, subscription-authenticated |
 
 Measured fixed overhead of the `cli` backend (empty prompt, Haiku 4.5,
