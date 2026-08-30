@@ -49,17 +49,15 @@ def load(stage: str) -> dict | None:
 
 def results_table() -> str:
     stages = [
-        ("baseline-v1", "Baseline — one direct prompt"),
-        ("caseworker-direct", "Caseworker prompt, one turn, no tools"),
-        ("exp1-tools", "Caseworker + tools + loop"),
-        ("final-v1", "**Full agent** — + independent verifier"),
+        ("baseline-v2", "Baseline — one direct prompt, no tools, no verifier"),
+        ("final-v2-merged", "**Full agent** — tools, loop, independent verifier"),
     ]
     loaded = [(label, load(s), s) for s, label in stages]
     have = [(label, r, s) for label, r, s in loaded if r]
     if not have:
         return "_No result files yet. Run `make baseline evaluate`._"
 
-    base = load("baseline-v1")
+    base = load("baseline-v2")
     rows = ["| System | CRA | Action | Compensation | Entitlements (DoC) | Unsupported claims | False escalations | Model calls | Cost |",
             "|---|---|---|---|---|---|---|---|---|"]
     for label, r, _ in have:
@@ -71,25 +69,24 @@ def results_table() -> str:
             f"{m['duty_of_care_accuracy']:.2f} | {m['unsupported_claims']} | "
             f"{m['false_escalations']} | {t['model_calls']} | {cost} |"
         )
-    final = load("final-v1")
+    final = load("final-v2-merged")
     if base and final:
         d = final["metrics"]["case_resolution_accuracy"] - base["metrics"]["case_resolution_accuracy"]
         rows.append(f"| **Change, baseline → full agent** | **{d:+.2f}** | | | | | | | |")
 
-    repeat = load("baseline-v1-repeat")
-    note = [""]
-    if base and repeat:
-        spread = abs(repeat["metrics"]["case_resolution_accuracy"]
-                     - base["metrics"]["case_resolution_accuracy"])
-        note += [
-            f"Best possible constant answer on this suite: **0.25**. An identical re-run of the "
-            f"baseline, with no change to code, prompt or benchmark, scored "
-            f"{repeat['metrics']['case_resolution_accuracy']:.2f} against "
-            f"{base['metrics']['case_resolution_accuracy']:.2f} — a spread of **{spread:.2f}**, "
-            f"which is the run-to-run noise floor any difference here has to clear.",
-        ]
-    else:
-        note += ["Best possible constant answer on this suite: **0.25**."]
+    note = [
+        "",
+        "Both runs use the same model (`claude-haiku-4-5-20251001`), the same policy, the "
+        "same 28 cases, the same output schema and the same grader, against the same "
+        "first-party endpoint. The best possible constant answer on this suite is **0.25**.",
+        "",
+        "**Read +0.11 as directional, not significant.** It is three cases, and this project "
+        "has no valid variance estimate — the one it had was withdrawn in FAILURES.md F-008 "
+        "once it turned out to be measuring dropped cases rather than sampling. The agent's "
+        "figure is also merged from two partial runs covering the benchmark exactly once "
+        "(`c2c/eval/merge.py`, which refuses to merge across different endpoints, incomplete "
+        "coverage, or a case counted twice); the baseline is a single clean run.",
+    ]
     return "\n".join(rows + note)
 
 

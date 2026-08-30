@@ -109,6 +109,16 @@ downgrade) are all correct at once. Same model, same policy, same dossier, same
 schema for every system.
 
 <!--RESULTS_TABLE-->
+| System | CRA | Action | Compensation | Entitlements (DoC) | Unsupported claims | False escalations | Model calls | Cost |
+|---|---|---|---|---|---|---|---|---|
+| Baseline — one direct prompt, no tools, no verifier | **0.82** | 0.86 | 1.00 | 0.96 | 0 | 0 | 28 | $1.37 |
+| **Full agent** — tools, loop, independent verifier | **0.93** | 0.93 | 1.00 | 1.00 | 0 | 0 | 102 | $3.77 |
+| **Change, baseline → full agent** | **+0.11** | | | | | | | |
+
+Both runs use the same model (`claude-haiku-4-5-20251001`), the same policy, the same 28 cases, the same output schema and the same grader, against the same first-party endpoint. The best possible constant answer on this suite is **0.25**.
+
+**Read +0.11 as directional, not significant.** It is three cases, and this project has no valid variance estimate — the one it had was withdrawn in FAILURES.md F-008 once it turned out to be measuring dropped cases rather than sampling. The agent's figure is also merged from two partial runs covering the benchmark exactly once (`c2c/eval/merge.py`, which refuses to merge across different endpoints, incomplete coverage, or a case counted twice); the baseline is a single clean run.
+<!--/RESULTS_TABLE-->
 
 ### Suite B — durability · 6 failure-injection scenarios
 
@@ -138,7 +148,35 @@ each carrying its commit, model, backend and prompt digests.
 
 ## The biggest improvement, and an honest note about it
 
-<!--BIGGEST_IMPROVEMENT-->
+**On the reasoning axis, the independent verifier.** On the durability axis, and
+more importantly, deciding where case memory lives.
+
+The verifier is what the numbers show. Adding tools and a multi-step loop was
+supposed to be the big lever and largely was not — the agent made **1.4 tool
+calls per case** and called `calculate` **three times in 28 cases**. What changed
+the score was a second model, given the same case and the policy but *not* the
+caseworker's working, told to reach its own conclusion first and then compare.
+
+The clearest single piece of evidence is **R16** — a partial settlement where the
+carrier paid duty of care and refused compensation on a weather ground its own
+operations log contradicts. It failed under the baseline. It failed under
+tools-only. It passes under the verifier. Duty-of-care accuracy went 0.96 → 1.00
+and evidence sufficiency 0.89 → 0.93, which is exactly the shape of "someone
+checked the arithmetic and re-read the clause".
+
+It is not free: **3.6× the model calls and 2.8× the cost** for +0.11.
+
+But the improvement that actually mattered was not a component at all. It was
+answering *where does the case remember itself?* — and being strict about it. The
+answer is the durable workflow, not the agent runtime and not the control plane.
+That single decision is why NanoClaw was rejected (`experiments/EXP-004`), why
+there is no database, why FastAPI holds no case state, and why a `kill -9` in the
+window around a claim submission produces **two attempts at the carrier and one
+landed claim** instead of two claims.
+
+The reasoning improvement is three cases. The durability property is the
+difference between a system that helps and a system that submits your claim
+twice.
 
 ---
 
