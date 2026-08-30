@@ -49,15 +49,26 @@ def show_status(c: httpx.Client) -> dict:
     return st
 
 
-def wait_for(c: httpx.Client, wanted: set[str], timeout: float = 300) -> str:
-    deadline = time.monotonic() + timeout
+def wait_for(c: httpx.Client, wanted: set[str], timeout: float = 900,
+             label: str = "") -> tuple[str, bool]:
+    """Wait for one of `wanted`. Returns (state, reached).
+
+    Returning whether it was actually reached matters: an assessment takes
+    several minutes, and a version of this that returned only the last-seen state
+    reported a still-running case as "the case ended at INTAKE". A demo that
+    misreports what happened is worse than one that fails.
+    """
+    started = time.monotonic()
     last = ""
-    while time.monotonic() < deadline:
+    while time.monotonic() - started < timeout:
         last = c.get(f"{API}/c2c/cases/{CASE}").json().get("state", "")
         if last in wanted:
-            return last
-        time.sleep(2)
-    return last
+            return last, True
+        if label:
+            print(f"    {label}: {last or 'starting'} … {int(time.monotonic()-started)}s",
+                  end="\r", flush=True)
+        time.sleep(3)
+    return last, False
 
 
 def approve(c: httpx.Client, promise: str = "approval", approved: bool = True) -> dict:
@@ -108,7 +119,15 @@ def main(argv=None) -> int:
         print("  the caseworker reads documents and looks up clauses, then an independent")
         print("  verifier checks the result.")
         c.post(f"{API}/c2c/cases/{CASE}/open", json={"opened_by": "demo"})
-        state = wait_for(c, {"AWAITING_APPROVAL", "CLOSED_NO_ACTION"})
+        state, reached = wait_for(c, {"AWAITING_APPROVAL", "CLOSED_NO_ACTION"},
+                                  timeout=1200, label="assessing")
+        print(" " * 60, end="\r")
+        if not reached:
+            print(f"\n  Still assessing after 20 minutes (state: {state or 'unknown'}).")
+            print("  The workflow is durable and is still running — nothing is lost. Re-run")
+            print("  this script to pick it up, or watch: "
+                  f"curl {API}/c2c/cases/{CASE}")
+            return 1
 
         rule("3. The agent has decided, and stopped")
         st = show_status(c)
@@ -126,7 +145,7 @@ def main(argv=None) -> int:
 
         rule("4. A human approves")
         print(" ", approve(c, "approval"))
-        wait_for(c, {"AWAITING_CARRIER", "SUBMITTED"})
+        wait_for(c, {"AWAITING_CARRIER", "SUBMITTED"}, label="submitting")
         show_status(c)
 
         rule("5. Weeks pass, then the carrier rejects")
@@ -134,14 +153,15 @@ def main(argv=None) -> int:
         print("  silence where most valid claims quietly die.")
         c.post(f"{API}/c2c/cases/{CASE}/carrier-event",
                json={"promise": "carrier_response", "payload": SCRIPTED_REJECTION})
-        wait_for(c, {"AWAITING_APPROVAL"})
+        wait_for(c, {"AWAITING_APPROVAL"}, label="re-assessing")
+        print(" " * 60, end="\r")
         st = show_status(c)
         print(f"\n  The rejection cites weather. The operational record on file says the crew")
         print(f"  timed out and both stations were CAVOK. The agent proposes a challenge.")
 
         rule("6. A human approves the challenge")
         print(" ", approve(c, "challenge_approval"))
-        wait_for(c, {"CHALLENGED"})
+        wait_for(c, {"CHALLENGED"}, label="challenging")
         show_status(c)
 
         rule("7. What the passenger actually receives")

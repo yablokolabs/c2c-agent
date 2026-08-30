@@ -452,3 +452,101 @@ deliberately make no model calls. The first time the dense pattern ran against a
 real backend, it fell over — and it fell over in a way that looked exactly like
 bad reasoning in the aggregate score, which is F-008's lesson arriving a second
 time.
+
+---
+
+## F-010 — An `async` handler with no `await` froze the entire control plane
+
+| | |
+|---|---|
+| **Found** | the first end-to-end run of `make demo` |
+| **Commit** | introduced with the control plane, fixed after `707daa0` |
+| **Evidence** | 154 retry invocations against workflow key `R12` in Restate |
+
+**Observed.** `make demo` opened the case and then hung. The control plane was
+*up* — port listening, process alive, no error in its log — and returned nothing
+to anything. Every request answered `http 000`. Its last log line was the demo's
+own `POST /c2c/cases/R12/open`.
+
+**Expected.** An assessment takes minutes; everything else keeps working while it
+runs.
+
+**Root cause.** `POST /c2c/assess` was declared `async def` and contained **no
+`await` at all**. It calls the agent, which is synchronous and blocks on
+`subprocess.run` for several minutes.
+
+An `async def` handler runs on uvicorn's event loop. Blocking it blocks
+*everything*: status polls, approvals, the airline endpoints, the health check.
+The control plane was not slow, it was entirely deaf, for the duration of every
+assessment.
+
+The blast radius was larger than the hang. Restate could not reach the frozen
+control plane, so it correctly retried the durable assess step — **154 times**
+against workflow key `R12`. The durability layer worked exactly as designed while
+the thing it was calling was dead.
+
+**Corrective change.** `async def assess` → `def assess`. FastAPI runs a sync
+handler in a threadpool, and the loop stays free. One word.
+
+Verified live: the control plane now answers `200` *during* an assessment, where
+before it answered nothing.
+
+**Outcome.** A regression guard in `tests/test_simulator.py` asserts `assess` is
+not a coroutine function.
+
+**Lesson.** **`async def` with no `await` in the body is a bug smell worth
+grepping for.** The keyword is a promise that the function yields; a handler that
+never yields and does blocking work has taken the loop hostage.
+
+The failure mode is unusually cruel to diagnose. There is no exception, no log
+line, no crash, and the process looks healthy — the port is open and the PID is
+alive. Everything that would normally tell you something is wrong is itself
+blocked on the thing that is wrong.
+
+And the wider point, again: **this was found by running the demo, not by the
+tests.** 121 tests pass with this bug present, because they exercise the agent
+and the simulator directly and never stand the control plane up under a real
+assessment. The end-to-end path had been asserted in the docs and never executed
+once. It was found four hours before it would have been found on camera.
+
+---
+
+## F-011 — The demo reported a running case as a finished one
+
+| | |
+|---|---|
+| **Found** | immediately after F-010, on the re-run |
+| **Commit** | fixed after `707daa0` |
+
+**Observed.** With the control plane fixed, the demo printed:
+
+```
+3. The agent has decided, and stopped
+   state           INTAKE
+   compensation    None units
+   Nothing consequential to approve; the case ended at INTAKE.
+```
+
+The case had not ended. It was still being assessed, and completed normally
+afterwards.
+
+**Root cause.** Two compounding defects in `c2c/tools/demo.py`.
+
+`wait_for` returned the last state it saw, whether or not the wanted state was
+ever reached, so a timeout and a success were indistinguishable to the caller.
+And its timeout was 300 seconds against an assessment that takes **211 seconds at
+the median and 491 at the maximum**, measured across 34 real assessments — so it
+timed out routinely.
+
+**Corrective change.** `wait_for` now returns `(state, reached)`. The assessment
+wait is 1200s, it prints elapsed time while waiting, and on timeout the demo says
+the workflow is still running and durable rather than claiming it finished.
+
+**Lesson.** **A function that cannot distinguish "it happened" from "I gave up
+waiting" will eventually report the second as the first.** The signature was the
+bug: returning a bare state made the misreport the path of least resistance for
+every caller.
+
+This is the same shape as F-008, where a case the model never saw was scored as a
+case the model got wrong. Both times, two distinct outcomes were collapsed into
+one return value, and the system confidently reported the wrong one.

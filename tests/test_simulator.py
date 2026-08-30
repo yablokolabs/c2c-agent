@@ -93,3 +93,18 @@ def test_reset_clears_everything(client):
     client.post("/airline/claims", json=SUBMISSION, headers={"Idempotency-Key": "k1"})
     client.post("/airline/_admin/reset")
     assert client.get("/airline/_admin/audit").json()["entries"] == []
+
+
+def test_the_assess_handler_is_sync_so_it_cannot_block_the_event_loop():
+    """The agent blocks for minutes. As `async def` it freezes uvicorn's loop and
+    the whole control plane stops answering — status polls, approvals, the
+    airline, everything. FastAPI runs a sync handler in a threadpool instead.
+
+    Found by the first end-to-end demo run, which hung with the control plane up
+    but returning nothing. See FAILURES.md F-010."""
+    import inspect
+
+    from c2c.api import assess
+
+    assert not inspect.iscoroutinefunction(assess), (
+        "assess must stay sync: it calls the agent, which blocks on a subprocess")

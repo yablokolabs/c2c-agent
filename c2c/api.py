@@ -43,10 +43,16 @@ class AssessRequest(BaseModel):
 
 
 @router.post("/assess")
-async def assess(req: AssessRequest) -> dict:
+def assess(req: AssessRequest) -> dict:
     """Run the agent over a case. Called by the workflow's durable assess step.
 
-    Deliberately not idempotent in itself — Restate's `ctx.run` gives it
+    Deliberately **not** `async def`. The agent blocks — it shells out to the
+    model and waits, for minutes. Declared async, that blocks uvicorn's event
+    loop and the entire control plane stops answering: status polls, approvals,
+    the airline, all of it, for the whole assessment. Declared sync, FastAPI runs
+    it in a threadpool and the loop stays free.
+
+    Deliberately not idempotent in itself either — Restate's `ctx.run` gives it
     exactly-once semantics, and duplicating that here would be two mechanisms
     for one invariant.
     """
