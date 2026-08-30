@@ -165,8 +165,31 @@ scenario in the failure suite.
 | `ctx.uuid()` inside a durable step | idempotency keys are replay-stable, so a retry reuses the key | **D06** |
 | `ctx.promise` | a human approval outlives the process and resolves once | D02, D03, D04 |
 | the approval branch returning before any call | a rejected action is unreachable | **D05** |
-| `ctx.sleep` | the 56-day and 28-day policy clocks survive restarts | the demo |
+| `ctx.sleep` | the 56-day and 28-day policy clocks survive restarts | **not exercised — see below** |
 | `ctx.set` | case state survives `kill -9` | D02 |
+
+### What is implemented but unverified
+
+Two things in this layer are written and reachable, and are **not** covered by
+any test or scenario. They are listed here rather than counted as working.
+
+**`ctx.sleep` has never run.** The 56-day and 28-day policy clocks are
+implemented in `_await_carrier`, and `C2C_CLOCK_SCALE` exists to compress them.
+No durability scenario references the clock — the suite has zero references to
+it — and no recorded trajectory contains a suspend or resume event. Restate's
+timers are well-tested upstream, but *this project has not demonstrated them*.
+The longest suspension actually observed is the approval wait in D02, measured in
+seconds.
+
+**The workflow emits no trajectory.** Seven event types are declared in
+`c2c/trajectory.py` and never emitted anywhere: `WORKFLOW_TRANSITION`,
+`WORKFLOW_SUSPEND`, `WORKFLOW_RESUME`, `HUMAN_APPROVAL_REQUIRED`,
+`HUMAN_APPROVED`, `HUMAN_REJECTED` and `EXTERNAL_EVENT`. The agent records a
+detailed trajectory; the durable layer records none. Workflow state lives in
+Restate and is readable through `GET /c2c/cases/{id}`, and the airline's audit
+log captures what actually landed — so the *evidence* exists, but it is not in
+the trajectory files, and the human approval checkpoints in particular are absent
+from them.
 
 **Registered additively.** The Restate server was already running and already
 hosting an unrelated project. C2C prefixes every service it owns with `C2C`,
@@ -193,7 +216,8 @@ the other tenants are intact before and after every run.
    measured by D06, where a crash produced 2 attempts and 1 landed claim.
 6. The workflow waits on whichever comes first: the carrier's reply, or
    `ctx.sleep(56 days)`. On silence it proposes escalation, which needs its own
-   approval.
+   approval. Every run to date has taken the reply branch; the timer branch is
+   implemented and untested.
 7. `GET /c2c/cases/R12/document` renders the case summary and the claim letter
    from the stored verdict.
 
