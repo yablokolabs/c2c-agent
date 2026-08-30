@@ -123,3 +123,15 @@ def test_no_constant_guess_scores_well():
 def test_missing_verdict_scores_zero():
     s = score_case(CASES[0], None)
     assert not s.resolved and not s.action_correct
+
+
+def test_a_dropped_case_is_visible_not_just_scored():
+    """A case the model never saw is not a case it got wrong. The grader cannot
+    tell them apart, so the harness has to surface the count. See F-008."""
+    import inspect
+
+    from c2c.eval import run
+
+    src = inspect.getsource(run.main)
+    assert "cases_without_model_call" in src
+    assert "never reached the model" in src, "a dropped case must produce a visible warning"

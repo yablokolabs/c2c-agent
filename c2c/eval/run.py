@@ -197,6 +197,14 @@ def main(argv=None) -> int:
     totals["wall_clock_s"] = wall_s
     totals["mean_calls_per_case"] = round(totals["model_calls"] / len(cases), 2)
 
+    # A case the model never saw is not a case the model got wrong. The grader
+    # cannot tell them apart, so the count is surfaced here and the run says so
+    # loudly. Six silently-dropped cases once turned a 0.82 baseline into a 0.68
+    # one and stood as the project's comparison point for two days. See F-008.
+    unreached = [c["case_id"] for c in per_case if c["model_calls"] == 0]
+    totals["cases_without_model_call"] = len(unreached)
+    totals["unreached_cases"] = unreached
+
     metrics = aggregate(scored)
 
     payload = {
@@ -242,6 +250,11 @@ def main(argv=None) -> int:
         print(f"  {k:26} {metrics[k]}")
     print(f"  failed: {', '.join(metrics['failed_cases']) or 'none'}")
     print(f"  calls={totals['model_calls']} wall={wall_s}s cost={totals['cost_usd']}")
+    if unreached:
+        print(f"\n  WARNING: {len(unreached)} of {len(cases)} cases never reached the model "
+              f"({', '.join(unreached)}).\n"
+              f"  They are scored as wrong, which they are not. This aggregate understates\n"
+              f"  the system and is NOT comparable with a run that reached every case.")
     print(f"\n  results     {out_path}")
     print(f"  trajectory  {rec.root}/trajectory.md")
     return 0
