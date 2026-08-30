@@ -70,7 +70,7 @@ alongside it precisely so the conjunction can be decomposed when diagnosing.
 ## D4 — Two model backends behind one interface
 
 **Decision.** `c2c/llm.py` speaks to either the Anthropic SDK (when
-`ANTHROPIC_API_KEY` is set) or the `claude -p` CLI (otherwise).
+`ANTHROPIC_API_KEY` is set, or when both `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` are set for local proxy) or the `claude -p` CLI (otherwise).
 
 **Why.** The build host has no API key; see `docs/ENVIRONMENT.md`. Hiding that
 and reporting numbers as if they came from the SDK would misreport how the
@@ -118,3 +118,28 @@ second server, or reinstalling this one, would have risked them.
 **Reverses if.** A judge reproducing from a clean environment has no Restate
 server, in which case `docs/REPRODUCTION.md` covers starting a throwaway one.
 The headline reasoning result does not require Restate at all.
+
+
+---
+
+## D7 — A gateway is a supported backend, but never an anonymous one
+
+**Decision.** `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN` select the `api`
+backend against a self-hosted or local gateway. Every result records
+`model_endpoint` and `first_party_model`, the harness warns on a non-first-party
+endpoint, and the report refuses to compare two runs across different endpoints.
+
+**Why.** A gateway is a legitimate way to run this — a team with an internal
+proxy should be able to reproduce the benchmark. But a gateway can serve a
+different model than the one requested while every log line still names the model
+you asked for, which is exactly what happened here: the baseline fell from 0.68
+to 0.29 with no change to the baseline. See FAILURES.md F-007.
+
+Recording the model alone is not provenance. The model field says what was
+requested; the endpoint says what answered.
+
+**Consequence.** The CLI subprocess also strips every `ANTHROPIC_*` variable, so
+a gateway configured for the `api` backend cannot silently capture the `cli`
+backend through the inherited environment.
+
+**Reverses if.** Nothing. This is a floor, not a preference.

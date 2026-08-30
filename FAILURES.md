@@ -263,3 +263,73 @@ be checked against how often X was actually called, and on which cases.
 
 And: if a behaviour matters, enforce it in the loop rather than asking for it in
 the prompt. The prompt had already asked, in bold, with an example.
+
+---
+
+## F-007 — A gateway served a different model, and nothing in the results said so
+
+| | |
+|---|---|
+| **Found** | reviewing an evening of runs that all looked like ordinary bad results |
+| **Commit** | `fbcae5e` (introduced), fixed on `main` |
+| **Evidence** | `evaluation/results/baseline-v1--20260830T01*.json`, `.worktrees/fix-llm-backend/` |
+
+**Observed.** After the `claude -p` CLI began refusing calls
+(`claude -p exited 1`, 28/28 cases), the harness was pointed at a local gateway
+via `ANTHROPIC_BASE_URL=http://127.0.0.1:8082` plus `ANTHROPIC_AUTH_TOKEN`. Runs
+started completing again. They also got much worse, and the *baseline* got worse
+too:
+
+| Run | Endpoint | CRA | Output tokens/call |
+|---|---|---|---|
+| baseline-v1 | CLI | **0.68** | 7,990 |
+| baseline-v1-repeat | CLI | **0.75** | 7,470 |
+| baseline-v1 | gateway | **0.29** | 2,824 |
+| baseline-v1 | gateway | **0.36** | 2,744 |
+
+**Expected.** Changing transport should not change the baseline. The baseline
+halving is the tell: no change had been made to the baseline at all.
+
+**Root cause.** The gateway (`fcc-server`, "free-claude-code") serves 186 models,
+mostly `nvidia_nim/*` open weights. It does **not** carry
+`claude-haiku-4-5-20251001` — it has `claude-haiku-4-20250514`,
+`claude-3-haiku-20240307` and `claude-3-5-haiku-20241022`, and nothing newer. A
+request naming `claude-haiku-4-5-20251001` was answered by something else.
+
+Meanwhile every result file recorded `"model": "claude-haiku-4-5-20251001"`,
+because that field logged what was *requested*. **The provenance was
+technically true and completely misleading.**
+
+There was a second, quieter half. With `ANTHROPIC_BASE_URL` exported in the
+parent shell, the `claude` CLI subprocess inherited it and routed through the
+gateway too. So the `cli` backend silently stopped being the CLI backend, which
+is why CLI-labelled runs also came back at 0.43 and 0.54 instead of 0.68–0.75.
+
+**Corrective change.**
+
+- Every result now records `model_endpoint` and `first_party_model`. The harness
+  prints a warning when calls are not going to Anthropic, and the report refuses
+  to compare two runs whose endpoints differ.
+- `_cli_env()` strips every `ANTHROPIC_*` variable from the CLI subprocess, so
+  the CLI backend is the CLI backend regardless of the parent shell.
+- Calls are paced (1s default, `C2C_MIN_CALL_INTERVAL`) across all instances and
+  worker threads, since the refusals were load-driven.
+
+**Outcome.** Every gateway-era number is discarded. The valid comparison points
+remain the CLI runs: baseline 0.68/0.75, agent-with-tools 0.86.
+
+**Lesson.** **The model field is not provenance; the endpoint is.** Any layer
+between the harness and the provider can serve something other than what was
+asked for, and it will do so silently while every log line still names the model
+you requested.
+
+The diagnostic lesson is sharper. This was first written up, in
+`FAILURE_ANALYSIS.md`, as a "verifier resource leak" with a "progressive failure
+pattern" — a plausible story built entirely from the shape of the failures, with
+no test of the transport itself. **The baseline moving was sitting in the data
+the whole time, and the baseline had not been changed.** When a control moves,
+stop theorising about the treatment.
+
+And: routing around a rate limit is not free. It converted a loud, obvious
+failure into a quiet, plausible one, and cost an evening of runs that all had to
+be thrown away.
