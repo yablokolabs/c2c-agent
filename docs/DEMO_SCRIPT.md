@@ -57,7 +57,12 @@ Show `benchmark/POLICY.md`, then one case file.
 
 ## 1:20 — One real execution (95s)
 
-Run `make demo`.
+**Scroll through the already-completed `make demo` output**, top to bottom.
+
+> Run `make demo` *before* recording. One assessment takes 3.5 minutes at the
+> median and the demo does two, so it cannot happen live inside a five-minute
+> video. What is on screen is a genuine execution; the trajectory is committed
+> alongside it.
 
 **Step 3 — the assessment.**
 

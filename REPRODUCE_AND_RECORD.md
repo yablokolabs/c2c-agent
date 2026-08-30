@@ -167,8 +167,18 @@ nothing — re-run.
 ```bash
 make up                # control plane :8099, SDK service :9095, registers C2CCase
 make demo-reset
-make demo              # ~5 model calls, 2-4 minutes
+make demo              # ~10 model calls, 7-16 MINUTES. See the timing note below.
 ```
+
+> **`make demo` takes 7 to 16 minutes and cannot be run live on camera.**
+>
+> Measured across 34 real assessments: **211s median, 426s p90, 491s max** for a
+> single assessment. The demo performs two — the initial one and the
+> re-assessment after the carrier's rejection — plus approvals and the challenge.
+>
+> The recording plan in §7 accounts for this: run it *before* recording and
+> narrate over the completed output. It is still a real execution, and the
+> trajectory is committed as evidence.
 
 **Checkpoints, in order:**
 
@@ -246,21 +256,31 @@ one, so it hits this and the baseline does not. See `FAILURES.md` **F-009**.
 
 Target 5:00. Script with narration: `docs/DEMO_SCRIPT.md`.
 
-### Before you hit record
+### Before you hit record — this part is not optional
 
 ```bash
 make setup && make test          # 121 passed
 make up
 make restate-check               # 3 pre-existing services intact
 make demo-reset
+make demo                        # RUN THIS BEFORE RECORDING. 7-16 minutes.
 ```
 
-Two terminals. **Left:** `make demo`. **Right:** `make failure-tests`, then
-`make compare`.
+**Leave the finished `make demo` output in the left terminal and scroll back to
+the top.** You will narrate over the completed run, scrolling through steps 3 to
+8. It is a genuine execution — the same one, just not in real time — and the
+trajectory is committed alongside it.
 
-Do a **dry run of `make demo` first** and leave the output on screen — it takes
-2-4 minutes and makes real model calls, which is time you do not want to be
-silent for on camera.
+Do not attempt to run it live. A single assessment is 3.5 minutes at the median
+and the demo does two, which is longer than the entire video.
+
+If a case id is already used (Restate retains workflow ids), either use
+`C2C_DEMO_CASE=R16` or purge the invocations for that key through the admin API
+at `:9070`.
+
+Two terminals. **Left:** the completed `make demo` output. **Right:**
+`make failure-tests`, then `make compare` — both of these are fast and *can* be
+run live.
 
 ### Take order
 
@@ -269,7 +289,7 @@ silent for on camera.
 | 0:00 | — | — | the problem |
 | 0:35 | editor | `prompts/baseline_v2.md` | the baseline |
 | 0:50 | editor | `benchmark/POLICY.md`, one case | the benchmark, and the mistake |
-| 1:20 | left | `make demo` | steps 3, 4-6, **7**, 8 |
+| 1:20 | left | scroll the **already-completed** `make demo` output | steps 3, 4-6, **7**, 8 |
 | 2:55 | right | `make failure-tests` | D06 (2 attempts, 1 landed), D05 (0 calls) |
 | 3:45 | right | `make compare` | 0.82 → 0.93; then NanoClaw |
 | 4:40 | — | — | hot take |
@@ -286,9 +306,13 @@ The Restate admin UI, the workflow source, or an architecture diagram. They cost
 30-60s and score nothing — the rubric asks which design choices *helped*, and the
 failure-injection output answers that where a dashboard does not.
 
-### If the demo dies mid-take
+### If the demo fails during the pre-run
 
-It makes ~5 model calls and is subject to §6. `make demo-reset` and start that
-segment again. If it fails twice, record the rest and narrate step 7 over the
-committed trajectory at
-`trajectories/runs/<newest>/trajectory.md` instead.
+It makes ~10 model calls and is subject to the throughput ceiling in §6. It is
+durable: the workflow survives, so re-running the script picks the case up where
+it stopped rather than starting over. Check with
+`curl localhost:8099/c2c/cases/R12`.
+
+If it fails repeatedly, narrate step 7 over the committed trajectory at
+`trajectories/runs/<newest>/trajectory.md` and the artifact at
+`GET /c2c/cases/R12/document`.
