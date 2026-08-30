@@ -1,0 +1,1313 @@
+{
+  "stage": "final-v1",
+  "system": "agent",
+  "note": "Full agent: tools, multi-step loop, independent verifier, one revision.",
+  "timestamp": "2026-08-29T21:25:08.312563+00:00",
+  "git_sha": "fbcae5e95c3cce5f428ad195339ffa0615ff4e45",
+  "model": "claude-haiku-4-5-20251001",
+  "backend": "cli",
+  "benchmark_digest": "ed6d07230d16",
+  "n_benchmark_cases": 28,
+  "prompt_provenance": {
+    "policy": "e4b3876ef2c8",
+    "baseline_v1": "f33c3cc8ee98",
+    "baseline_v2": "0f4077ce0a7c",
+    "caseworker": "ea2f432e5b65",
+    "caseworker_direct": "6bb1f8ea41a3",
+    "verifier": "a89e3f24ec46"
+  },
+  "python": "3.12.3",
+  "trajectory_run_id": "20260829T212412Z-final-v1-4aacad",
+  "metrics": {
+    "n_cases": 28,
+    "case_resolution_accuracy": 0.0,
+    "action_accuracy": 0.0,
+    "compensation_accuracy": 0.0,
+    "eligibility_accuracy": 0.0,
+    "cause_accuracy": 0.0,
+    "evidence_sufficiency_accuracy": 0.0,
+    "duty_of_care_accuracy": 0.0,
+    "downgrade_accuracy": 0.0,
+    "unsupported_claims": 0,
+    "unsupported_rejection_challenges": 0,
+    "false_escalations": 0,
+    "missed_escalations": 1,
+    "failed_cases": [
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05",
+      "R06",
+      "R07",
+      "R08",
+      "R09",
+      "R10",
+      "R11",
+      "R12",
+      "R13",
+      "R14",
+      "R15",
+      "R16",
+      "R17",
+      "R18",
+      "R19",
+      "R20",
+      "R21",
+      "R22",
+      "R23",
+      "R24",
+      "R25",
+      "R26",
+      "R27",
+      "R28"
+    ]
+  },
+  "totals": {
+    "model_calls": 0,
+    "task_input_tokens": 0,
+    "output_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "harness_overhead_tokens": 0,
+    "cost_usd": 0.0,
+    "wall_clock_s": 55.4,
+    "mean_calls_per_case": 0.0
+  },
+  "cases": [
+    {
+      "case_id": "R01",
+      "title": "Cancelled short-notice flight, crew shortage",
+      "difficulty": "easy",
+      "tags": [
+        "eligible_cancellation",
+        "operational_disruption",
+        "advance_notice"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S1.2 all limbs met",
+          "S2.1(a) cancellation",
+          "S3.2(b) crew out of duty hours -> carrier-controlled",
+          "S4.2 notice 03 Mar 09:12 -> 06 Mar 07:40 is under 7 days -> 100%",
+          "S4.3/S4.4 no re-routing offered, no exemption",
+          "S5.1 2,090 km -> band B -> 420 units"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R02",
+      "title": "Weather cancellation with overnight duty of care",
+      "difficulty": "medium",
+      "tags": [
+        "weather_extraordinary",
+        "partial_entitlement"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "extraordinary",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 240,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "challenge_rejection",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.3(a) weather below minima -> extraordinary -> no Part 5 compensation",
+          "S6.1 duty of care owed regardless of cause",
+          "S6.2(a)+(b) overnight wait, meals and hotel",
+          "S6.4 itemised receipts present",
+          "S6.3 240 units is under the 300 cap -> 240 payable",
+          "S9.1(e) rejection is silent on / refuses duty of care where S6.1 applies -> validly challengeable"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R03",
+      "title": "Unforeseen technical fault, six-hour delay, long haul",
+      "difficulty": "medium",
+      "tags": [
+        "operational_disruption",
+        "grounding_over_recall"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 750,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(b) 6h 06m at final destination, at or over 3h30m",
+          "S3.2(a) technical fault, explicitly including unforeseen faults -> carrier-controlled",
+          "S3.4 fault found by carrier's own maintenance, not a manufacturer/regulator directive -> not S3.3(g)",
+          "S4.6 notice ladder does not apply to delays",
+          "S5.4 6h 06m is at or over 5 hours -> no taper",
+          "S5.1 6,635 km -> band C -> 750 units"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R04",
+      "title": "Missed connection on one booking, tapered delay",
+      "difficulty": "hard",
+      "tags": [
+        "missed_connection",
+        "delay_taper"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 375,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.3 both segments on a single booking reference -> missed connection qualifies",
+          "S2.2 delay measured at final destination SYD, not at DOH",
+          "S2.1(b) 4h 10m is at or over 3h30m",
+          "S3.2(e) late inbound aircraft, inbound delay itself carrier-controlled",
+          "S5.1 17,680 km -> band C -> 750 units",
+          "S5.4 4h 10m is at or over 3h30m but under 5 hours -> 50% taper -> 375 units"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R05",
+      "title": "Missed connection across two separate bookings",
+      "difficulty": "hard",
+      "tags": [
+        "missed_connection",
+        "valid_negative",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": false,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S2.3 segments sold on separate booking references are separate journeys",
+          "S2.3 the final destination of the JJ journey is therefore FRA, the connecting airport",
+          "S2.1(b) delay at FRA was 0h 55m, under 3h30m -> does not qualify",
+          "The 15-hour outcome at IST is real but falls outside the scope of the JJ booking under S2.3"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R06",
+      "title": "Twelve days notice with a compliant re-routing offer",
+      "difficulty": "medium",
+      "tags": [
+        "advance_notice",
+        "rerouting_exemption",
+        "valid_negative"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(d) commercial consolidation -> carrier-controlled",
+          "S4.1 notice 08 Jun 11:40 -> 20 Jun 09:00 is 11 days 21h, inside the 7-20 day band",
+          "S4.3 re-route departed 08:00, 1h before the original 09:00, within the 2h limit",
+          "S4.3 re-route arrived 16:00 against an original 12:30, 3h30m late, under the 4h limit",
+          "S4.3 exemption applies in full -> no compensation despite a carrier-controlled cause"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R07",
+      "title": "Fourteen days notice, non-compliant re-route, exact band boundary",
+      "difficulty": "hard",
+      "tags": [
+        "advance_notice",
+        "rerouting_exemption",
+        "band_boundary"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 90,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(c) carrier's own IT/scheduling failure -> carrier-controlled",
+          "S4.1 notice 17 Sep 08:00 -> 01 Oct 16:45 is 14 days, inside the 7-20 day band -> 50%",
+          "S4.3 re-route arrived 01:35 on 02 Oct against an original 20:15 on 01 Oct, 5h 20m late, over the 4h limit -> exemption does not apply",
+          "S5.1 and S5.3 distance is exactly 1,200 km, and at exactly 1,200 km the lower band applies -> band A -> 180 units",
+          "S4.2 180 x 0.50 = 90 units"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R08",
+      "title": "Cancellation with twenty-five days notice",
+      "difficulty": "easy",
+      "tags": [
+        "advance_notice",
+        "valid_negative"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(d) commercial decision -> carrier-controlled",
+          "S4.1 notice 16 Nov 14:00 -> 12 Dec 07:25 is 25 days",
+          "S4.2 21 days or more -> no compensation",
+          "Cause being carrier-controlled does not survive the notice ladder"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R09",
+      "title": "Delay claim with no arrival-time evidence",
+      "difficulty": "medium",
+      "tags": [
+        "missing_evidence",
+        "evidence_request"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": null,
+        "cause_class": "carrier_controlled",
+        "eligible": null,
+        "compensation_units": null,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": false,
+        "missing_evidence": [
+          "S8.1(c) evidence of the actual arrival time at the final destination DOH"
+        ],
+        "next_action": "request_evidence",
+        "derivation": [
+          "S3.2(a) cause is carrier-controlled and is established",
+          "S2.1(b) requires the delay at the final destination, and a 2h10m departure delay does not establish the arrival delay",
+          "S8.1(c) a delay claim needs actual arrival-time evidence; it is absent",
+          "S8.2 the correct outcome is request_evidence naming the missing item",
+          "S8.2 assuming an arrival time in order to produce a number would be an unsupported claim"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R10",
+      "title": "Cancellation with no notification timestamp",
+      "difficulty": "medium",
+      "tags": [
+        "missing_evidence",
+        "evidence_request",
+        "advance_notice"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": null,
+        "compensation_units": null,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": false,
+        "missing_evidence": [
+          "S8.1(e) the carrier's cancellation notification showing its timestamp"
+        ],
+        "next_action": "request_evidence",
+        "derivation": [
+          "S2.1(a) cancellation is established",
+          "S3.2(b) crew sickness with no standby -> carrier-controlled",
+          "S4.1 the notice ladder is measured from the moment of notification",
+          "S8.1(e) without the notification timestamp the Part 4 ladder cannot be applied",
+          "S8.2 the passenger's recollection is not evidence of a timestamp; request it rather than assume it"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R11",
+      "title": "Contradictory arrival times across three documents",
+      "difficulty": "hard",
+      "tags": [
+        "conflicting_documents",
+        "evidence_request"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": null,
+        "cause_class": "carrier_controlled",
+        "eligible": null,
+        "compensation_units": null,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": false,
+        "missing_evidence": [
+          "S8.3 material contradiction on actual arrival time at LHR: carrier letter D3 states 16:00 (1h55m), passenger evidence D4 indicates 19:40 (5h35m), and the operational record D5 arrival field is unreadable"
+        ],
+        "next_action": "request_evidence",
+        "derivation": [
+          "S3.2(a) cause is carrier-controlled and is not in dispute",
+          "The contradiction is material: 1h55m does not qualify under S2.1(b), 5h35m qualifies at the full amount under S5.4",
+          "S3.6 resolves conflicts about the stated cause only, not about arrival times, so it does not apply here",
+          "S8.3 a material contradiction with no resolving rule -> request_evidence naming the contradiction",
+          "Picking either figure would be an unsupported claim"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R12",
+      "title": "Rejection citing weather contradicted by the operational record",
+      "difficulty": "medium",
+      "tags": [
+        "invalid_rejection",
+        "challenge"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "challenge_rejection",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.6 where the stated cause and the operational record disagree, the operational record governs",
+          "S3.2(b) crew timed out -> carrier-controlled, and the log records CAVOK, contradicting the weather ground",
+          "S4.1 notice 01 Aug 19:30 -> 03 Aug 17:20 is under 7 days -> 100%",
+          "S4.4 no re-routing offered -> no exemption",
+          "S5.1 2,750 km -> band B -> 420 units",
+          "S9.1(a) rejection cites S3.3 where the record shows S3.2 -> validly challengeable",
+          "S10.1(b) escalation is not yet available because the challenge has not yet been put to the carrier"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R13",
+      "title": "Rejection that is correct and must not be challenged",
+      "difficulty": "medium",
+      "tags": [
+        "valid_rejection",
+        "valid_negative",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "extraordinary",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.3(a) weather below operating minima -> extraordinary",
+          "S3.3(d) the airfield closure is also an order of a public authority",
+          "S3.5 does not apply: the closure was in force at the scheduled departure time, not 12 hours before it",
+          "S3.6 the operational record agrees with the carrier's stated ground, corroborated by the airport authority bulletin",
+          "S9.2 the rejection is valid and must not be challenged",
+          "S6.1 duty of care was owed but nothing was incurred or claimed",
+          "S10.2 escalation would be an error here"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R14",
+      "title": "Angry passenger demanding premature escalation",
+      "difficulty": "hard",
+      "tags": [
+        "premature_escalation",
+        "false_escalation",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "await_carrier",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(c) carrier IT failure -> carrier-controlled",
+          "S4.1 notice 04 May 22:15 -> 05 May 11:00 is under 7 days -> 100%",
+          "S5.1 2,730 km -> band B -> 420 units",
+          "The underlying claim is meritorious and already filed",
+          "S10.1(a) escalation on silence requires 56 days or more; only 20 have elapsed",
+          "S10.1(b) does not apply because no rejection has been issued",
+          "S10.2 escalating now would be premature and is an error despite the merits"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R15",
+      "title": "Challenge ignored for thirty-five days, escalation ripe",
+      "difficulty": "medium",
+      "tags": [
+        "escalation",
+        "eventual_resolution"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 750,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "escalate",
+        "derivation": [
+          "S1.2(c) filed 20 Jan 2026 against a 14 Jan 2026 departure, well inside 18 months",
+          "S2.1(b) 7h 42m at the final destination",
+          "S3.2(a) technical fault found by the carrier's own maintenance -> carrier-controlled",
+          "S3.4 no manufacturer or regulator directive, so not S3.3(g)",
+          "S5.4 7h 42m is at or over 5 hours -> no taper",
+          "S5.1 7,930 km -> band C -> 750 units",
+          "S9.1(a) the rejection is validly challengeable and has been challenged",
+          "S10.1(b) the challenge was put 35 days ago and the carrier has not replied within 28 days -> escalation is available",
+          "S10.1(a) is independently satisfied at 92 days since filing"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": true
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R16",
+      "title": "Partial settlement: duty of care paid, compensation wrongly refused",
+      "difficulty": "hard",
+      "tags": [
+        "partial_settlement",
+        "invalid_rejection",
+        "challenge"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 300,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "challenge_rejection",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.6 the operational record governs over the carrier's stated weather ground",
+          "S3.2(c) carrier's own rostering and dispatch platform outage -> carrier-controlled",
+          "S4.1 notice 08 Oct 17:10 -> 08 Oct 19:45 is under 7 days -> 100%",
+          "S4.4 the re-route arrived roughly 24 hours late, far outside the 2h window -> no exemption",
+          "S5.1 2,900 km -> band B -> 420 units",
+          "S6.3 duty of care of 300.00 units is at the cap and has been settled correctly",
+          "S9.3 a partial settlement is challengeable on the refused portion only",
+          "S9.1(a) the refused compensation element cites S3.3 against a record showing S3.2 -> challenge",
+          "S10.1(b) escalation is not yet available; the challenge must be put to the carrier first"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R17",
+      "title": "Involuntary downgrade with no delay and no cancellation",
+      "difficulty": "medium",
+      "tags": [
+        "downgrade",
+        "not_a_part5_event",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": false,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 320,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1 no cancellation, no denied boarding, and the flight arrived early, so no Part 2 disruption qualifies",
+          "S7.2 a downgrade is not a Part 5 compensation event and Parts 4 and 5 do not apply to it",
+          "S7.1 reimbursement is 40% of the fare paid for the affected segment: 800.00 x 0.40 = 320 units",
+          "S6.1 duty of care is not engaged because no Part 2 disruption occurred",
+          "The claim is still worth submitting, for the S7.1 reimbursement only"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R18",
+      "title": "Extraordinary cause with forty hours to recover",
+      "difficulty": "hard",
+      "tags": [
+        "knock_on_effect",
+        "weather_extraordinary",
+        "reverts_to_carrier"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.3(e) the bird strike is itself an extraordinary cause",
+          "S3.5 the extraordinary event ended 22 Jun 01:10Z and scheduled departure was 23 Jun 17:10Z, roughly 40 hours later",
+          "S3.5 more than 12 hours elapsed, and spare airframes were available, so the cause reverts to carrier-controlled",
+          "S4.1 notice 22 Jun 23:40 -> 23 Jun 17:10Z is under 7 days -> 100%",
+          "S4.4 no re-routing offered -> no exemption",
+          "S5.1 2,190 km -> band B -> 420 units"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R19",
+      "title": "Fleet-wide airworthiness directive, duty of care only",
+      "difficulty": "hard",
+      "tags": [
+        "weather_extraordinary",
+        "grounding_over_recall",
+        "partial_entitlement"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "extraordinary",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 180,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.4 the distinguishing test is who identified the defect: here the manufacturer and regulator, not TF maintenance",
+          "S3.3(g) hidden manufacturing defect under a regulator airworthiness directive -> extraordinary -> no Part 5 compensation",
+          "S3.2(a) does not apply, which is the trap in this case",
+          "S3.5 does not apply: the directive was issued 8 hours before departure, under the 12-hour threshold",
+          "S6.1 duty of care is owed regardless of cause",
+          "S6.2(a)+(b) overnight wait with meals and hotel",
+          "S6.4 itemised receipts present",
+          "S6.3 180 units is under the 300 cap -> 180 payable",
+          "The claim should be submitted for duty of care only"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R20",
+      "title": "Passenger overstates the delay; evidence shows just under threshold",
+      "difficulty": "hard",
+      "tags": [
+        "adversarial",
+        "unsupported_claim",
+        "valid_negative"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": false,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S2.1(b) requires 3 hours 30 minutes or more at the final destination",
+          "S2.2 the measurement is at the final destination IST, from the arrivals record",
+          "The documented delay is 3h 20m, ten minutes under the threshold, so the disruption does not qualify",
+          "The cause is carrier-controlled but that is irrelevant once Part 2 is not satisfied",
+          "The passenger's own estimate of six hours is contradicted by D3 and D4 and must not be relied on",
+          "Evidence is sufficient; this is a determination, not an evidence request"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R21",
+      "title": "Decisive fact buried at document eight of nine",
+      "difficulty": "hard",
+      "tags": [
+        "advance_notice",
+        "rerouting_exemption",
+        "buried_fact",
+        "valid_negative",
+        "distractors"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(b) crew duty limit -> carrier-controlled",
+          "S4.1 notice 08 May 13:20 -> 12 May 08:00 is under 7 days, so S4.4 governs",
+          "S4.4 re-route in D8 departed 07:30, 30 minutes before the original 08:00, within the 1 hour limit",
+          "S4.4 re-route arrived 12:20 against an original 10:45, 1h 35m late, under the 2 hour limit",
+          "S4.4 exemption applies -> no compensation",
+          "S6.2(a) the wait was 1h 35m, under the 2 hour threshold, so no meals entitlement arises",
+          "The decisive fact is the re-routing offer recorded in D8; D4, D5 and D7 are not material"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R22",
+      "title": "Two composed reductions at an exact band boundary",
+      "difficulty": "hard",
+      "tags": [
+        "delay_taper",
+        "band_boundary",
+        "arithmetic_chain"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 210,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(b) 3h 45m at the final destination, at or over 3h30m",
+          "S3.2(e) late inbound aircraft, inbound delay itself carrier-controlled",
+          "S5.3 at exactly 4,000 km band B applies, not band C",
+          "S5.1 band B -> 420 units",
+          "S5.4 3h 45m is at or over 3h30m but under 5 hours -> 50% taper -> 210 units",
+          "S4.6 the notice ladder does not apply to delays, so no second reduction"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R23",
+      "title": "Rejection resting on a re-routing offer that is not in the record",
+      "difficulty": "hard",
+      "tags": [
+        "invalid_rejection",
+        "challenge",
+        "absence_detection"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 750,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "challenge_rejection",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(d) commercial consolidation -> carrier-controlled",
+          "S4.1 notice 14 Nov 09:00 -> 17 Nov 15:50 is 3 days, under 7 days -> S4.4 governs",
+          "S4.4 the exemption requires an offer that was actually made; D3 records no rebooking actions and D4 records no such contact",
+          "S4.5 a declined offer would still count, but only if it was made, and nothing in the record shows one",
+          "S5.1 4,590 km -> band C -> 750 units",
+          "S9.1(c) the rejection cites a re-routing exemption with no re-routing offer in the record -> validly challengeable",
+          "The decisive observation is the absence of a document, not the content of one"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R24",
+      "title": "Strong claim filed nineteen months late",
+      "difficulty": "hard",
+      "tags": [
+        "out_of_scope",
+        "valid_negative",
+        "distractors",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": false,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "close_no_claim",
+        "derivation": [
+          "S1.2(c) a claim must be filed within 18 months of the scheduled departure of the first affected segment",
+          "Scheduled departure 04 Feb 2025, filing 12 Sep 2026, an elapsed 19 months and 8 days",
+          "S1.3 a claim failing any limb of S1.2 is out of scope and receives no compensation and no duty of care",
+          "The merits are strong and the carrier admits fault, and none of that survives S1.3",
+          "S2 and S3 are reached in the analysis but cannot rescue an out-of-scope claim"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R25",
+      "title": "Receipts with a non-reimbursable item and a cap",
+      "difficulty": "hard",
+      "tags": [
+        "weather_extraordinary",
+        "duty_of_care",
+        "arithmetic_chain",
+        "partial_entitlement"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "extraordinary",
+        "eligible": false,
+        "compensation_units": 0,
+        "duty_of_care_units": 300,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.3(b) airspace closure by the air navigation service provider, not caused by the carrier -> extraordinary",
+          "S3.5 does not apply: the closure was still in force at the scheduled departure time",
+          "No Part 5 compensation is payable",
+          "S6.1 duty of care is owed regardless of cause",
+          "S6.2(b) hotel 210.00 and airport transfer 21.00 are reimbursable",
+          "S6.2(a) meals 31.00 and 58.00 are reimbursable",
+          "Replacement clothing is not among the categories in S6.2 and is not reimbursable, so 95.00 is excluded",
+          "Reimbursable subtotal is 210 + 31 + 58 + 21 = 320.00 units",
+          "S6.3 the cap is 300 units per passenger per disruption -> 300 units payable",
+          "S6.4 itemised receipts are present for every line"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R26",
+      "title": "Denied boarding, four hours late, no taper",
+      "difficulty": "hard",
+      "tags": [
+        "denied_boarding",
+        "rule_scope",
+        "operational_disruption"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S1.2(b) the passenger was denied boarding, which satisfies the limb directly",
+          "S2.1(c) involuntary denied boarding on a confirmed booking qualifies in its own right",
+          "S3.2(d) overbooking -> carrier-controlled",
+          "S5.1 1,720 km -> band B -> 420 units",
+          "S4.6 the notice ladder does not apply to denied boarding; it is compensated at 100% subject to S5.4",
+          "S5.4 the taper is confined to claims qualifying under S2.1(b) only; this claim qualifies under S2.1(c), so the 4h 20m arrival delay does not reduce the amount",
+          "420 units payable in full"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R27",
+      "title": "Stated cause contradicted by the record, where the policy resolves it",
+      "difficulty": "hard",
+      "tags": [
+        "conflicting_documents",
+        "rule_scope",
+        "operational_disruption",
+        "distractors"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.6 where the carrier's stated cause and the operational record disagree, the operational record governs, so this conflict is resolved by rule and is not an S8.3 evidence request",
+          "S3.2(b) crew sickness with no standby -> carrier-controlled, corroborated by D4",
+          "S4.1 notice 09 Sep 04:50 -> 09 Sep 06:40 is under 7 days -> 100%",
+          "S4.4 no re-routing offered -> no exemption",
+          "S5.1 1,450 km -> band B -> 420 units",
+          "S6.1 duty of care was owed but D6 records that nothing was incurred",
+          "D2 is a customer-service letter, not a rejection, and no claim has been filed, so the correct action is to submit rather than to challenge",
+          "S10.2 escalation would be premature"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    },
+    {
+      "case_id": "R28",
+      "title": "Settlement offer that matches the full entitlement",
+      "difficulty": "hard",
+      "tags": [
+        "settlement",
+        "accept_settlement",
+        "arithmetic_chain"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 170,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "accept_settlement",
+        "derivation": [
+          "S2.1(a) cancellation",
+          "S3.2(c) carrier's own flight-planning system outage -> carrier-controlled",
+          "S4.1 notice 06 Dec 15:05 -> 06 Dec 17:30 is under 7 days -> 100%",
+          "S4.4 the re-route arrived roughly 24 hours late, far outside the 2 hour window -> no exemption",
+          "S5.1 1,600 km -> band B -> 420 units",
+          "S6.2(a)+(b) overnight wait with meals and hotel, S6.4 receipts present, S6.3 170.00 is under the 300 cap -> 170 units",
+          "Full entitlement across Parts 5, 6 and 7 is 420 + 170 + 0 = 590.00 units",
+          "S9.4 the offer of 590.00 units meets the full entitlement and should be accepted",
+          "S9.3 does not apply because nothing is being refused"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    }
+  ]
+}

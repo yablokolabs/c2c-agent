@@ -1,0 +1,95 @@
+{
+  "stage": "baseline-check",
+  "system": "baseline",
+  "note": "",
+  "timestamp": "2026-08-29T23:52:58.762477+00:00",
+  "git_sha": "fbcae5e95c3cce5f428ad195339ffa0615ff4e45",
+  "model": "claude-haiku-4-5-20251001",
+  "backend": "cli",
+  "benchmark_digest": "ed6d07230d16",
+  "n_benchmark_cases": 28,
+  "prompt_provenance": {
+    "policy": "e4b3876ef2c8",
+    "baseline_v1": "f33c3cc8ee98",
+    "baseline_v2": "0f4077ce0a7c",
+    "caseworker": "ea2f432e5b65",
+    "caseworker_direct": "6bb1f8ea41a3",
+    "verifier": "a89e3f24ec46"
+  },
+  "python": "3.12.3",
+  "trajectory_run_id": "20260829T235252Z-baseline-check-306815",
+  "metrics": {
+    "n_cases": 1,
+    "case_resolution_accuracy": 0.0,
+    "action_accuracy": 0.0,
+    "compensation_accuracy": 0.0,
+    "eligibility_accuracy": 0.0,
+    "cause_accuracy": 0.0,
+    "evidence_sufficiency_accuracy": 0.0,
+    "duty_of_care_accuracy": 0.0,
+    "downgrade_accuracy": 0.0,
+    "unsupported_claims": 0,
+    "unsupported_rejection_challenges": 0,
+    "false_escalations": 0,
+    "missed_escalations": 0,
+    "failed_cases": [
+      "R01"
+    ]
+  },
+  "totals": {
+    "model_calls": 0,
+    "task_input_tokens": 0,
+    "output_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "harness_overhead_tokens": 0,
+    "cost_usd": 0.0,
+    "wall_clock_s": 5.9,
+    "mean_calls_per_case": 0.0
+  },
+  "cases": [
+    {
+      "case_id": "R01",
+      "title": "Cancelled short-notice flight, crew shortage",
+      "difficulty": "easy",
+      "tags": [
+        "eligible_cancellation",
+        "operational_disruption",
+        "advance_notice"
+      ],
+      "resolved": false,
+      "expected": {
+        "in_scope": true,
+        "qualifies": true,
+        "cause_class": "carrier_controlled",
+        "eligible": true,
+        "compensation_units": 420,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0,
+        "evidence_sufficient": true,
+        "missing_evidence": [],
+        "next_action": "submit_claim",
+        "derivation": [
+          "S1.2 all limbs met",
+          "S2.1(a) cancellation",
+          "S3.2(b) crew out of duty hours -> carrier-controlled",
+          "S4.2 notice 03 Mar 09:12 -> 06 Mar 07:40 is under 7 days -> 100%",
+          "S4.3/S4.4 no re-routing offered, no exemption",
+          "S5.1 2,090 km -> band B -> 420 units"
+        ]
+      },
+      "got": {
+        "error": "no parseable verdict"
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": null,
+      "policy_citations": null,
+      "model_calls": 0
+    }
+  ]
+}
