@@ -333,3 +333,67 @@ stop theorising about the treatment.
 And: routing around a rate limit is not free. It converted a loud, obvious
 failure into a quiet, plausible one, and cost an evening of runs that all had to
 be thrown away.
+
+---
+
+## F-008 — Six cases were never sent to the model, and scored as wrong answers
+
+| | |
+|---|---|
+| **Found** | `baseline-v2` scoring 0.82 against a "known" baseline of 0.68 |
+| **Commit** | `6471db6` (introduced), fixed by `87a9e59` |
+| **Evidence** | `evaluation/results/baseline-v1--20260828T173342Z.json` vs `baseline-v2--20260830T092738Z.json` |
+
+**Observed.** The first clean baseline scored **0.82**, far above the 0.68 and
+0.75 that had been treated as the comparison point all project. The cause was
+not the model:
+
+| Run | CRA | Model calls | Cases that received no model call |
+|---|---|---|---|
+| baseline-v1 | 0.68 | 23 | **6** — R18, R24, R25, R26, R27, R28 |
+| baseline-v1-repeat | 0.75 | 23 | **6** — the same six |
+| baseline-v2 | **0.82** | **28** | **0** |
+| exp1-tools | 0.86 | 73 | 1 — R25 |
+
+**Expected.** 28 cases, 28 verdicts, or a loud failure.
+
+**Root cause.** Under concurrent load the CLI began refusing calls. `LLM.complete`
+retried three times and then raised; the harness caught the exception per case,
+recorded an `ERROR` event, and moved on with `verdict=None`. `score_case` scores
+a missing verdict as wrong on every component — which is correct for a model that
+answered badly, and completely wrong for a case that was never asked.
+
+So six cases, five of them the hard ones added in EXP-000, were **auto-zeroed
+without ever reaching the model**, and the aggregate reported it as reasoning
+failure.
+
+**Consequences, stated plainly.**
+
+- **The headline "+0.18 from tools" is retracted.** It compared a baseline denied
+  six of the hardest cases against an agent that answered 27 of 28. On comparable
+  footing it is roughly **+0.04**, about one case. EXP-001 carries the retraction.
+- **The "0.07 noise floor" is withdrawn.** Both v1 runs dropped the *identical*
+  six cases, which is deterministic, not sampling. It measured a harness failure
+  rate. There is currently **no variance estimate** for this benchmark.
+
+**Corrective change.** The pacing and subprocess isolation added for F-007
+(`87a9e59`) removed the refusals as a side effect: `baseline-v2` is the first run
+in which all 28 cases received a model call. All three systems are being
+re-measured on that harness.
+
+Still outstanding: the harness should **refuse to report an aggregate** when any
+case failed to reach the model, rather than folding it into the score. A dropped
+case and a wrong answer must not be summed into one number.
+
+**Lesson.** **A missing answer is not a wrong answer, and an aggregate that
+cannot tell them apart will quietly report infrastructure as capability.**
+
+This is the same mistake as F-001, at a larger scale. There, one `null` field
+turned a good verdict into a zero. Here, a refused call turned six unasked
+questions into six failures. Both times the score moved for a reason that had
+nothing to do with reasoning, and both times it looked entirely plausible —
+0.68 for a single-prompt baseline is exactly what one would expect.
+
+The tell was available and unread: `model_calls: 23` for a 28-case run was
+printed in every result file and in the run summary from the very first
+evaluation.

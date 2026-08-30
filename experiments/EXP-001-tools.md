@@ -3,6 +3,23 @@
 **Git SHA:** `bc4e9b8`
 **Decision:** KEEP, with the attribution stated honestly
 
+> ## RETRACTION
+>
+> **The +0.18 headline below is wrong and is withdrawn.** The baseline it was
+> measured against never received a model call for six of the 28 cases — R18,
+> R24, R25, R26, R27, R28, five of them the hard cases added in EXP-000 — and
+> the grader scored each as a total loss. This experiment therefore compared a
+> baseline denied the hardest cases against an agent that answered 27 of 28.
+>
+> On a clean harness the baseline scores **0.82**, not 0.68, which puts the gap
+> at roughly **+0.04**, about one case. The **0.07 "noise floor"** cited below
+> is withdrawn for the same reason: both baseline runs dropped the *identical*
+> six cases, so it measured a harness failure rate, not sampling variance.
+>
+> See FAILURES.md **F-008**. All three systems are re-measured as `baseline-v2`,
+> `final-v2` and `exp1-tools-v2`. The original numbers and this retraction are
+> both kept; the sections below are left exactly as written.
+
 ## Hypothesis
 
 The baseline fails on cases that need attention the single pass does not give:
