@@ -36,6 +36,11 @@ def show(r: dict) -> None:
     print(f"\n{r['stage']}  ({r['system']})")
     print(f"  commit {r['git_sha'][:8]}  model {r['model']}  backend {r['backend']}  "
           f"{r['timestamp']}")
+    endpoint = r.get("model_endpoint", "(not recorded)")
+    print(f"  endpoint {endpoint}")
+    if r.get("first_party_model") is False:
+        print("  WARNING: served by a gateway, not Anthropic. Not comparable with "
+              "first-party runs.")
     if r.get("note"):
         print(f"  note: {r['note']}")
     print()
@@ -64,6 +69,11 @@ def show(r: dict) -> None:
 
 
 def compare(a: dict, b: dict) -> None:
+    ea, eb = a.get("model_endpoint"), b.get("model_endpoint")
+    if ea != eb:
+        print(f"\n  WARNING: these runs used different endpoints ({ea} vs {eb}).\n"
+              f"  A gateway can serve a different model than the one requested, so this\n"
+              f"  comparison is not measuring the change you think it is.")
     ma, mb = a["metrics"], b["metrics"]
     ta, tb = a["totals"], b["totals"]
     print(f"\n{'METRIC':34}{a['stage']:>16}{b['stage']:>16}{'CHANGE':>12}")

@@ -22,6 +22,8 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import tempfile
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Optional
@@ -53,6 +55,7 @@ class LLMResult:
     cache_read_tokens: int = 0
     harness_overhead_tokens: int = 0
     cost_usd: Optional[float] = None
+    endpoint: str = ""
     raw: dict = field(default_factory=dict)
 
     def usage(self) -> dict:
@@ -67,14 +70,43 @@ class LLMResult:
         }
 
 
+ANTHROPIC_API = "https://api.anthropic.com"
+
+
 def choose_backend() -> str:
     forced = os.environ.get("C2C_LLM_BACKEND")
     if forced:
         return forced
-    return "api" if os.environ.get("ANTHROPIC_API_KEY") else "cli"
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return "api"
+    # A local or self-hosted gateway, addressed by base URL plus token.
+    if os.environ.get("ANTHROPIC_BASE_URL") and os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return "api"
+    return "cli"
+
+
+def resolve_endpoint(backend: str) -> str:
+    """Where calls actually go.
+
+    This is recorded in every result file. A gateway can serve a completely
+    different model than the one requested while the request still names
+    `claude-haiku-4-5`, so the model field alone is not provenance. Runs whose
+    endpoint is not api.anthropic.com are not comparable with runs that are.
+    """
+    if backend == "cli":
+        return "claude-cli"
+    return os.environ.get("ANTHROPIC_BASE_URL") or ANTHROPIC_API
 
 
 class LLM:
+    # Spacing between calls, shared across every LLM instance and worker thread.
+    # The CLI backend starts refusing under concurrent load, and a refusal is
+    # indistinguishable in the results from a model that could not answer, so
+    # pacing is cheaper than the ambiguity. Tune with C2C_MIN_CALL_INTERVAL.
+    _min_interval = float(os.environ.get("C2C_MIN_CALL_INTERVAL", "1.0"))
+    _last_call_at = 0.0
+    _pace_lock = threading.Lock()
+
     def __init__(self, model: str = DEFAULT_MODEL, backend: Optional[str] = None,
                  max_retries: int = 3, timeout_s: int = 300):
         self.model = model
@@ -84,17 +116,28 @@ class LLM:
         self.calls = 0
         if self.backend not in ("api", "cli"):
             raise LLMError(f"unknown backend {self.backend!r}")
+        self.endpoint = resolve_endpoint(self.backend)
+
+    @classmethod
+    def _pace(cls) -> None:
+        with cls._pace_lock:
+            wait = cls._min_interval - (time.monotonic() - cls._last_call_at)
+            if wait > 0:
+                time.sleep(wait)
+            cls._last_call_at = time.monotonic()
 
     def complete(self, system: str, user: str, max_tokens: int = 4096) -> LLMResult:
         last: Optional[Exception] = None
         for attempt in range(self.max_retries):
             try:
+                self._pace()
                 started = time.monotonic()
                 if self.backend == "api":
                     r = self._complete_api(system, user, max_tokens)
                 else:
                     r = self._complete_cli(system, user)
                 r.duration_ms = int((time.monotonic() - started) * 1000)
+                r.endpoint = self.endpoint
                 self.calls += 1
                 return r
             except Exception as exc:  # noqa: BLE001 - retried and re-raised below
@@ -106,7 +149,17 @@ class LLM:
     def _complete_api(self, system: str, user: str, max_tokens: int) -> LLMResult:
         import anthropic
 
-        client = anthropic.Anthropic()
+        # Determine the API key and base URL for the local proxy
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            # Fallback to AUTH_TOKEN if API key is not set (for local proxy)
+            api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
+        base_url = os.environ.get("ANTHROPIC_BASE_URL")
+
+        client = anthropic.Anthropic(
+            api_key=api_key,
+            base_url=base_url
+        )
         msg = client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
@@ -147,11 +200,16 @@ class LLM:
             "--allowed-tools", "",
             "--max-turns", "1",
         ]
-        proc = subprocess.run(
-            cmd, input=user, capture_output=True, text=True,
-            timeout=self.timeout_s, cwd=_isolated_cwd(),
-        )
-        if proc.returncode != 0:
+        # A fresh directory per call, removed afterwards. A shared one accumulates
+        # session state across a 150-call run, and it must contain no CLAUDE.md,
+        # so project instructions cannot leak into a benchmark call.
+        with tempfile.TemporaryDirectory(prefix="c2c-llm-") as cwd:
+            proc = subprocess.run(
+                cmd, input=user, capture_output=True, text=True,
+                timeout=self.timeout_s, cwd=cwd, env=_cli_env(),
+            )
+
+        if proc.returncode != 0 and not _only_benign_warning(proc.stderr, proc.stdout):
             raise LLMError(f"claude -p exited {proc.returncode}: {proc.stderr[:500]}")
         try:
             d = json.loads(proc.stdout)
@@ -182,20 +240,41 @@ class LLM:
         )
 
 
+BENIGN_CLI_WARNINGS = ("claude.ai connectors are disabled",)
+
+
+def _only_benign_warning(stderr: str, stdout: str) -> bool:
+    """True when the CLI exited non-zero but still produced a usable answer.
+
+    It exits 1 on warnings that have nothing to do with the completion. Losing a
+    good result to one of those turns a warning into a scored failure.
+    """
+    if not stdout.strip():
+        return False
+    low = stderr.lower()
+    return any(w in low for w in BENIGN_CLI_WARNINGS)
+
+
+def _cli_env() -> dict:
+    """The CLI subprocess environment, with every ANTHROPIC_* variable removed.
+
+    This is a correctness fix, not tidiness. With ANTHROPIC_BASE_URL set in the
+    parent shell the `claude` CLI routes through that gateway too, so the "cli"
+    backend silently stops being the CLI backend and starts serving whatever the
+    gateway serves. That happened here, and the runs it produced looked like
+    ordinary bad results rather than a different model. See FAILURES.md F-007.
+    """
+    env = {k: v for k, v in os.environ.items() if not k.startswith("ANTHROPIC_")}
+    return env
+
+
 HARNESS_BASELINE_TOKENS = 12587
 
-_ISO_DIR = None
-
-
 def _isolated_cwd() -> str:
-    """Run the CLI somewhere with no CLAUDE.md, so project instructions cannot
-    leak into a benchmark call."""
-    global _ISO_DIR
-    if _ISO_DIR is None:
-        import tempfile
-
-        _ISO_DIR = tempfile.mkdtemp(prefix="c2c-llm-")
-    return _ISO_DIR
+    """A directory with no CLAUDE.md, so project instructions cannot leak into a
+    benchmark call. Kept for the isolation tests; `_complete_cli` now makes a
+    fresh one per call and removes it afterwards."""
+    return tempfile.mkdtemp(prefix="c2c-llm-")
 
 
 def extract_json(text: str) -> Optional[dict]:

@@ -26,6 +26,12 @@ from c2c.trajectory import Recorder, git_sha
 
 RESULTS_DIR = Path("evaluation/results")
 
+FIRST_PARTY_ENDPOINTS = {"claude-cli", "https://api.anthropic.com"}
+
+
+def _is_first_party(endpoint: str) -> bool:
+    return endpoint in FIRST_PARTY_ENDPOINTS
+
 SYSTEMS = {}
 
 
@@ -110,11 +116,17 @@ def main(argv=None) -> int:
 
     rec.emit("USER_INPUT", input={
         "system": args.system, "stage": args.stage, "model": args.model,
-        "backend": llm.backend, "n_cases": len(cases), "note": args.note,
+        "backend": llm.backend, "endpoint": llm.endpoint,
+        "n_cases": len(cases), "note": args.note,
     })
 
     print(f"[{args.stage}] system={args.system} model={args.model} backend={llm.backend} "
-          f"cases={len(cases)} -> run {rec.run_id}", flush=True)
+          f"endpoint={llm.endpoint} cases={len(cases)} -> run {rec.run_id}", flush=True)
+    if not _is_first_party(llm.endpoint):
+        print(f"\n  WARNING: calls go to {llm.endpoint}, not Anthropic.\n"
+              f"  A gateway can serve a different model than the one requested, so this run\n"
+              f"  is NOT comparable with runs against Anthropic. Recorded as such.\n",
+              flush=True)
 
     started = time.monotonic()
     results: dict[str, tuple] = {}
@@ -195,6 +207,12 @@ def main(argv=None) -> int:
         "git_sha": git_sha(),
         "model": args.model,
         "backend": llm.backend,
+        # Where the calls actually went. The model field records what was
+        # *requested*; a gateway can serve something else entirely while the
+        # request still names claude-haiku-4-5. Only runs sharing an endpoint
+        # are comparable. See FAILURES.md F-007.
+        "model_endpoint": llm.endpoint,
+        "first_party_model": _is_first_party(llm.endpoint),
         "benchmark_digest": benchmark_digest(),
         "n_benchmark_cases": len(load_cases()),
         "prompt_provenance": prompts.provenance(),
