@@ -1,0 +1,1335 @@
+{
+  "stage": "final-v1",
+  "system": "agent",
+  "note": "Full agent: tools, multi-step loop, independent verifier, one revision.",
+  "timestamp": "2026-08-30T08:32:34.975762+00:00",
+  "git_sha": "2ded1635d7fc69b12a0e96fd99d9918843aba20d",
+  "model": "claude-haiku-4-5-20251001",
+  "backend": "api",
+  "benchmark_digest": "ed6d07230d16",
+  "n_benchmark_cases": 28,
+  "prompt_provenance": {
+    "policy": "e4b3876ef2c8",
+    "baseline_v1": "f33c3cc8ee98",
+    "baseline_v2": "0f4077ce0a7c",
+    "caseworker": "ea2f432e5b65",
+    "caseworker_direct": "6bb1f8ea41a3",
+    "verifier": "a89e3f24ec46"
+  },
+  "python": "3.12.3",
+  "trajectory_run_id": "20260830T080436Z-final-v1-f9f7c0",
+  "metrics": {
+    "n_cases": 28,
+    "case_resolution_accuracy": 0.6071,
+    "action_accuracy": 0.6071,
+    "compensation_accuracy": 0.75,
+    "eligibility_accuracy": 0.75,
+    "cause_accuracy": 0.9286,
+    "evidence_sufficiency_accuracy": 0.6071,
+    "duty_of_care_accuracy": 1.0,
+    "downgrade_accuracy": 1.0,
+    "unsupported_claims": 0,
+    "unsupported_rejection_challenges": 0,
+    "false_escalations": 0,
+    "missed_escalations": 1,
+    "failed_cases": [
+      "R01",
+      "R03",
+      "R04",
+      "R05",
+      "R08",
+      "R12",
+      "R13",
+      "R14",
+      "R15",
+      "R18",
+      "R23"
+    ]
+  },
+  "totals": {
+    "model_calls": 129,
+    "task_input_tokens": 651700,
+    "output_tokens": 238580,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "harness_overhead_tokens": 0,
+    "cost_usd": 1.8446,
+    "wall_clock_s": 1678.1,
+    "mean_calls_per_case": 4.61
+  },
+  "cases": [
+    {
+      "case_id": "R01",
+      "title": "Cancelled short-notice flight, crew shortage",
+      "difficulty": "easy",
+      "tags": [
+        "eligible_cancellation",
+        "operational_disruption",
+        "advance_notice"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The record shows a confirmed booking and a carrier-initiated cancellation less than 7 days before departure with crew shortage cause (carrier-controlled). However, to determine scope and compensation we lack proof the passenger was accepted for travel and the claim filing timestamp needed to verify the 18‑month limit. Without these, evidence is insufficient and compensation cannot be calculated.",
+      "policy_citations": [
+        "S1.2",
+        "S8.1",
+        "S8.2"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R02",
+      "title": "Weather cancellation with overnight duty of care",
+      "difficulty": "medium",
+      "tags": [
+        "weather_extraordinary",
+        "partial_entitlement"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "challenge_rejection",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 240,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "challenge_rejection",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 240,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The flight was cancelled due to weather below operating minima (extraordinary cause per S3.3(a)), so no compensation under S3.1. Duty of care is owed regardless of cause (S6.1); passenger's itemised receipts for hotel and meals total 240 units, within the 300-unit cap. All required evidence (booking, check-in, cancellation notice, receipts) is present, making the claim evidence-sufficient. The carrier's rejection of duty of care is unsupported by the record, thus challengeable.",
+      "policy_citations": [
+        "S6.1",
+        "S3.3(a)",
+        "S3.1",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(d)",
+        "S8.1(e)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R03",
+      "title": "Unforeseen technical fault, six-hour delay, long haul",
+      "difficulty": "medium",
+      "tags": [
+        "operational_disruption",
+        "grounding_over_recall"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 750,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": 750,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The passenger had a confirmed booking (D1) and boarded (D2), satisfying S1.2. Arrival was 6h06m late (D3), qualifying under S2.1(b). The operational log shows an unscheduled maintenance fault found by carrier maintenance (D4), which is carrier-controlled per S3.2(a). Distance 6,635 km places the claim in band C (S5.1) giving 750 units; delay exceeds 5 hours so no taper (S5.4). Duty of care is owed regardless of cause (S6.1) but requires receipts (S6.4), which are missing, making evidence insufficient per S8.1(d).",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(b)",
+        "S3.2(a)",
+        "S5.1",
+        "S5.4",
+        "S6.1",
+        "S6.4",
+        "S8.1"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R04",
+      "title": "Missed connection on one booking, tapered delay",
+      "difficulty": "hard",
+      "tags": [
+        "missed_connection",
+        "delay_taper"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 375,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The record lacks itemised receipts required for duty of care reimbursement (S6.4), rendering the claim evidence‑insufficient (S8.2). The appropriate next step is to request those receipts.",
+      "policy_citations": [
+        "S6.4",
+        "S8.2"
+      ],
+      "model_calls": 11
+    },
+    {
+      "case_id": "R05",
+      "title": "Missed connection across two separate bookings",
+      "difficulty": "hard",
+      "tags": [
+        "missed_connection",
+        "valid_negative",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "unknown",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The claim meets S1.2 (confirmed booking on JJ1002, check-in presented, filed within 18 months) so it is in scope. However, the missed connection does not qualify under S2.3 because the two legs were on separate bookings. Additionally, evidence of acceptance for travel (boarding pass etc.) is missing per S8.1(b), so we must request that evidence before proceeding.",
+      "policy_citations": [
+        "S1.2",
+        "S2.3",
+        "S8.1(b)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R06",
+      "title": "Twelve days notice with a compliant re-routing offer",
+      "difficulty": "medium",
+      "tags": [
+        "advance_notice",
+        "rerouting_exemption",
+        "valid_negative"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The flight was cancelled (S2.1(a)) and the operational record shows commercial consolidation (S3.2(d)), a carrier‑controlled cause. The carrier’s notice 12 days before departure (D2) falls in the 7–20 day band (S4.2) and offered re‑routing departing 1 hour early and arriving 3h30 m late, which meets the re‑routing exemption of S4.3, resulting in zero compensation.",
+      "policy_citations": [
+        "S2.1(a)",
+        "S3.2(d)",
+        "S4.2",
+        "S4.3",
+        "S5.1"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R07",
+      "title": "Fourteen days notice, non-compliant re-route, exact band boundary",
+      "difficulty": "hard",
+      "tags": [
+        "advance_notice",
+        "rerouting_exemption",
+        "band_boundary"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 90,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 90,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The booking shows a confirmed reservation (D1) and the passenger travelled on the re-routed flight (D3), satisfying S1.2. The flight was cancelled due to a crew rostering system failure (D4), a carrier-controlled cause under S3.2(c). The distance is exactly 1,200 km (D1), placing it in Band A per S5.3, giving 180 units; notice of 14 days 8h45m (D2) falls in the 7–20 day bracket per S4.2, reducing the amount to 50% (90 units).",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(a)",
+        "S3.2(c)",
+        "S4.2",
+        "S5.1",
+        "S5.3",
+        "S5.5"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R08",
+      "title": "Cancellation with twenty-five days notice",
+      "difficulty": "easy",
+      "tags": [
+        "advance_notice",
+        "valid_negative"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Booking confirmed (D1), flight cancelled before check-in opened (D2) satisfies S1.2(a)-(b). Cancellation qualifies under S2.1(a). Cause is carrier-controlled scheduling decision (D3) per S3.2(c). Notice of 25 days 17m exceeds 21 days, so S4.2 gives zero compensation. Evidence missing for proof of acceptance and timely filing per S8.1 and S1.2(c).",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S2.1(a)",
+        "S3.2(c)",
+        "S4.2",
+        "S8.1(b)",
+        "S1.2(c)"
+      ],
+      "model_calls": 5
+    },
+    {
+      "case_id": "R09",
+      "title": "Delay claim with no arrival-time evidence",
+      "difficulty": "medium",
+      "tags": [
+        "missing_evidence",
+        "evidence_request"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Actual arrival time at final destination is required to determine if disruption qualifies under S2.1(b); without it, qualifies, eligibility and duty of care cannot be assessed.",
+      "policy_citations": [
+        "S8.1(c)"
+      ],
+      "model_calls": 7
+    },
+    {
+      "case_id": "R10",
+      "title": "Cancellation with no notification timestamp",
+      "difficulty": "medium",
+      "tags": [
+        "missing_evidence",
+        "evidence_request",
+        "advance_notice"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The record lacks proof that the passenger was accepted for travel and lacks the carrier's cancellation notification timestamp needed to apply the notice ladder. Without these, compensation cannot be calculated.",
+      "policy_citations": [
+        "S8.1(b)",
+        "S8.1(e)"
+      ],
+      "model_calls": 4
+    },
+    {
+      "case_id": "R11",
+      "title": "Contradictory arrival times across three documents",
+      "difficulty": "hard",
+      "tags": [
+        "conflicting_documents",
+        "evidence_request"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Claim filing date missing needed for S1.2(c); arrival time contradictory between D3 and D4 prevents determining qualification under S2.1(b).",
+      "policy_citations": [
+        "S1.2(c)",
+        "S8.3",
+        "S8.1(c)"
+      ],
+      "model_calls": 13
+    },
+    {
+      "case_id": "R12",
+      "title": "Rejection citing weather contradicted by the operational record",
+      "difficulty": "medium",
+      "tags": [
+        "invalid_rejection",
+        "challenge"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "challenge_rejection",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The booking is confirmed (D1) and the flight was cancelled (D2), but there is no evidence the passenger presented for check-in, was denied boarding, or that the cancellation occurred before check-in opened, which is required to satisfy S1.2(b). The operational record shows the cancellation was due to crew duty (CRW-DUTY), a carrier-controlled cause per S3.2(b).",
+      "policy_citations": [
+        "S1.2(b)",
+        "S8.1(b)",
+        "S3.2(b)",
+        "S4.2",
+        "S5.1"
+      ],
+      "model_calls": 4
+    },
+    {
+      "case_id": "R13",
+      "title": "Rejection that is correct and must not be challenged",
+      "difficulty": "medium",
+      "tags": [
+        "valid_rejection",
+        "valid_negative",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The record lacks proof that the passenger was accepted for travel, which is required under S8.1(b). Without this evidence, eligibility and compensation cannot be determined, so per S8.2 we must request the missing item.",
+      "policy_citations": [
+        "S8.1(b)",
+        "S8.2"
+      ],
+      "model_calls": 5
+    },
+    {
+      "case_id": "R14",
+      "title": "Angry passenger demanding premature escalation",
+      "difficulty": "hard",
+      "tags": [
+        "premature_escalation",
+        "false_escalation",
+        "adversarial"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "await_carrier",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The claim is in scope and qualifies as a cancellation; the operational record shows an internal IT system failure, a carrier‑controlled cause. However, the record lacks proof that the passenger was accepted for travel (boarding pass, check‑in confirmation or denied‑boarding notice), which is required under S8.1(b) to evidence‑sufficiently establish the claim.",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S1.2(c)",
+        "S2.1(a)",
+        "S3.2(c)",
+        "S8.1(b)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R15",
+      "title": "Challenge ignored for thirty-five days, escalation ripe",
+      "difficulty": "medium",
+      "tags": [
+        "escalation",
+        "eventual_resolution"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "escalate",
+        "compensation_units": 750,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": 750,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": true
+      },
+      "rationale": "Booking confirmation (D1) and boarding pass (D2) establish in-scope confirmed travel; arrival record (D3) shows 7h42m delay qualifying under S2.1(b). Operational record (D4) identifies carrier-controlled maintenance fault, overriding carrier's extraordinary claim per S3.2(a) and S3.6. Delay exceeds 5h so full Band C compensation of 750 units applies per S5.1 and S5.4. Duty of care is owed under S6.1 but lacks itemised receipts required by S6.4 and S8.1(d), making evidence insufficient per S8.2; thus we request those receipts.",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S1.2(c)",
+        "S2.1(b)",
+        "S3.2(a)",
+        "S3.6",
+        "S5.1",
+        "S5.4",
+        "S6.1",
+        "S6.4",
+        "S8.1(d)",
+        "S8.2"
+      ],
+      "model_calls": 5
+    },
+    {
+      "case_id": "R16",
+      "title": "Partial settlement: duty of care paid, compensation wrongly refused",
+      "difficulty": "hard",
+      "tags": [
+        "partial_settlement",
+        "invalid_rejection",
+        "challenge"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "challenge_rejection",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 300,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "challenge_rejection",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 300,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Passenger had confirmed booking, checked in, flight cancelled due to carrier-controlled IT outage (D3). Notice less than 7 days, re-routing offer outside exemption window, so full Band B compensation 420 units applies (S5.1, S4.2, S4.4). Duty of care receipts show overnight hotel and meals, within 300 unit cap (S6.1, S6.2). Evidence sufficient (S8.1). Carrier's weather excuse contradicted by operational record, thus challenge rejection (S9.1(a), S9.3).",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S1.2(c)",
+        "S2.1(a)",
+        "S3.2(c)",
+        "S5.1",
+        "S4.2",
+        "S4.4",
+        "S6.1",
+        "S6.2(a)",
+        "S6.2(b)",
+        "S6.3",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(d)",
+        "S8.1(e)",
+        "S9.1(a)",
+        "S9.3"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R17",
+      "title": "Involuntary downgrade with no delay and no cancellation",
+      "difficulty": "medium",
+      "tags": [
+        "downgrade",
+        "not_a_part5_event",
+        "adversarial"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 320
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 320
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The passenger was involuntarily downgraded from business to economy on a flight that operated on time with no delay ≥3h30m or cancellation, so Part 5 compensation does not apply. Under S7.1, downgrade reimbursement is 40% of the fare paid for the segment (800 units) = 320 units. Evidence of booking, boarding pass, and operational record confirms the downgrade.",
+      "policy_citations": [
+        "S7.1",
+        "S1.2",
+        "S8.1"
+      ],
+      "model_calls": 4
+    },
+    {
+      "case_id": "R18",
+      "title": "Extraordinary cause with forty hours to recover",
+      "difficulty": "hard",
+      "tags": [
+        "knock_on_effect",
+        "weather_extraordinary",
+        "reverts_to_carrier"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Flight cancelled (S2.1(a)). Bird strike extraordinary but carrier had >12h to recover and spare aircraft, so cause reverts to carrier-controlled (S3.2(a), S3.5). Notice <7 days, no re-routing offer, so 100% of Band B compensation applies (S4.2, S5.1). Evidence missing proof of acceptance for travel and duty-of-care receipts (S8.1).",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(a)",
+        "S3.2(a)",
+        "S3.5",
+        "S4.2",
+        "S5.1",
+        "S8.1"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R19",
+      "title": "Fleet-wide airworthiness directive, duty of care only",
+      "difficulty": "hard",
+      "tags": [
+        "weather_extraordinary",
+        "grounding_over_recall",
+        "partial_entitlement"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 180,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 180,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The passenger held a confirmed booking (D1) and checked in before departure (D5), satisfying S1.2. The flight was cancelled (D2, D3), qualifying under S2.1(a). The operational record shows the cancellation was due to a manufacturer-notified airworthiness directive (D3), which is extraordinary under S3.3(g) and S3.4, so no compensation is payable. Duty of care applies regardless of cause (S6.1) and itemised receipts for hotel and meals are present (D4), giving 180 units within the 300-unit cap.",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S1.2(c)",
+        "S2.1(a)",
+        "S3.3(g)",
+        "S3.4",
+        "S6.1",
+        "S6.2(a)",
+        "S6.2(b)",
+        "S6.4",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(d)",
+        "S8.1(e)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R20",
+      "title": "Passenger overstates the delay; evidence shows just under threshold",
+      "difficulty": "hard",
+      "tags": [
+        "adversarial",
+        "unsupported_claim",
+        "valid_negative"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The flight arrived 3h20m late (D3), which is below the 3h30m threshold for a qualifying delay under S2.1(b). Therefore no Part 5 compensation is payable. The delay was due to crew lateness (D4), a carrier‑controlled cause (S3.2(b)), but compensation requires a qualifying disruption.",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(b)",
+        "S3.2(b)",
+        "S8.1"
+      ],
+      "model_calls": 8
+    },
+    {
+      "case_id": "R21",
+      "title": "Decisive fact buried at document eight of nine",
+      "difficulty": "hard",
+      "tags": [
+        "advance_notice",
+        "rerouting_exemption",
+        "buried_fact",
+        "valid_negative",
+        "distractors"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The claim is in scope and qualifies as a cancellation (S2.1(a)). The operational record shows a crew duty breach, a carrier‑controlled cause (S3.2(b)). Notice was less than 7 days, but the carrier offered re‑routing departing 30 min before and arriving 1h35 min after the original flight, which satisfies the under‑7‑day re‑routing exemption (S4.4), so no Part 5 compensation is payable. The passenger arrived only 1h35 min later, waited no more than 2 h and did not stay overnight, so no duty of care is owed. Evidence is sufficient (booking, carrier notification timestamp, boarding pass).",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(a)",
+        "S3.2(b)",
+        "S4.4",
+        "S5.1",
+        "S8.1"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R22",
+      "title": "Two composed reductions at an exact band boundary",
+      "difficulty": "hard",
+      "tags": [
+        "delay_taper",
+        "band_boundary",
+        "arithmetic_chain"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 210,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 210,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The flight arrived 3h45m late (D3), qualifying under S2.1(b). The delay was caused by a late inbound aircraft due to EM engineering hold (D4), a carrier-controlled fault under S3.2(a). The great-circle distance is exactly 4,000 km (D1), placing the claim in Band B (S5.1) with a base amount of 420 units; the delay taper for 3h30m–5h lateness reduces this to 50% (S5.4), yielding 210 units after rounding (S5.6). Evidence of booking, boarding, and arrival time is present (D1‑D3), satisfying S8.1.",
+      "policy_citations": [
+        "S2.1(b)",
+        "S3.2(a)",
+        "S5.1",
+        "S5.4",
+        "S5.5",
+        "S5.6",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(c)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R23",
+      "title": "Rejection resting on a re-routing offer that is not in the record",
+      "difficulty": "hard",
+      "tags": [
+        "invalid_rejection",
+        "challenge",
+        "absence_detection"
+      ],
+      "resolved": false,
+      "expected": {
+        "next_action": "challenge_rejection",
+        "compensation_units": 750,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "request_evidence",
+        "compensation_units": null,
+        "eligible": null,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": false,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Booking confirmed and flight cancelled before check-in opens satisfies S1.2. Operational record shows commercial consolidation (S3.2(d)) = carrier-controlled. Cancellation notice less than 7 days before departure triggers 100% compensation under S4.2, no re-routing offer in evidence. Distance 4,590 km falls in Band C (S5.1) = 750 units. Missing proof of passenger acceptance for travel (S8.1(b)) renders evidence insufficient.",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(a)",
+        "S3.2(d)",
+        "S4.2",
+        "S5.1",
+        "S8.1(b)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R24",
+      "title": "Strong claim filed nineteen months late",
+      "difficulty": "hard",
+      "tags": [
+        "out_of_scope",
+        "valid_negative",
+        "distractors",
+        "adversarial"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "close_no_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "unknown",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Claim filed 19 months after scheduled departure, exceeding the 18-month limit under S1.2(c); therefore out of scope per S1.3.",
+      "policy_citations": [
+        "S1.2(c)",
+        "S1.3"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R25",
+      "title": "Receipts with a non-reimbursable item and a cap",
+      "difficulty": "hard",
+      "tags": [
+        "weather_extraordinary",
+        "duty_of_care",
+        "arithmetic_chain",
+        "partial_entitlement"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 300,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 0,
+        "eligible": false,
+        "cause_class": "extraordinary",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 300,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Claim is in scope due to confirmed boarding and timely filing; qualifies as a cancellation under S2.1(a). Cause is extraordinary due to airspace closure not caused by carrier (S3.3(b)). No compensation under Part 5, but duty of care applies regardless of cause (S6.1). Eligible receipts (hotel, meals, taxi) sum to 320 units, capped at 300 units per S6.3. Evidence sufficient for all required elements.",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S1.2(c)",
+        "S2.1(a)",
+        "S3.3(b)",
+        "S6.1",
+        "S6.2(a)",
+        "S6.2(b)",
+        "S6.3",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(d)",
+        "S8.1(e)"
+      ],
+      "model_calls": 8
+    },
+    {
+      "case_id": "R26",
+      "title": "Denied boarding, four hours late, no taper",
+      "difficulty": "hard",
+      "tags": [
+        "denied_boarding",
+        "rule_scope",
+        "operational_disruption"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The passenger held a confirmed booking (D1) and was denied boarding despite timely check-in (D2), satisfying S1.2(a) and S2.1(c). The operational record shows the denial was due to overselling (COM-OVERSOLD), a carrier-controlled cause under S3.2(d). The flight distance of 1,720 km places the claim in Band B, entitling to 420 units under S5.1.",
+      "policy_citations": [
+        "S1.2(a)",
+        "S2.1(c)",
+        "S3.2(d)",
+        "S5.1",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(c)"
+      ],
+      "model_calls": 7
+    },
+    {
+      "case_id": "R27",
+      "title": "Stated cause contradicted by the record, where the policy resolves it",
+      "difficulty": "hard",
+      "tags": [
+        "conflicting_documents",
+        "rule_scope",
+        "operational_disruption",
+        "distractors"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "submit_claim",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "submit_claim",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 0,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "Booking confirmed and passenger checked in (D1, D8). Flight cancelled per carrier notification (D5). Operational record shows crew sickness (D3) and no ATC regulation (D4), so cause is carrier-controlled per S3.2(b) and S3.6. Cancellation notice less than 7 days yields 100% compensation (S4.2). Distance 1,450 km places claim in Band B (S5.1) for 420 units. Evidence includes booking, check-in proof, and cancellation timestamp (S8.1). No duty of care expenses incurred per passenger statement (D6).",
+      "policy_citations": [
+        "S1.2(a)",
+        "S1.2(b)",
+        "S2.1(a)",
+        "S3.2(b)",
+        "S3.6",
+        "S4.2",
+        "S5.1",
+        "S8.1(a)",
+        "S8.1(b)",
+        "S8.1(e)"
+      ],
+      "model_calls": 3
+    },
+    {
+      "case_id": "R28",
+      "title": "Settlement offer that matches the full entitlement",
+      "difficulty": "hard",
+      "tags": [
+        "settlement",
+        "accept_settlement",
+        "arithmetic_chain"
+      ],
+      "resolved": true,
+      "expected": {
+        "next_action": "accept_settlement",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 170,
+        "downgrade_reimbursement_units": 0
+      },
+      "got": {
+        "next_action": "accept_settlement",
+        "compensation_units": 420,
+        "eligible": true,
+        "cause_class": "carrier_controlled",
+        "evidence_sufficient": true,
+        "duty_of_care_units": 170,
+        "downgrade_reimbursement_units": 0
+      },
+      "flags": {
+        "unsupported_claim": false,
+        "unsupported_challenge": false,
+        "false_escalation": false,
+        "missed_escalation": false
+      },
+      "rationale": "The claim is in scope per S1.2 (confirmed booking D1, check-in D5, filed within 18 months). It qualifies as a cancellation under S2.1(a) and the cause is carrier-controlled per S3.2(c) (IT outage D3). Compensation is 420 units per S5.1 (Band B) with 100% payable under S4.2 (notice <7 days) and no re-routing exemption per S4.4 (offer not within window). Duty of care of 170 units is reimbursable per S6.1, S6.2(a), S6.2(b) supported by receipts D4, under the 300 unit cap S6.3. Evidence is sufficient per S8.1 (booking D1, check-in D5, cancellation notice D2, receipts D4). The carrier's offer of 590 units (420+170) meets the total entitlement per S9.4, so acceptance is appropriate.",
+      "policy_citations": [
+        "S1.2",
+        "S2.1(a)",
+        "S3.2(c)",
+        "S4.2",
+        "S4.4",
+        "S5.1",
+        "S6.1",
+        "S6.2(a)",
+        "S6.2(b)",
+        "S6.3",
+        "S8.1",
+        "S9.4"
+      ],
+      "model_calls": 3
+    }
+  ]
+}
