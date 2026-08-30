@@ -130,3 +130,25 @@ def test_calls_are_paced_apart():
 def test_pacing_is_shared_across_instances():
     """Two workers must not each get their own budget."""
     assert LLM(backend="cli")._pace_lock is LLM(backend="cli")._pace_lock
+
+
+# --- backoff (F-009) --------------------------------------------------------
+
+def test_a_silent_cli_exit_backs_off_far_longer_than_an_ordinary_error():
+    from c2c.llm import SilentCLIExit, _backoff
+
+    for attempt in range(4):
+        assert _backoff(SilentCLIExit("x"), attempt) > _backoff(LLMError("x"), attempt)
+
+
+def test_backoff_is_capped_so_a_worker_cannot_hang_forever():
+    from c2c.llm import SilentCLIExit, _backoff
+
+    assert _backoff(SilentCLIExit("x"), 20) <= 90.0
+
+
+def test_a_silent_exit_is_still_an_llm_error():
+    """Callers that catch LLMError must keep catching this."""
+    from c2c.llm import SilentCLIExit
+
+    assert issubclass(SilentCLIExit, LLMError)

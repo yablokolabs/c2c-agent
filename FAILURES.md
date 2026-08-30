@@ -397,3 +397,58 @@ nothing to do with reasoning, and both times it looked entirely plausible —
 The tell was available and unread: `model_calls: 23` for a 28-case run was
 printed in every result file and in the run summary from the very first
 evaluation.
+
+---
+
+## F-009 — The CLI dies silently under load, and the retry policy made it worse
+
+| | |
+|---|---|
+| **Found** | `final-v2` scoring 0.07 on 16 model calls for 28 cases |
+| **Commit** | fixed after `956b359` |
+| **Evidence** | `evaluation/results/final-v2--20260830T094122Z.json` |
+
+**Observed.** The clean baseline had just completed all 28 cases without a single
+error. The full agent, on the same harness, same pacing and same worker count,
+managed **16 model calls across 28 cases** and produced 25 errors, every one of
+them:
+
+```
+LLMError('cli backend failed after 3 attempts: claude -p exited 1: ')
+```
+
+Note the empty message after the colon. **The CLI exited non-zero having written
+nothing to stdout and nothing to stderr.** A single identical call issued by hand
+two minutes after the run finished returned `PONG` and exit 0.
+
+**Expected.** Either the calls succeed, or they fail with a reason.
+
+**Root cause, in two parts.**
+
+The far side intermittently drops calls under sustained load and reports nothing
+about it. The agent makes three to four calls per case against the baseline's
+one, so it presents roughly four times the load for the same worker count — which
+is why the baseline sailed through and the agent did not.
+
+The second part is mine. The retry policy was 3 attempts with `2**attempt`
+backoff: 1 second, then 2. For a load symptom that is close to useless — all
+three attempts land inside the window where the far side is still unhappy, and
+the case is abandoned about three seconds after the first refusal.
+
+**Corrective change.** Silent exits are now their own exception type with their
+own backoff curve — 8s, 16s, 32s, 64s, capped at 90 — while ordinary errors keep
+failing fast at 1s and 2s. Default attempts raised from 3 to 5. An error that
+names a real cause should not hold a worker for a minute; an error that names
+nothing should not be retried in one second.
+
+**Lesson.** **An empty error message is itself a signal, and worth branching on.**
+The absence of any output distinguished a transient load symptom from a genuine
+failure, and both were being handled by the same impatient policy.
+
+The wider point is about test coverage of *load*. Everything about this system
+was validated at one call per case. The agent's call pattern is four times
+denser, and nothing in the test suite exercises that, because the tests
+deliberately make no model calls. The first time the dense pattern ran against a
+real backend, it fell over — and it fell over in a way that looked exactly like
+bad reasoning in the aggregate score, which is F-008's lesson arriving a second
+time.

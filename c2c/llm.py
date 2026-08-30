@@ -43,6 +43,27 @@ class LLMError(RuntimeError):
     pass
 
 
+class SilentCLIExit(LLMError):
+    """The CLI exited non-zero having written nothing to stdout or stderr.
+
+    This is a load symptom rather than a real failure: a single call a moment
+    later succeeds. It gets a much longer backoff than an ordinary error, because
+    retrying it quickly just burns the remaining attempts. See FAILURES.md F-009.
+    """
+
+
+def _backoff(exc: Exception, attempt: int) -> float:
+    """Seconds to wait before the next attempt.
+
+    A silent exit means the far side is unhappy with the load, so retrying in one
+    second is worse than useless. An ordinary error is likelier to be real, so it
+    fails fast rather than holding a worker for a minute.
+    """
+    if isinstance(exc, SilentCLIExit):
+        return min(90.0, 8.0 * (2**attempt))
+    return float(2**attempt)
+
+
 @dataclass
 class LLMResult:
     text: str
@@ -108,7 +129,7 @@ class LLM:
     _pace_lock = threading.Lock()
 
     def __init__(self, model: str = DEFAULT_MODEL, backend: Optional[str] = None,
-                 max_retries: int = 3, timeout_s: int = 300):
+                 max_retries: int = 5, timeout_s: int = 300):
         self.model = model
         self.backend = backend or choose_backend()
         self.max_retries = max_retries
@@ -143,7 +164,7 @@ class LLM:
             except Exception as exc:  # noqa: BLE001 - retried and re-raised below
                 last = exc
                 if attempt < self.max_retries - 1:
-                    time.sleep(2**attempt)
+                    time.sleep(_backoff(exc, attempt))
         raise LLMError(f"{self.backend} backend failed after {self.max_retries} attempts: {last}")
 
     def _complete_api(self, system: str, user: str, max_tokens: int) -> LLMResult:
@@ -210,6 +231,14 @@ class LLM:
             )
 
         if proc.returncode != 0 and not _only_benign_warning(proc.stderr, proc.stdout):
+            if not proc.stderr.strip() and not proc.stdout.strip():
+                # Exit non-zero with nothing on either stream. Observed under
+                # sustained load: the CLI dies without a message and a single
+                # probe a moment later succeeds. Marked so the backoff can wait
+                # far longer for this than for a real error. See F-009.
+                raise SilentCLIExit(
+                    f"claude -p exited {proc.returncode} with no output "
+                    f"(transient; backing off)")
             raise LLMError(f"claude -p exited {proc.returncode}: {proc.stderr[:500]}")
         try:
             d = json.loads(proc.stdout)
