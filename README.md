@@ -196,13 +196,73 @@ be grounded in the supplied text.
 
 ## The main failure mode
 
-<!--MAIN_FAILURE-->
+The agent asserts money it never computed.
+
+It has a `calculate` tool. Across 28 cases it called it **three times**, and made
+**1.4 tool calls per case** overall. Eleven cases used no tool at all and
+answered in a single step — structurally identical to the baseline it was
+supposed to improve on.
+
+The two cases it still gets wrong, R16 and R25, both fail on duty-of-care
+arithmetic: a partial settlement, and a receipts total with a non-reimbursable
+line and a cap. `calculate` was available on both and called on neither. The
+prompt already told it to use the tool "for every arithmetic step, including sums
+of receipts and each multiplication," in bold, with an example.
+
+It read the instruction and did the sums in its head anyway, because it is
+capable of doing them in its head and confident about it. Nothing in the loop
+noticed that a figure had been asserted rather than derived.
+
+That is the failure mode worth naming, because it is invisible in an aggregate
+score and it is the one that reaches the passenger. A wrong number in a claim
+letter is not a system that failed loudly — it is a system that produced a
+confident, well-cited, correctly-formatted document with the wrong amount in it.
+
+The corrective experiment is EXP-005: a verdict asserting money it never computed
+is handed back once, with the arithmetic it owes. Enforcement in the loop rather
+than instruction in the prompt.
 
 ---
 
 ## Hot take
 
-<!--HOT_TAKE-->
+**When a control moves and you did not touch the control, stop theorising about
+the treatment.**
+
+Three separate times, this project reported infrastructure as capability.
+
+A required schema field turned one well-formed verdict into a zero (F-001). Six
+cases were never sent to the model and were scored as six wrong answers, which
+stood as the headline comparison for two days (F-008). A gateway served a
+different model entirely while every result file still recorded
+`claude-haiku-4-5-20251001`, because that field logged what was *requested*
+(F-007).
+
+Every one of those looked exactly like a reasoning result. 0.68 is a completely
+plausible score for a single-prompt baseline. Nothing about it invites suspicion.
+
+What caught all three was the same thing: **the baseline moved when nothing about
+the baseline had changed.** 0.68, then 0.75, then 0.29, then 0.82 — same prompt,
+same policy, same cases, every time. That is not a model being variable. That is
+an instrument being broken, and it was legible in data I had already printed —
+`model_calls: 23` on a 28-case run sat in every result file from the first
+evaluation onward, unread.
+
+The practical version, for anyone building an eval harness:
+
+- **A missing answer is not a wrong answer.** If your grader cannot tell them
+  apart, it will quietly report your infrastructure as your agent's reasoning.
+- **The model field is not provenance. The endpoint is.** Anything between you
+  and the provider can serve something else and still let every log line name
+  the model you asked for.
+- **Re-run your control, not just your treatment.** A baseline you measured once
+  and then stopped questioning is an assumption wearing a number's clothes.
+
+And the thing I actually got wrong at the start: I assumed the reasoning would be
+the hard part and the durability would be plumbing. A single prompt already
+handles most of these cases. What a single prompt cannot do is still be holding
+the case in week six — which is the part that decides whether a passenger gets
+paid.
 
 ---
 
