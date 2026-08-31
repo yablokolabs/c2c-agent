@@ -14,8 +14,8 @@ Two terminals. Left: `make demo`. Right: `make failure-tests`, then `make compar
 > Step numbers below match what `c2c/tools/demo.py` prints. If you change the
 > demo, change this.
 >
-> The numbers in the 3:45 beat are marked `[[ ]]`. Read them off `make compare`
-> — do not recite them from memory, and do not record until they are filled in.
+> Read the numbers off `make compare` on screen rather than reciting them. The
+> figures below match the committed result files as of commit `707daa0`.
 
 ---
 
@@ -122,7 +122,7 @@ Run `make failure-tests`.
 
 Run `make compare`. Show `IMPROVEMENT_CHANGELOG.md`.
 
-> "Baseline `[[0.82]]`, full agent `[[ ]]`, same 28 cases, same model.
+> "Baseline **0.82**, full agent **0.93**, same 28 cases, same model.
 >
 > The changelog has every iteration. Two I'd rather show than hide.
 >
