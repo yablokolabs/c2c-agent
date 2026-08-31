@@ -156,7 +156,44 @@ that it would push back. That is a strong beat if you have time for it.
 
 | Symptom | Cause |
 |---|---|
+| PONG check hangs with no output | the container has no outbound network (see below) |
 | No reply to `/start` | bot not running: `docker compose --profile telegram up -d bot` |
 | Case opens, then nothing | assessment takes 3-4 min. `docker compose logs api` to watch. |
 | "Filed" then silence | expected — the airline has not replied. Run the carrier command. |
 | Two bots replying | Telegram allows one poller per token. Stop the other. |
+
+### The PONG check hangs (no output, no error)
+
+The PONG check above is the model-reachability gate: if it hangs, nothing that
+needs a model will work, so fix it before recording. First confirm the
+container itself cannot reach the internet:
+
+```bash
+docker compose exec api sh -c 'curl -sS -o /dev/null -w "%{http_code}\n" https://api.anthropic.com'
+```
+
+A hang here (rather than an error) means outbound traffic from the compose
+network is being dropped by the host. A known cause is a stale **legacy
+iptables** ruleset left over from an older Docker install: its `FORWARD` chain
+has `policy DROP` and only knows about the default `docker0` bridge, so the
+compose bridge (`br-...`) is silently dropped and the container never reaches
+NAT. Docker's own nftables rules may look fine while the legacy ruleset does
+the dropping. Diagnose with:
+
+```bash
+sudo iptables-legacy -L FORWARD -n -v   # policy DROP, no rule for your compose bridge
+```
+
+Fix — substitute your compose bridge name from `docker network ls` /
+`docker inspect <container> --format '{{.NetworkSettings.Networks}}'`:
+
+```bash
+BRIDGE=br-<your-compose-bridge>   # e.g. br-12ec353f97cc
+sudo iptables-legacy -I DOCKER-FORWARD -i $BRIDGE -j ACCEPT
+sudo iptables-legacy -I DOCKER-CT -o $BRIDGE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+sudo iptables-legacy -t nat -A POSTROUTING -s 172.18.0.0/16 ! -o $BRIDGE -j MASQUERADE
+```
+
+Re-run the PONG check; it should return `PONG`. These rules are runtime-only
+and do not survive a reboot — re-apply them if the hang returns on a fresh
+boot.

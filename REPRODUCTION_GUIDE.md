@@ -95,6 +95,31 @@ docker compose exec api sh -c 'cd /tmp && claude -p "Reply with exactly: PONG" \
 
 **Expected:** `PONG`. If it fails, you need an `ANTHROPIC_API_KEY` in `.env`.
 
+If it **hangs with no output at all**, the container cannot reach the
+internet — the model never gets asked. Confirm with:
+
+```bash
+docker compose exec api sh -c 'curl -sS -o /dev/null -w "%{http_code}\n" https://api.anthropic.com'
+```
+
+A hang there means outbound traffic from the compose network is being dropped
+by the host. A known cause is a stale **legacy iptables** ruleset from an older
+Docker install: its `FORWARD` chain has `policy DROP` and only knows the
+default `docker0` bridge, so the compose bridge is silently dropped before NAT
+(Docker's own nftables rules can look fine while the legacy ruleset does the
+dropping). Check with `sudo iptables-legacy -L FORWARD -n -v`; if the compose
+bridge is missing, add it:
+
+```bash
+BRIDGE=br-<your-compose-bridge>   # from docker inspect <container> --format '{{.NetworkSettings.Networks}}'
+sudo iptables-legacy -I DOCKER-FORWARD -i $BRIDGE -j ACCEPT
+sudo iptables-legacy -I DOCKER-CT -o $BRIDGE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+sudo iptables-legacy -t nat -A POSTROUTING -s 172.18.0.0/16 ! -o $BRIDGE -j MASQUERADE
+```
+
+These rules are runtime-only and do not survive a reboot. Re-apply them if the
+hang returns on a fresh boot.
+
 ## 5. The test suite — no model calls, no services
 
 ```bash
