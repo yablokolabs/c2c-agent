@@ -47,7 +47,8 @@ ANTHROPIC_API_KEY=sk-ant-...
 …or leave it blank and rely on the mounted Claude Code login, which
 `docker-compose.yml` wires up by default.
 
-Telegram is optional and can stay blank. Everything works over HTTP without it.
+Telegram is optional and can stay blank — everything works over HTTP without it.
+If you want the chat interface, see section 7a.
 
 > Running this alongside another C2C stack? Add distinct ports:
 > `C2C_RESTATE_ADMIN_PORT=9270`, `C2C_RESTATE_INGRESS_PORT=8280`,
@@ -184,6 +185,97 @@ and the audit of what actually landed.
 
 Final state `CHALLENGED`, 420 units, citing S3.6 and S9.1(a).
 
+## 7a. The Telegram interface
+
+Optional, and the most convincing thing to show a person: a passenger describes a
+disruption in chat, and gets told what is happening at every stage.
+
+### Create a bot
+
+1. Message **@BotFather** on Telegram, send `/newbot`, follow the prompts.
+2. It gives you a token like `8123456789:AAF...`.
+3. **Message your new bot once** — send it `hi`. A bot cannot start a
+   conversation with someone who has never opened one, and skipping this
+   produces `chat not found` later, which is opaque.
+
+### Find your chat id
+
+```bash
+curl -s "https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates" \
+  | python -m json.tool | grep -A3 '"chat"'
+```
+
+The numeric `id` is yours.
+
+### Put both in `.env`
+
+```
+C2C_TELEGRAM_TOKEN=8123456789:AAF...
+C2C_TELEGRAM_CHAT_ID=7979198539
+```
+
+`.env` is gitignored. Never commit it.
+
+> If you have Python locally, `make configure` does all of the above
+> interactively and **checks each piece works** — including sending you a real
+> test message. It exists because `chat not found` is a five-second fix that
+> costs twenty minutes to diagnose at demo time.
+
+### Start the bot
+
+The `bot` service sits behind a compose profile, so it only runs when asked:
+
+```bash
+docker compose --profile telegram up -d bot
+docker compose logs bot
+```
+
+**Expected:**
+
+```
+bot-1  | C2C is listening on Telegram. Control plane: http://api:8099
+bot-1  | A passenger can now describe a disruption and attach documents.
+```
+
+Restart the other services too if `.env` changed after they started, since the
+token is read at process start:
+
+```bash
+docker compose up -d --force-recreate api workflow
+```
+
+### Check delivery before you rely on it
+
+```bash
+docker compose exec bot python -c \
+  "from c2c.notify import send, configured; print(configured(), send('C2C is live.'))"
+```
+
+**Expected:** `True {'delivered': True, 'status': 200}`, and the message on your
+phone. `chat not found` means step 3 above was skipped.
+
+The **workflow** container sends the stage updates, not the bot, so check it too:
+
+```bash
+docker compose exec workflow python -c \
+  "from c2c.notify import configured; print('workflow can notify:', configured())"
+```
+
+### Use it
+
+Send `/start` for the introduction, then describe a disruption — flight number,
+date, route, booking reference, what went wrong. Anything missing, it asks about
+rather than inventing.
+
+What follows: a case reference (`C2C-2026-XXXXX`), an assessment (three to four
+minutes), then a message with the amount, the reasoning, the clauses it rests on,
+and **Approve / Reject** buttons. Nothing reaches the airline until you tap
+Approve.
+
+Text attachments are read. Photos are not — that needs OCR, which is not built,
+and it says so rather than storing a blank document that would look like
+evidence.
+
 ## 8. The headline benchmark — costs real money
 
 ```bash
@@ -217,6 +309,8 @@ Restate you already had was touched — this stack runs its own.
 | `docker compose up --build` | ✅ all four containers, `registered C2CCase` |
 | model reachable with no API key | ✅ `PONG` via the mounted login |
 | durability suite in the clean stack | ✅ **6/6, 0 duplicate actions** |
+| containerised Telegram bot | ✅ connects, and delivers to a real chat |
+| workflow container can notify | ✅ stage updates reach the passenger |
 
 The one thing this exercise found: `hypercorn` and `restate-sdk` were installed
 by hand during development and were missing from `pyproject.toml`, so a clean
