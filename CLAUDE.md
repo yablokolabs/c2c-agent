@@ -14,7 +14,7 @@ Core thesis:
 
 Project root:
 
-`/home/azureuser/yablokolabs/c2c-agent`
+`./` — wherever this repository is cloned (do not rely on a fixed path)
 
 The official hackathon brief is:
 
