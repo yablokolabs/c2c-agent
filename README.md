@@ -56,24 +56,31 @@ Full write-up: [`docs/PROBLEM.md`](docs/PROBLEM.md). Why I care:
 
 **Agents reason. Workflows remember.** Every boundary follows from that.
 
-```
-  human ──▶ FastAPI control plane ──▶ Caseworker (4 tools, ≤10 steps)
-              :8099                        │
-                │                          ▼
-                │                    Verifier (independent, can reject)
-                ▼
-        Restate 1.7.7  ──── ctx.run       exactly-once side effects
-        (pre-existing,  ─── ctx.promise   approvals that outlive the process
-         SHARED)        ─── ctx.sleep     the 56-day and 28-day clocks
-                        ─── ctx.set       state that survives kill -9
-                │
-                ▼
-        Synthetic airline ── audit log of what LANDED, not what was attempted
+```mermaid
+flowchart LR
+    P([Passenger]) -->|"tells us what happened"| IN[Intake]
+    IN --> CW[Caseworker<br/>4 tools]
+    CW --> VF[Verifier]
+    VF -.->|"reject"| CW
+    VF --> WF[[C2CCase workflow<br/>Restate]]
+    WF -->|"asks first"| P
+    P -->|"Approve"| WF
+    WF -->|"exactly once"| AIR[(Airline)]
+    WF -->|"progress, every stage"| P
+
+    classDef a fill:#eef6ff,stroke:#4a7fb5
+    classDef d fill:#f0f7ee,stroke:#5a8f4a
+    class IN,CW,VF a
+    class WF d
 ```
 
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) ·
-[`docs/STACK.md`](docs/STACK.md) ·
-[`docs/DECISIONS.md`](docs/DECISIONS.md)
+Blue forgets everything the moment it returns. Green survives `kill -9`. That
+split is the entire design, and it is why NanoClaw was rejected — its persistent
+sessions would have competed with the workflow for owning the case.
+
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) has the full diagrams: the state
+machine a case moves through, and a sequence diagram of what a crash mid-claim
+actually costs.
 
 ### What is agentic about it
 
@@ -124,7 +131,7 @@ Both runs use the same model (`claude-haiku-4-5-20251001`), the same policy, the
 
 | Metric | Result |
 |---|---|
-| Scenarios passed | **6 / 6** |
+| Scenarios passed | **6 / 6** (and 6/6 again inside Docker) |
 | Workflow completion | 1.00 |
 | Failure recovery | 1.00 |
 | State preserved after `kill -9` | 1.00 |

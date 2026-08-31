@@ -25,55 +25,111 @@ possible, and giving it that job is the whole reason it is here.
 
 ## The picture
 
-```
-                        ┌──────────────────────────────────┐
-   Telegram / curl ────▶│  FastAPI control plane   :8099   │
-   (human approvals)    │  /c2c/*     /airline/*           │
-                        └────┬──────────────────┬──────────┘
-            starts, approves,│                  │ POST /c2c/assess
-            reads state,     │                  ▼
-            fetches documents│        ┌──────────────────────┐
-                             │        │  Caseworker          │
-                             │        │  ≤10 steps, 4 tools: │
-                             │        │   list_documents     │
-                             │        │   read_document      │
-                             │        │   policy_lookup      │
-                             │        │   calculate          │
-                             │        └──────────┬───────────┘
-                             │            verdict│
-                             │                   ▼
-                             │        ┌──────────────────────┐
-                             │        │  Verifier            │
-                             │        │  sees the case, NOT  │
-                             │        │  the caseworker's    │
-                             │        │  working             │
-                             │        │  pass / reject       │──┐
-                             │        └──────────▲───────────┘  │ one
-                             │                   └──────────────┘ revision
-                             ▼
-        ┌────────────────────────────────────────────────┐
-        │  Restate 1.7.7   (pre-existing, SHARED)        │
-        │  admin :9070    ingress :8080                  │
-        │  C2C SDK service :9095                         │
-        │                                                │
-        │   C2CCase  (Workflow, key = case_id)           │
-        │     run / approve / carrier_event / status     │
-        │                                                │
-        │   also hosts an unrelated project's            │
-        │   Outreach / LeadRegistry / ProspectLoop       │
-        └────────────────────┬───────────────────────────┘
-                             │ HTTP + Idempotency-Key
-                             ▼
-                  ┌──────────────────────────────┐
-                  │  Synthetic airline  /airline │
-                  │   claims, challenges,        │
-                  │   escalations                │
-                  │   audit of what LANDED       │
-                  │   failure injection          │
-                  └──────────────────────────────┘
+```mermaid
+flowchart TB
+    P([Passenger<br/>Telegram])
+
+    subgraph CP["FastAPI control plane :8099"]
+        INTAKE["/c2c/assess<br/>/c2c/cases/*<br/>/airline/*"]
+    end
+
+    subgraph AGENTS["Agents — reason, hold no state"]
+        IN["Intake<br/><i>organises, never invents</i>"]
+        CW["Caseworker<br/>4 tools, ≤10 steps"]
+        VF["Verifier<br/><i>sees the case, not the working</i>"]
+    end
+
+    subgraph RS["Restate 1.7.7 — remembers"]
+        WF["C2CCase workflow<br/>key = case_id"]
+        ST[("case state<br/>survives kill -9")]
+        PR{{"durable promise<br/>human approval"}}
+        TM(["ctx.sleep<br/>56d / 28d clocks"])
+    end
+
+    AIR["Synthetic airline<br/><i>audit of what LANDED</i>"]
+    ART["Case summary +<br/>claim letter"]
+
+    P -->|"describes the disruption"| INTAKE
+    INTAKE --> IN
+    IN -->|"case file"| WF
+    WF -->|"assess"| CW
+    CW -->|"verdict"| VF
+    VF -.->|"reject → one revision"| CW
+    VF -->|"agreed verdict"| WF
+    WF --- ST
+    WF --> PR
+    PR -->|"asks"| P
+    P -->|"Approve / Reject"| PR
+    PR -->|"approved only"| AIR
+    WF --- TM
+    WF -->|"progress at every stage"| P
+    WF --> ART --> P
+
+    classDef agent fill:#eef6ff,stroke:#4a7fb5
+    classDef durable fill:#f0f7ee,stroke:#5a8f4a
+    class IN,CW,VF agent
+    class WF,ST,PR,TM durable
 ```
 
----
+**Read the two boxes as the whole argument.** Everything in the blue box is
+stateless and forgets immediately. Everything in the green box survives a
+`kill -9`. A rejected approval never reaches the airline, because the branch
+returns before any call is reachable — measured by D05, where the carrier
+endpoint is called zero times.
+
+## The lifecycle a case moves through
+
+```mermaid
+stateDiagram-v2
+    [*] --> INTAKE
+    INTAKE --> ASSESSED: agent + verifier
+    ASSESSED --> CLOSED_NO_ACTION: nothing worth claiming
+    ASSESSED --> AWAITING_APPROVAL: consequential action proposed
+
+    AWAITING_APPROVAL --> CLOSED_BY_HUMAN: rejected<br/>(carrier never called)
+    AWAITING_APPROVAL --> SUBMITTED: approved
+
+    SUBMITTED --> AWAITING_CARRIER
+    AWAITING_CARRIER --> RESOLVED_SETTLED: offer meets entitlement (S9.4)
+    AWAITING_CARRIER --> AWAITING_APPROVAL: refused, and challengeable
+    AWAITING_CARRIER --> ESCALATED: 56 days of silence (S10.1a)
+
+    AWAITING_APPROVAL --> CHALLENGED: challenge approved
+    CHALLENGED --> RESOLVED_AFTER_CHALLENGE: they budge
+    CHALLENGED --> ESCALATED: 28 more days of silence (S10.1b)
+
+    CLOSED_NO_ACTION --> [*]
+    CLOSED_BY_HUMAN --> [*]
+    RESOLVED_SETTLED --> [*]
+    RESOLVED_AFTER_CHALLENGE --> [*]
+    ESCALATED --> [*]
+```
+
+Every transition out of `AWAITING_APPROVAL` requires a human. Every clock is a
+durable timer, not a poll — the workflow consumes nothing while waiting, and the
+wait survives a restart.
+
+## What a crash actually costs
+
+```mermaid
+sequenceDiagram
+    participant W as Workflow
+    participant A as Airline
+    Note over W,A: D06 — SIGKILL inside the submission window
+
+    W->>W: ctx.run("idem_submit") → replay-stable key
+    W->>A: POST /claims  (Idempotency-Key: abc…)
+    Note over W: 💥 kill -9 before the journal entry lands
+    A-->>A: claim recorded
+    Note over W: restart, replay from the journal
+    W->>A: POST /claims  (Idempotency-Key: abc…)  ← same key
+    A-->>W: 200 deduplicated
+    Note over W,A: 2 attempts reached the carrier · 1 claim landed
+```
+
+Measured, not asserted: the airline's audit log distinguishes attempts from
+landings. Had it shown one attempt, the kill would have missed its window and
+the scenario would have proved nothing.
 
 ## Modules
 
