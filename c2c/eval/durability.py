@@ -140,6 +140,40 @@ def wait_for_state(c: httpx.Client, case_id: str, wanted: set[str], timeout: flo
     return seen
 
 
+def _port_open(port: int, host: str = "127.0.0.1") -> bool:
+    """Pure-Python port check. `ss` is not in a slim container image, and
+    shelling out for this made the suite depend on iproute2."""
+    import socket
+
+    with socket.socket() as sock:
+        sock.settimeout(0.5)
+        return sock.connect_ex((host, port)) == 0
+
+
+def _pids_running(pattern: str) -> list[int]:
+    """PIDs whose command line contains `pattern`, read from /proc.
+
+    Replaces `pkill -f`, which is absent from slim images and which matches the
+    caller's own shell when the pattern appears in it — a footgun that killed
+    the wrong process more than once while this suite was being written.
+    """
+    import os
+
+    me = os.getpid()
+    out = []
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit() or int(entry) == me:
+            continue
+        try:
+            with open(f"/proc/{entry}/cmdline", "rb") as fh:
+                cmdline = fh.read().replace(b"\0", b" ").decode(errors="ignore")
+        except OSError:
+            continue
+        if pattern in cmdline and "durability" not in cmdline:
+            out.append(int(entry))
+    return out
+
+
 class Service:
     """The C2C SDK service process, so scenarios can kill and restart it."""
 
@@ -156,8 +190,7 @@ class Service:
         )
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
-            if subprocess.run(["ss", "-lnt", f"sport = :{SERVICE_PORT}"],
-                              capture_output=True, text=True).stdout.count("LISTEN"):
+            if _port_open(SERVICE_PORT):
                 time.sleep(1)
                 return
             time.sleep(0.3)
@@ -173,11 +206,14 @@ class Service:
             self.proc.send_signal(signal.SIGKILL)
             self.proc.wait(timeout=15)
             self.proc = None
-        subprocess.run(["pkill", "-9", "-f", "c2c.restate_service"], capture_output=True)
+        for pid in _pids_running("c2c.restate_service"):
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
         deadline = time.monotonic() + 25
         while time.monotonic() < deadline:
-            if not subprocess.run(["ss", "-lnt", f"sport = :{SERVICE_PORT}"],
-                                  capture_output=True, text=True).stdout.count("LISTEN"):
+            if not _port_open(SERVICE_PORT):
                 return
             time.sleep(0.3)
         raise RuntimeError(f"port {SERVICE_PORT} still held after SIGKILL")

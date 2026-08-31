@@ -34,20 +34,30 @@ def main() -> int:
     print(f"  pre-existing services : {', '.join(theirs) or 'none'}")
     print(f"  C2C services          : {', '.join(ours) or 'none (not registered)'}")
 
-    if not BASELINE.exists():
+    # Keyed by admin endpoint. Tenants are a property of one server, and a
+    # single global record false-alarms the moment you point this at another —
+    # a containerised Restate legitimately has none of the host's tenants.
+    record = json.loads(BASELINE.read_text()) if BASELINE.exists() else {}
+    if "pre_existing_services" in record:  # migrate the old single-server format
+        record = {os.environ.get("C2C_RESTATE_ADMIN_LEGACY", "http://localhost:9070"): record}
+
+    if ADMIN not in record:
         BASELINE.parent.mkdir(parents=True, exist_ok=True)
-        BASELINE.write_text(json.dumps(
-            {"restate_version": version["version"], "pre_existing_services": theirs},
-            indent=2) + "\n")
-        print(f"\n  recorded the pre-existing tenants to {BASELINE}")
+        record[ADMIN] = {"restate_version": version["version"],
+                         "pre_existing_services": theirs}
+        BASELINE.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+        print(f"\n  first run against {ADMIN} — recorded its tenants to {BASELINE}")
         return 0
 
-    expected = json.loads(BASELINE.read_text())["pre_existing_services"]
+    expected = record[ADMIN]["pre_existing_services"]
     missing = [s for s in expected if s not in services]
     if missing:
         print(f"\n  FAIL: pre-existing services are gone: {', '.join(missing)}")
         print("  C2C must never remove a deployment it did not create.")
         return 1
+    if not expected:
+        print(f"\n  OK: {ADMIN} had no other tenants to protect")
+        return 0
     print(f"\n  OK: all {len(expected)} pre-existing services still registered")
     return 0
 

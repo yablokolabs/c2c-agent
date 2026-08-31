@@ -1,8 +1,14 @@
 {
-  "restate_version": "1.7.7",
-  "pre_existing_services": [
-    "LeadRegistry",
-    "Outreach",
-    "ProspectLoop"
-  ]
+  "http://localhost:9070": {
+    "pre_existing_services": [
+      "LeadRegistry",
+      "Outreach",
+      "ProspectLoop"
+    ],
+    "restate_version": "1.7.7"
+  },
+  "http://restate:9070": {
+    "pre_existing_services": [],
+    "restate_version": "1.7.7"
+  }
 }

@@ -1,0 +1,138 @@
+{
+  "suite": "durability",
+  "timestamp": "2026-08-31T07:53:56.388250+00:00",
+  "git_sha": "unknown",
+  "n_scenarios": 6,
+  "workflow_completion_rate": 1.0,
+  "failure_recovery_rate": 1.0,
+  "state_preservation_rate": 1.0,
+  "duplicate_consequential_actions": 0,
+  "scenarios_passed": 6,
+  "scenarios": [
+    {
+      "id": "D01",
+      "name": "carrier API returns 503 three times",
+      "invariant": "retries must not produce a second submission",
+      "passed": true,
+      "workflow_completed": true,
+      "state_preserved": true,
+      "duplicate_actions": 0,
+      "recovered": true,
+      "final_outcome": "SUBMITTED",
+      "detail": {
+        "calls_that_reached_the_carrier": 4,
+        "injected_503s": 3,
+        "submissions_that_landed": 1,
+        "elapsed_s": 5.8
+      },
+      "notes": "the carrier endpoint was called 4 times: three answered 503 and one succeeded. Restate retried the durable step and 1 submission landed."
+    },
+    {
+      "id": "D02",
+      "name": "worker killed while awaiting human approval",
+      "invariant": "a restart must not lose case state",
+      "passed": true,
+      "workflow_completed": true,
+      "state_preserved": true,
+      "duplicate_actions": 0,
+      "recovered": true,
+      "final_outcome": "SUBMITTED",
+      "detail": {
+        "state_before_kill": "AWAITING_APPROVAL",
+        "state_after_restart": "AWAITING_APPROVAL",
+        "verdict_survived": true,
+        "submissions_that_landed": 1,
+        "elapsed_s": 5.9
+      },
+      "notes": "the workflow was suspended on a durable promise, so the kill cost nothing and the approval given after the restart still resolved it."
+    },
+    {
+      "id": "D03",
+      "name": "the same carrier rejection delivered twice",
+      "invariant": "a duplicate external event must not duplicate side effects",
+      "passed": true,
+      "workflow_completed": true,
+      "state_preserved": true,
+      "duplicate_actions": 0,
+      "recovered": true,
+      "final_outcome": "CHALLENGED",
+      "detail": {
+        "first_delivery": {
+          "accepted": true,
+          "promise": "carrier_response",
+          "duplicate": false
+        },
+        "second_delivery": {
+          "accepted": false,
+          "promise": "carrier_response",
+          "duplicate": true,
+          "detail": "this event was already delivered"
+        },
+        "challenges_that_landed": 1,
+        "elapsed_s": 6.2
+      },
+      "notes": "the second delivery was rejected by the durable promise, which had already been resolved, so exactly one challenge reached the carrier."
+    },
+    {
+      "id": "D04",
+      "name": "human approves the same action twice",
+      "invariant": "a consequential action executes at most once per intent",
+      "passed": true,
+      "workflow_completed": true,
+      "state_preserved": true,
+      "duplicate_actions": 0,
+      "recovered": true,
+      "final_outcome": "SUBMITTED",
+      "detail": {
+        "first_approval": {
+          "accepted": true,
+          "promise": "approval",
+          "duplicate": false
+        },
+        "second_approval": {
+          "accepted": false,
+          "promise": "approval",
+          "duplicate": true,
+          "detail": "this approval was already answered"
+        },
+        "submissions_that_landed": 1,
+        "elapsed_s": 1.9
+      },
+      "notes": "the second approval was absorbed; one submission reached the carrier."
+    },
+    {
+      "id": "D05",
+      "name": "human rejects the pending submission",
+      "invariant": "a rejected action must never execute",
+      "passed": true,
+      "workflow_completed": true,
+      "state_preserved": true,
+      "duplicate_actions": 0,
+      "recovered": true,
+      "final_outcome": "CLOSED_BY_HUMAN",
+      "detail": {
+        "submit_attempts_at_carrier": 0,
+        "submissions_that_landed": 0,
+        "elapsed_s": 1.5
+      },
+      "notes": "the carrier was never called at all; the rejection branch returns before any side effect is reachable."
+    },
+    {
+      "id": "D06",
+      "name": "worker killed in the window around the submission",
+      "invariant": "a crash around a side effect must not double it",
+      "passed": true,
+      "workflow_completed": true,
+      "state_preserved": true,
+      "duplicate_actions": 0,
+      "recovered": true,
+      "final_outcome": "SUBMITTED",
+      "detail": {
+        "submit_attempts_at_carrier": 2,
+        "submissions_that_landed": 1,
+        "elapsed_s": 7.0
+      },
+      "notes": "the carrier saw 2 attempt(s) and 1 landed. Where the retry did reach the carrier twice, the replay-stable idempotency key made the second one a no-op."
+    }
+  ]
+}

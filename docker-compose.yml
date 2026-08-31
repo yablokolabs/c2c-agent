@@ -42,9 +42,11 @@ services:
       - ./data:/app/data
       - ./trajectories:/app/trajectories
       - ./evaluation:/app/evaluation
-      # Option 2 — reuse an existing Claude Code login instead of an API key:
-      # - ${HOME}/.claude:/root/.claude
-      # - ${HOME}/.claude.json:/root/.claude.json
+      # Reuse an existing Claude Code login instead of an API key. Harmless if
+      # you have no such login — C2C falls back to ANTHROPIC_API_KEY. The image
+      # ships the Claude CLI so this mount actually does something.
+      - ${HOME}/.claude:/root/.claude
+      - ${HOME}/.claude.json:/root/.claude.json
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://localhost:8099/c2c/health"]
       interval: 5s
