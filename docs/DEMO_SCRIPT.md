@@ -1,4 +1,6 @@
-# Demo script
+# Demo script — terminal
+
+*Filming it as a Telegram conversation instead? Use [`DEMO_SCRIPT_TELEGRAM.md`](DEMO_SCRIPT_TELEGRAM.md).*
 
 Five minutes exactly. Timings are cumulative and the beats are budgeted to land
 on 5:00 with nothing rushed.

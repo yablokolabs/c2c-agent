@@ -19,7 +19,7 @@ RUNDIR   := .run
 .PHONY: help setup test baseline evaluate evaluate-tools compare reproduce \
         trajectories restate-check restate-register restate-deregister \
         up down failure-tests demo demo-reset demo-advance demo-approve clean audit \
-        configure bot compose-up compose-down
+        configure bot compose-up compose-down carrier-refuse carrier-settle
 
 help:  ## show this help
 	@grep -hE '^[a-z][a-z-]*:.*?## ' $(MAKEFILE_LIST) | \
@@ -144,3 +144,9 @@ compose-up: ## start everything in Docker, including its own Restate
 
 compose-down: ## stop and remove the Docker stack
 	docker compose down -v
+
+carrier-refuse: setup  ## airline refuses the newest live case (demo)
+	$(PY) -m c2c.tools.carrier
+
+carrier-settle: setup  ## airline offers a settlement, e.g. AMOUNT=210
+	$(PY) -m c2c.tools.carrier --settle $(or $(AMOUNT),210)
