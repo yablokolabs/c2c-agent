@@ -44,6 +44,9 @@ class Intake:
 
     def as_prompt(self) -> str:
         parts = ["## WHAT THE PASSENGER WROTE", ""]
+        parts += ["This is the whole conversation so far, including earlier messages. "
+                  "Keep everything the passenger has already told you, and do not ask "
+                  "for it again.", ""]
         parts += [f"- {m}" for m in self.messages] or ["- (nothing yet)"]
         parts += ["", "## WHAT THEY ATTACHED", ""]
         if not self.attachments:

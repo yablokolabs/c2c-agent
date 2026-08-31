@@ -186,6 +186,46 @@ def test_the_conversation_accumulates_across_messages():
     assert "my flight was cancelled" in llm2.seen[0] and "MR414" in llm2.seen[0]
 
 
+def test_a_partially_filled_conversations_does_not_restart_from_zero():
+    """The failure mode described in the demo: the passenger gives facts, then
+    the next reply still asks for everything as if nothing was said."""
+    from c2c.telegram import Telegram
+
+    http = IntakeStubHTTP()
+    tg = Telegram(token="t", chat_id="1", api="http://cp", client=http)
+
+    record_so_far = _json.dumps({
+        "passenger_name": "Y. Tanaka",
+        "pnr": "HX9T7P",
+        "narrative": "Flight IN300 from Helsinki to Istanbul was cancelled on 23 June.",
+        "facts": {"carrier": "Indigo North", "flight_number": "IN300",
+                  "route": "Helsinki to Istanbul", "what_happened": "cancellation",
+                  "disruption_date": "2026-06-23"},
+        "missing": ["the airline's cancellation email, so we can see when they told you"],
+        "ready": False,
+        "reply": "Got it — I have your flight and date. I still need the carrier's cancellation notice.",
+    })
+    tg.handle_message("1", "my flight was cancelled", llm=IntakeStubLLM(record_so_far))
+    later_message = "2026"
+    reply = _json.dumps({
+        "passenger_name": "Y. Tanaka",
+        "pnr": "HX9T7P",
+        "narrative": "Flight IN300 from Helsinki to Istanbul was cancelled on 23 June.",
+        "facts": {"carrier": "Indigo North", "flight_number": "IN300",
+                  "route": "Helsinki to Istanbul", "what_happened": "cancellation",
+                  "disruption_date": "2026-06-23"},
+        "missing": ["the airline's cancellation email, so we can see when they told you"],
+        "ready": False,
+        "reply": "Thanks — I've noted that. I still need: the airline's cancellation email, so we can see when they told you.",
+    })
+    tg.handle_message("1", later_message, llm=IntakeStubLLM(reply))
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert any("still need" in t for t in sent), sent
+    assert "Which flight was it" not in " ".join(sent)
+    assert "name, booking reference, flight number" not in " ".join(sent)
+    assert "Tell me your name" not in " ".join(sent)
+
+
 def test_conversations_are_kept_separate_per_chat():
     tg = _tg(IntakeStubHTTP())
     tg.handle_message("1", "passenger one", llm=IntakeStubLLM(NOT_READY))

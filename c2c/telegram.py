@@ -196,8 +196,31 @@ class Telegram:
                               "the date, and what went wrong?")
             return {"ready": False, "record": None}
 
-        self.say(chat_id, record.get("reply") or "Thanks — I've noted that.")
+        reply = record.get("reply") or _fallback_reply(record)
+        self.say(chat_id, reply)
         return {"ready": bool(record.get("ready")), "record": record}
+
+    def _fallback_reply(self, record: dict) -> str:
+        """A passenger should never get a blank acknowledgment when the model
+        returned a usable intake record but left `reply` empty.
+
+        Keep it state-aware: if the case is ready, say so. If not, tell the
+        passenger what is still missing rather than restarting from zero.
+        """
+        content = record or {}
+        if content.get("ready"):
+            facts = content.get("facts") or {}
+            pieces = [p for p in (facts.get("carrier"), facts.get("flight_number"),
+                                  facts.get("route"), facts.get("disruption_date"))
+                      if p]
+            if pieces:
+                return "Got it — I have enough to start your case."
+            return "Thanks — I've noted that."
+        missing = content.get("missing") or []
+        if missing:
+            return ("Thanks — I've noted what you've told me. "
+                    "I still need: " + "; ".join(missing) + ".")
+        return "Thanks — I've noted that."
 
     def say(self, chat_id: str, text: str) -> dict:
         return self.http.post(f"{self.base}/sendMessage",
