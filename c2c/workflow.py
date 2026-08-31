@@ -38,7 +38,13 @@ from c2c import notify
 
 CONTROL_PLANE = os.environ.get("C2C_CONTROL_PLANE", "http://localhost:8099")
 AIRLINE = os.environ.get("C2C_AIRLINE", "http://localhost:8099/airline")
-HTTP_TIMEOUT = float(os.environ.get("C2C_HTTP_TIMEOUT", "120"))
+# Longer than it looks like it needs to be, on purpose. An assessment is four or
+# five model calls and takes 211s at the median and 491s at the maximum, measured
+# across 34 real runs. The old 120s default was shorter than a typical
+# assessment, so the workflow timed out on its own agent — and because the client
+# disconnected, the control plane never logged the request either, which made it
+# look as though assess was never called at all. See FAILURES.md F-014.
+HTTP_TIMEOUT = float(os.environ.get("C2C_HTTP_TIMEOUT", "900"))
 
 # Policy clocks. Compressed by C2C_CLOCK_SCALE so a demo and the failure suite
 # can exercise real timer behaviour without waiting eight weeks; the durable

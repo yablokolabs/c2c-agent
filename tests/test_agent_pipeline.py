@@ -250,3 +250,13 @@ def test_the_assess_step_bounds_its_retries():
     src = inspect.getsource(workflow.run)
     assert 'ctx.run("assess", do_assess, max_attempts=' in src, (
         "the assess step must bound its retries")
+
+
+def test_the_workflow_waits_longer_than_an_assessment_takes():
+    """An assessment is 211s at the median and 491s at the maximum across 34
+    measured runs. A timeout below that means the workflow gives up on its own
+    agent. See FAILURES.md F-014."""
+    from c2c import workflow
+
+    assert workflow.HTTP_TIMEOUT >= 600, (
+        f"HTTP_TIMEOUT is {workflow.HTTP_TIMEOUT}s; assessments reach 491s")

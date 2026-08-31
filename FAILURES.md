@@ -671,3 +671,51 @@ This is the fourth failure in this project caused by two distinct conditions
 collapsing into one indistinguishable signal: a missing answer read as a wrong
 answer (F-008), a timeout read as a completion (F-011), a gateway read as the
 model it impersonated (F-007), and now a paused workflow read as a slow one.
+
+---
+
+## F-014 — The workflow timed out on its own agent
+
+| | |
+|---|---|
+| **Found** | running the demo against a clean Docker stack |
+| **Commit** | fixed after `bbb7429` |
+
+**Observed.** In a freshly built stack the case reached `INTAKE`, printed its
+opening notification, and then stopped. The control plane's log showed
+**zero** `POST /c2c/assess` requests, so it looked like the workflow was never
+calling the agent at all. Connectivity was fine — `curl` from the workflow
+container to `api:8099/c2c/health` returned 200.
+
+The workflow container's log had the answer four lines down: `httpx.ReadTimeout`.
+
+**Root cause.** `C2C_HTTP_TIMEOUT` defaulted to **120 seconds**. An assessment is
+four or five model calls and takes **211s at the median and 491s at the
+maximum**, measured across 34 real runs earlier in this project. The workflow was
+giving up on its own agent roughly half way through, every time.
+
+Two things disguised it:
+
+- The control plane logs a request when it *responds*. The client had already
+  disconnected, so nothing was logged, and the obvious reading of "0 assess
+  calls" was that the call was never made rather than never finished.
+- Restate then retried the durable step, which started a *fresh* assessment,
+  which also took longer than 120s. The case stayed at `INTAKE` while burning
+  model calls steadily.
+
+It had not shown up on the development host because the same timeout was in
+place there and the demo happened to get an assessment under two minutes.
+
+**Corrective change.** Default raised to 900s, above the observed maximum with
+room to spare. A test asserts it stays above 600s, with the measured numbers in
+the failure message so the next person to lower it sees why they should not.
+
+**Lesson.** **A timeout is an assertion about how long something takes, and it
+should be written against a measurement.** 120 seconds was not chosen; it was a
+plausible-looking default that nobody checked against the 211s median sitting in
+this project's own trajectory data.
+
+The diagnostic lesson is the sharper one, and it is the sixth instance in this
+project of the same shape: *absence of a log line was read as absence of the
+call.* A request that times out looks identical, in an access log, to a request
+that was never sent — and the two have completely different causes.
