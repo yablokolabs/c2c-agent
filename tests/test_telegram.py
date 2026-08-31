@@ -103,3 +103,110 @@ def test_the_demo_shows_the_passenger_surface_not_the_http_call():
     assert "format_request" in src and "show_approval_request(st)" in src
     assert src.count("show_approval_request(st)") == 2, (
         "both approval gates should render the passenger's view")
+
+
+# --- intake over chat -------------------------------------------------------
+
+class IntakeStubHTTP:
+    def __init__(self): self.posts = []
+    def get(self, url, params=None):
+        class R:
+            text = "BOOKING QX7T4L"
+            def json(_): return {"result": {"file_path": "docs/ticket.txt"}}
+        return R()
+    def post(self, url, json=None):
+        self.posts.append((url, json))
+        class R:
+            def json(_): return {"ok": True}
+        return R()
+
+
+class IntakeStubLLM:
+    backend = model = "stub"
+    def __init__(self, reply): self.reply = reply; self.seen = []
+    def complete(self, system, user, max_tokens=4096):
+        from c2c.llm import LLMResult
+        self.seen.append(user)
+        return LLMResult(text=self.reply, model="stub", backend="stub", duration_ms=1)
+
+
+import json as _json
+
+READY = _json.dumps({
+    "passenger_name": "A. Mendes", "pnr": "QX7T4L", "narrative": "cancelled",
+    "documents": [], "facts": {"what_happened": "cancellation"}, "missing": [],
+    "ready": True, "reply": "Got it — I have what I need to start.",
+})
+NOT_READY = _json.dumps({
+    "passenger_name": None, "pnr": None, "narrative": "something went wrong",
+    "documents": [], "facts": {"what_happened": "unclear"},
+    "missing": ["which flight"], "ready": False, "reply": "Which flight was it?",
+})
+
+
+def _tg(http):
+    return Telegram(token="t", chat_id="1", api="http://cp", client=http)
+
+
+def test_a_passenger_message_becomes_an_intake_record():
+    http, llm = IntakeStubHTTP(), IntakeStubLLM(READY)
+    out = _tg(http).handle_message("1", "my flight was cancelled", llm=llm)
+    assert out["ready"] is True
+    assert out["record"]["pnr"] == "QX7T4L"
+    assert "my flight was cancelled" in llm.seen[0]
+
+
+def test_the_passenger_always_gets_a_reply():
+    http = IntakeStubHTTP()
+    _tg(http).handle_message("1", "help", llm=IntakeStubLLM(READY))
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert any("Got it" in t for t in sent)
+
+
+def test_an_incomplete_account_is_not_marked_ready():
+    out = _tg(IntakeStubHTTP()).handle_message("1", "it was awful", llm=IntakeStubLLM(NOT_READY))
+    assert out["ready"] is False
+    assert out["record"]["missing"] == ["which flight"]
+
+
+def test_an_unusable_model_reply_asks_the_passenger_again():
+    http = IntakeStubHTTP()
+    out = _tg(http).handle_message("1", "???", llm=IntakeStubLLM("no json here"))
+    assert out["ready"] is False and out["record"] is None
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert any("didn't follow" in t for t in sent)
+
+
+def test_the_conversation_accumulates_across_messages():
+    http, tg = IntakeStubHTTP(), None
+    tg = _tg(http)
+    tg.handle_message("1", "my flight was cancelled", llm=IntakeStubLLM(NOT_READY))
+    llm2 = IntakeStubLLM(READY)
+    tg.handle_message("1", "it was MR414 on 6 March", llm=llm2)
+    assert "my flight was cancelled" in llm2.seen[0] and "MR414" in llm2.seen[0]
+
+
+def test_conversations_are_kept_separate_per_chat():
+    tg = _tg(IntakeStubHTTP())
+    tg.handle_message("1", "passenger one", llm=IntakeStubLLM(NOT_READY))
+    tg.handle_message("2", "passenger two", llm=IntakeStubLLM(NOT_READY))
+    assert tg.conversations["1"].messages == ["passenger one"]
+    assert tg.conversations["2"].messages == ["passenger two"]
+
+
+def test_a_text_attachment_is_read_into_the_conversation():
+    tg = _tg(IntakeStubHTTP())
+    assert "BOOKING QX7T4L" in tg.fetch_file("file-1")
+
+
+def test_a_non_text_attachment_says_so_rather_than_storing_a_blank():
+    """A photo of a boarding pass needs OCR, which is not built. Storing an
+    empty document that looks like evidence would be worse than saying so."""
+    class PhotoHTTP(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                text = ""
+                def json(_): return {"result": {"file_path": "photos/pass.jpg"}}
+            return R()
+    out = _tg(PhotoHTTP()).fetch_file("file-1")
+    assert "text attachments only" in out

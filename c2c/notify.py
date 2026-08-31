@@ -137,6 +137,14 @@ def send(text: str, chat_id: Optional[str] = None, timeout: float = 15) -> dict:
             json={"chat_id": chat_id or CHAT_ID, "text": text, "parse_mode": "Markdown"},
             timeout=timeout,
         )
-        return {"delivered": r.status_code == 200, "status": r.status_code}
+        if r.status_code == 200:
+            return {"delivered": True, "status": 200}
+        # Surface Telegram's own reason. Swallowing it turned "chat not found"
+        # -- a five-second fix -- into an opaque 400.
+        try:
+            reason = r.json().get("description", "")
+        except Exception:  # noqa: BLE001
+            reason = r.text[:200]
+        return {"delivered": False, "status": r.status_code, "reason": reason}
     except Exception as exc:  # noqa: BLE001 - a dead notifier must not stall a case
         return {"delivered": False, "reason": repr(exc)[:200]}

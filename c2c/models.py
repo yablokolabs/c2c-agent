@@ -64,7 +64,11 @@ class Case(BaseModel):
     narrative: str
     documents: list[Document]
     carrier_response: Optional[CarrierResponse] = None
-    ground_truth: GroundTruth
+    # Benchmark cases carry ground truth; cases that arrive from a real
+    # passenger do not, and inventing one for them would be the worst kind of
+    # fabrication. `load_cases` asserts every benchmark case has it, so the
+    # guarantee holds exactly where it matters.
+    ground_truth: Optional[GroundTruth] = None
 
     def dossier(self) -> str:
         """The case as the agent or baseline sees it. Ground truth is excluded."""
@@ -112,4 +116,8 @@ def load_cases(directory: str | Path = "benchmark/cases") -> list[Case]:
     paths = sorted(Path(directory).glob("*.json"))
     if not paths:
         raise FileNotFoundError(f"no benchmark cases under {directory}")
-    return [Case.model_validate(json.loads(p.read_text())) for p in paths]
+    cases = [Case.model_validate(json.loads(p.read_text())) for p in paths]
+    missing = [c.case_id for c in cases if c.ground_truth is None]
+    if missing:
+        raise ValueError(f"benchmark cases without ground truth: {missing}")
+    return cases

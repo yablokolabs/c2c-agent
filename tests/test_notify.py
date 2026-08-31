@@ -40,8 +40,15 @@ def test_no_claim_explains_why_rather_than_just_saying_no():
     assert "3h20m" in out
 
 
-def test_send_never_raises_when_unconfigured(capsys):
-    r = send("hello")
+def test_send_never_raises_when_unconfigured(capsys, monkeypatch):
+    """Pinned to an empty config rather than the ambient one. This test read the
+    real environment and started failing the moment a token was added to .env —
+    a test whose result depends on the machine it runs on is not a test."""
+    import c2c.notify as n
+
+    monkeypatch.setattr(n, "TOKEN", "")
+    monkeypatch.setattr(n, "CHAT_ID", "")
+    r = n.send("hello")
     assert r["delivered"] is False and r["reason"] == "not configured"
     assert "hello" in capsys.readouterr().out
 
@@ -89,3 +96,18 @@ def test_every_workflow_transition_that_matters_tells_the_passenger():
     for stage in ("case_opened", "claim_filed", "carrier_replied", "challenge_sent",
                   "escalated", "resolved", "offer_short", "closed_by_human"):
         assert f'"{stage}"' in src, f"the workflow never tells the passenger about {stage}"
+
+
+def test_a_rejected_send_reports_telegrams_own_reason(monkeypatch):
+    """Swallowing the description turned 'chat not found' -- a five-second fix --
+    into an opaque 400."""
+    import c2c.notify as n
+
+    class R:
+        status_code = 400
+        def json(self): return {"ok": False, "description": "Bad Request: chat not found"}
+
+    monkeypatch.setattr(n, "TOKEN", "t"); monkeypatch.setattr(n, "CHAT_ID", "1")
+    monkeypatch.setattr(n.httpx, "post", lambda *a, **k: R())
+    r = n.send("hello")
+    assert r["delivered"] is False and "chat not found" in r["reason"]

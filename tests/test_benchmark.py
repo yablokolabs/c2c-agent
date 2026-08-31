@@ -135,3 +135,29 @@ def test_a_dropped_case_is_visible_not_just_scored():
     src = inspect.getsource(run.main)
     assert "cases_without_model_call" in src
     assert "never reached the model" in src, "a dropped case must produce a visible warning"
+
+
+def test_a_benchmark_case_without_ground_truth_is_refused(tmp_path):
+    """ground_truth is optional on the model so live intake cases can exist
+    without a fabricated one — but a *benchmark* case missing it must fail
+    loudly rather than score as unresolvable."""
+    import json
+
+    from c2c.models import load_cases as load
+
+    good = json.loads((Path("benchmark/cases") / "R01.json").read_text())
+    good.pop("ground_truth")
+    (tmp_path / "R01.json").write_text(json.dumps(good))
+    with pytest.raises(ValueError, match="without ground truth"):
+        load(tmp_path)
+
+
+def test_a_live_case_may_have_no_ground_truth():
+    from c2c.models import Case, Document
+
+    c = Case(case_id="LIVE-1", title="from a passenger", difficulty="medium", tags=["live"],
+             passenger={"name": "A. Passenger", "pnr": "ABC123"},
+             narrative="my flight was cancelled",
+             documents=[Document(doc_id="D1", type="booking_confirmation", content="...")])
+    assert c.ground_truth is None
+    assert "my flight was cancelled" in c.dossier()

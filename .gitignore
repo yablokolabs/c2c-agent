@@ -17,3 +17,4 @@ trajectories/runs/tmp-*/
 # Harness-debugging artifacts, not experiments. See evaluation/results/README.md.
 evaluation/results/test-*.json
 trajectories/runs/*-test-*/
+data/cases/

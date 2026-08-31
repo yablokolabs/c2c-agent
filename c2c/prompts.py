@@ -20,6 +20,7 @@ PROMPTS = {
     "caseworker": ROOT / "agents" / "caseworker" / "SYSTEM_PROMPT.md",
     "caseworker_direct": ROOT / "prompts" / "caseworker_direct.md",
     "verifier": ROOT / "agents" / "verifier" / "SYSTEM_PROMPT.md",
+    "intake": ROOT / "agents" / "intake" / "SYSTEM_PROMPT.md",
 }
 
 

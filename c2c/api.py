@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from c2c.agent.pipeline import run_case
 from c2c.artifact import case_summary, claim_letter
 from c2c.llm import DEFAULT_MODEL, LLM
+from c2c.intake import load_live, save as save_live, to_case
 from c2c.models import Verdict, load_cases
 from c2c.trajectory import Recorder
 
@@ -28,6 +29,15 @@ router = APIRouter(prefix="/c2c", tags=["control plane"])
 
 _cases = {c.case_id: c for c in load_cases()}
 _recorder: Optional[Recorder] = None
+
+
+def find_case(case_id: str):
+    """Benchmark cases are fixtures; live cases arrive from passengers and are
+    read from disk each time, so a case opened by one process is visible to the
+    next. The control plane holds no state of its own."""
+    if case_id in _cases:
+        return _cases[case_id]
+    return load_live().get(case_id)
 
 
 def recorder() -> Recorder:
@@ -56,9 +66,9 @@ def assess(req: AssessRequest) -> dict:
     exactly-once semantics, and duplicating that here would be two mechanisms
     for one invariant.
     """
-    case = _cases.get(req.case_id)
+    case = find_case(req.case_id)
     if case is None:
-        raise HTTPException(404, f"no such benchmark case {req.case_id!r}")
+        raise HTTPException(404, f"no such case {req.case_id!r}")
     verdict, _calls = run_case(case, LLM(model=req.model), recorder())
     if verdict is None:
         raise HTTPException(502, "the agent produced no verdict")
@@ -76,9 +86,9 @@ async def open_case(case_id: str, req: OpenRequest) -> dict:
     Restate keys the workflow by case_id, so opening the same case twice
     attaches to the existing run rather than starting a second one.
     """
-    case = _cases.get(case_id)
+    case = find_case(case_id)
     if case is None:
-        raise HTTPException(404, f"no such benchmark case {case_id!r}")
+        raise HTTPException(404, f"no such case {case_id!r}")
     payload = {"opened_by": req.opened_by,
                "passenger": case.passenger["name"], "pnr": case.passenger["pnr"]}
     async with httpx.AsyncClient(timeout=30) as client:
@@ -136,9 +146,9 @@ async def case_document(case_id: str, kind: str = "summary") -> str:
     model to write the letter as well would add a place for a figure to drift
     away from the one that was assessed and approved.
     """
-    case = _cases.get(case_id)
+    case = find_case(case_id)
     if case is None:
-        raise HTTPException(404, f"no such benchmark case {case_id!r}")
+        raise HTTPException(404, f"no such case {case_id!r}")
     state = await case_status(case_id)
     raw = state.get("verdict")
     if not raw:
@@ -149,6 +159,24 @@ async def case_document(case_id: str, kind: str = "summary") -> str:
     if kind == "summary":
         return case_summary(case, verdict)
     raise HTTPException(400, "kind must be 'summary' or 'letter'")
+
+
+class IntakeRecord(BaseModel):
+    record: dict
+
+
+@router.post("/cases/from-intake", status_code=201)
+def create_from_intake(body: IntakeRecord) -> dict:
+    """Open a case from a passenger's account rather than a benchmark fixture.
+
+    The case is persisted before the workflow is told about it: a case that
+    arrived from a person must outlive the process that received it, and Restate
+    holds the lifecycle but not the contents.
+    """
+    case = to_case(body.record)
+    path = save_live(case)
+    return {"case_id": case.case_id, "stored_at": str(path),
+            "passenger": case.passenger, "documents": len(case.documents)}
 
 
 @router.get("/cases")
