@@ -184,14 +184,17 @@ the dropping. Diagnose with:
 sudo iptables-legacy -L FORWARD -n -v   # policy DROP, no rule for your compose bridge
 ```
 
-Fix — substitute your compose bridge name from `docker network ls` /
-`docker inspect <container> --format '{{.NetworkSettings.Networks}}'`:
+Fix — the bridge name and subnet are derived from the running stack, so the
+same commands work for any judge's machine:
 
 ```bash
-BRIDGE=br-<your-compose-bridge>   # e.g. br-12ec353f97cc
-sudo iptables-legacy -I DOCKER-FORWARD -i $BRIDGE -j ACCEPT
-sudo iptables-legacy -I DOCKER-CT -o $BRIDGE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-sudo iptables-legacy -t nat -A POSTROUTING -s 172.18.0.0/16 ! -o $BRIDGE -j MASQUERADE
+CONTAINER=$(docker compose ps -q api)
+NETWORK=$(docker inspect "$CONTAINER" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+BRIDGE=br-$(docker network inspect "$NETWORK" --format '{{.Id}}' | cut -c1-12)
+SUBNET=$(docker network inspect "$NETWORK" --format '{{(index .IPAM.Config 0).Subnet}}')
+sudo iptables-legacy -I DOCKER-FORWARD -i "$BRIDGE" -j ACCEPT
+sudo iptables-legacy -I DOCKER-CT -o "$BRIDGE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+sudo iptables-legacy -t nat -A POSTROUTING -s "$SUBNET" ! -o "$BRIDGE" -j MASQUERADE
 ```
 
 Re-run the PONG check; it should return `PONG`. These rules are runtime-only

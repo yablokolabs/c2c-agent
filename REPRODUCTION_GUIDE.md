@@ -110,11 +110,17 @@ default `docker0` bridge, so the compose bridge is silently dropped before NAT
 dropping). Check with `sudo iptables-legacy -L FORWARD -n -v`; if the compose
 bridge is missing, add it:
 
+The bridge name and subnet are derived from the running stack, so the same
+commands work on any machine:
+
 ```bash
-BRIDGE=br-<your-compose-bridge>   # from docker inspect <container> --format '{{.NetworkSettings.Networks}}'
-sudo iptables-legacy -I DOCKER-FORWARD -i $BRIDGE -j ACCEPT
-sudo iptables-legacy -I DOCKER-CT -o $BRIDGE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-sudo iptables-legacy -t nat -A POSTROUTING -s 172.18.0.0/16 ! -o $BRIDGE -j MASQUERADE
+CONTAINER=$(docker compose ps -q api)
+NETWORK=$(docker inspect "$CONTAINER" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+BRIDGE=br-$(docker network inspect "$NETWORK" --format '{{.Id}}' | cut -c1-12)
+SUBNET=$(docker network inspect "$NETWORK" --format '{{(index .IPAM.Config 0).Subnet}}')
+sudo iptables-legacy -I DOCKER-FORWARD -i "$BRIDGE" -j ACCEPT
+sudo iptables-legacy -I DOCKER-CT -o "$BRIDGE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+sudo iptables-legacy -t nat -A POSTROUTING -s "$SUBNET" ! -o "$BRIDGE" -j MASQUERADE
 ```
 
 These rules are runtime-only and do not survive a reboot. Re-apply them if the
