@@ -23,6 +23,9 @@ git checkout 707daa0
 
 ---
 
+> A complete, verified walkthrough from an empty directory is in
+> [`FROM_SCRATCH.md`](FROM_SCRATCH.md). This section is the summary.
+
 ## 2a. The short version — Docker only
 
 If you have Docker and nothing else:
@@ -275,6 +278,25 @@ one, so it hits this and the baseline does not. See `FAILURES.md` **F-009**.
 
 **Never** paper over it by pointing at a gateway. That is F-007.
 
+### After running the durability suite in Docker
+
+The suite hosts and kills its own SDK service, so in Docker it runs in a
+throwaway container and registers *that* container's address. Restate then routes
+to it — and it is gone the moment the suite finishes.
+
+```bash
+# list deployments; anything not pointing at http://workflow:9095 is stale
+curl -s localhost:9170/deployments | python -m json.tool | grep uri
+
+curl -X DELETE "http://localhost:9170/deployments/<STALE_ID>?force=true"
+curl -X POST http://localhost:9170/deployments \
+  -H 'content-type: application/json' \
+  -d '{"uri":"http://workflow:9095","force":true}'
+```
+
+Avoid it entirely by stopping the workflow service first:
+`docker compose stop workflow`, run the suite, then `docker compose start workflow`.
+
 ### Clearing a stuck or paused workflow key
 
 `purge` alone does **not** clear a paused invocation — it must be killed first.
@@ -305,6 +327,7 @@ status, not the case state**, when a demo appears stuck.
 | every case scores 0, `calls=0` | backend erroring. Test one: `--cases R01` |
 | results look plausible but wrong | check `model_endpoint` in the result file |
 | `Address already in use` on 9095 | `C2C_RESTATE_SERVICE_PORT=9096 make up` |
+| everything times out after running the durability suite in Docker | **the suite clobbered the deployment.** It registers its own SDK endpoint at an ephemeral container IP with `force:true`; when that container exits, Restate is left routing to a dead address. Delete the stale deployment and re-register — see below. |
 | workflow id rejected as used | Restate retains ids; the durability suite tags per run, the demo does not — use `C2C_DEMO_CASE=R16` for a second same-day demo |
 | demo sits at `INTAKE` and never moves | **the workflow is paused, not slow.** Restate's default is `max_attempts: 70, on_max_attempts: Pause`; once paused it never retries, and a new `run` on the same key *attaches to the paused invocation*. `status` still reports the last stored state, so it looks like work in progress. See F-013 and the clearing procedure below. |
 | durability scenarios time out | stale registration: `make restate-register` |
