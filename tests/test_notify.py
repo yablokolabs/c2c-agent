@@ -7,7 +7,8 @@ from c2c.notify import BANNER, STAGES, configured, render, send
 
 
 def test_every_stage_renders_and_is_banner_stamped():
-    fields = dict(pnr="HB1188", amount=420, rationale="the record contradicts them",
+    fields = dict(pnr="HB1188", case_id="C2C-2026-K7M2P", amount=420,
+                  rationale="the record contradicts them",
                   citations="S3.6", ground="56 days of silence", reference="SYN-SPRB-1",
                   offered=210, owed=420, shortfall=210)
     for stage in STAGES:
@@ -22,7 +23,7 @@ def test_an_unknown_stage_is_refused_not_guessed():
 
 
 def test_the_filed_message_names_the_amount_and_the_clock():
-    out = render("claim_filed", amount=420)
+    out = render("claim_filed", amount=420, case_id="C2C-2026-K7M2P")
     assert "420 units" in out and "56 days" in out
 
 
@@ -111,3 +112,18 @@ def test_a_rejected_send_reports_telegrams_own_reason(monkeypatch):
     monkeypatch.setattr(n.httpx, "post", lambda *a, **k: R())
     r = n.send("hello")
     assert r["delivered"] is False and "chat not found" in r["reason"]
+
+
+def test_the_opening_message_gives_a_reference_the_passenger_can_quote():
+    out = render("case_opened", case_id="C2C-2026-K7M2P")
+    assert "C2C-2026-K7M2P" in out
+
+
+def test_a_case_reference_avoids_ambiguous_characters():
+    """It is read off a phone and typed into an email weeks later."""
+    from c2c.intake import new_reference
+
+    for _ in range(50):
+        tail = new_reference().split("-")[-1]
+        assert not (set(tail) & set("O0I1")), f"ambiguous characters in {tail}"
+        assert len(tail) == 5

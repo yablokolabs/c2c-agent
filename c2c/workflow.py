@@ -90,7 +90,7 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     """Carry one case from intake to a terminal state."""
     case_id = ctx.key()
     await _set_state(ctx, "INTAKE", case_id=case_id, opened_by=req.get("opened_by", "unknown"))
-    await _tell(ctx, "case_opened", pnr=req.get("pnr", case_id))
+    await _tell(ctx, "case_opened", case_id=case_id)
 
     # --- assess -------------------------------------------------------------
     # The agent runs in the control plane, not here. If it throws, Restate
@@ -156,7 +156,8 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     submitted = await ctx.run("submit", do_submit)
     claim_id = submitted["claim_id"]
     await _set_state(ctx, "SUBMITTED", claim_id=claim_id)
-    await _tell(ctx, "claim_filed", amount=verdict.get("compensation_units", 0))
+    await _tell(ctx, "claim_filed", amount=verdict.get("compensation_units", 0),
+                case_id=case_id)
 
     # --- wait for the carrier, or for the policy clock ----------------------
     await _set_state(ctx, "AWAITING_CARRIER")

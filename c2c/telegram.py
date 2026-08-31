@@ -50,6 +50,30 @@ ACTION_LABEL = {
 }
 
 
+GREETING = """Hi — I'm C2C.
+
+If a flight was cancelled, badly delayed, overbooked or downgraded, I'll work out
+whether you're owed compensation, and then chase it for you.
+
+The chasing is the part that matters. Airlines take weeks to reply, often refuse
+on grounds their own records contradict, and most valid claims die because nobody
+kept going. I don't get tired of a case.
+
+To start, just tell me what happened. Helpful if you can include:
+
+  • the flight number and date
+  • where you were flying from and to
+  • your booking reference
+  • what went wrong, and what the airline told you
+
+Anything you don't have, I'll ask about — I won't guess. You can attach documents
+as text files too.
+
+I never send anything to an airline without asking you first.
+
+_SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE_"""
+
+
 def format_request(case_id: str, state: dict) -> str:
     """The approval message. Everything a person needs to answer without
     opening anything else, and nothing they don't."""
@@ -217,6 +241,13 @@ class Telegram:
                 continue
             chat_id = str(msg.get("chat", {}).get("id", ""))
             text = msg.get("text") or msg.get("caption") or ""
+
+            # A first contact deserves an introduction, not an interrogation.
+            if text.strip().lower() in ("/start", "start", "hi", "hello", "hey"):
+                self.conversations.pop(chat_id, None)
+                self.say(chat_id, GREETING)
+                handled.append({"case_id": "-", "event": "greeted"})
+                continue
             attachment = None
             doc = msg.get("document") or (msg.get("photo") or [{}])[-1]
             if doc.get("file_id"):
@@ -227,9 +258,9 @@ class Telegram:
             if out["ready"] and out["record"]:
                 case_id = self.open_case(out["record"])
                 if case_id:
-                    self.say(chat_id, f"I've opened case {case_id} and started work on it. "
-                                      f"I'll message you at every step, and I won't send "
-                                      f"anything to the airline without asking you first.")
+                    # The workflow itself announces the reference and what happens
+                    # next, so saying it here too would just say it twice.
+                    self.conversations.pop(chat_id, None)
                     handled.append({"case_id": case_id, "event": "case opened"})
             else:
                 handled.append({"case_id": "-", "event": "intake in progress"})

@@ -15,8 +15,10 @@ and the invention does not.
 from __future__ import annotations
 
 import json
-import uuid
+import random
+import string
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -66,13 +68,24 @@ def understand(intake: Intake, llm: LLM) -> Optional[dict]:
     return raw
 
 
+def new_reference() -> str:
+    """A case reference a passenger can quote back.
+
+    Year plus five unambiguous characters — no O/0 or I/1, because this gets
+    read off a phone screen and typed into an email weeks later.
+    """
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    tail = "".join(random.choice(alphabet) for _ in range(5))
+    return f"C2C-{datetime.now(timezone.utc):%Y}-{tail}"
+
+
 def to_case(record: dict, case_id: Optional[str] = None) -> Case:
     """Build a Case from an intake record.
 
     No ground truth: this case came from a person, and inventing an expected
     answer for it would corrupt the one thing the benchmark guarantees.
     """
-    case_id = case_id or f"LIVE-{uuid.uuid4().hex[:6].upper()}"
+    case_id = case_id or new_reference()
     docs: list[Document] = []
     for i, d in enumerate(record.get("documents") or [], start=1):
         if not isinstance(d, dict) or not d.get("content"):

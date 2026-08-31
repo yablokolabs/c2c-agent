@@ -53,9 +53,11 @@ CHAT_ID = os.environ.get("C2C_TELEGRAM_CHAT_ID", "")
 # flight should understand it without re-reading the policy.
 STAGES = {
     "case_opened": (
-        "I've got your case, {pnr}.\n\n"
-        "I'm reading the documents now and working out what you're owed. "
-        "I'll come back to you before I send anything to the airline."
+        "Your case is open: *{case_id}*\n\n"
+        "Quote that reference if you ever need to. I'm reading through what you "
+        "sent now and working out what you're owed — that takes a few minutes.\n\n"
+        "I'll come back to you before anything goes to the airline. Nothing is "
+        "sent without you saying so."
     ),
     "assessed_no_claim": (
         "I've finished going through {pnr}.\n\n"
@@ -63,7 +65,7 @@ STAGES = {
         "that than have you chase it. Here's why:\n\n{rationale}"
     ),
     "claim_filed": (
-        "Filed. Your claim for *{amount} units* is with the airline.\n\n"
+        "Filed. Your claim for *{amount} units* is with the airline ({case_id}).\n\n"
         "They now have 56 days to give a final answer. If they go quiet, I'll "
         "escalate automatically — you don't need to remember any of this."
     ),

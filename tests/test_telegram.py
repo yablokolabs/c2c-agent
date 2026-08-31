@@ -210,3 +210,41 @@ def test_a_non_text_attachment_says_so_rather_than_storing_a_blank():
             return R()
     out = _tg(PhotoHTTP()).fetch_file("file-1")
     assert "text attachments only" in out
+
+
+def _updates_http(text):
+    class Updates(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    return {"result": [{"update_id": 1,
+                                        "message": {"chat": {"id": "9"}, "text": text}}]}
+            return R()
+    return Updates()
+
+
+@pytest.mark.parametrize("opener", ["/start", "hi", "Hello", "  hey  "])
+def test_a_first_message_gets_an_introduction_not_an_interrogation(opener):
+    from c2c.telegram import GREETING
+
+    http = _updates_http(opener)
+    assert _tg(http).poll_once() == [{"case_id": "-", "event": "greeted"}]
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert sent == [GREETING]
+
+
+def test_an_opener_does_not_become_part_of_the_case_narrative():
+    """'hi' is not an account of a flight disruption."""
+    http = _updates_http("/start")
+    tg = _tg(http)
+    tg.poll_once()
+    assert "9" not in tg.conversations
+
+
+def test_the_greeting_says_what_it_does_and_what_it_will_not_do():
+    from c2c.telegram import GREETING
+
+    assert "I'm C2C" in GREETING
+    assert "won't guess" in GREETING.replace("’", "'")
+    assert "without asking you first" in GREETING
+    assert "SYNTHETIC DEMO" in GREETING
