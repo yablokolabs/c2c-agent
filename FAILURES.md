@@ -611,3 +611,63 @@ And a smaller one worth stating: **"the workflow is still running" is not
 automatically good news.** Durability guarantees the case is not lost. It
 guarantees nothing about the case making progress, and a durable system that is
 durably failing will do so patiently and expensively.
+
+---
+
+## F-013 — A paused workflow is indistinguishable from a slow one
+
+| | |
+|---|---|
+| **Found** | after two more failed demo attempts that were not the CLI's fault |
+| **Commit** | after `707daa0` |
+
+**Observed.** With F-010, F-011 and F-012 all fixed, two further demo runs still
+sat at `INTAKE` for twenty minutes and gave up. `GET /c2c/cases/R12` returned
+`{"state": "INTAKE", ...}` throughout, which reads as *working, slowly*.
+
+It was not working at all. `POST /c2c/assess` was never called once.
+
+**Root cause.** Restate's default retry policy for this service is
+`max_attempts: 70, on_max_attempts: Pause`. During the F-010 freeze the assess
+step failed 70 times against a dead control plane, and Restate **paused** the
+invocation — the correct behaviour, and it says so plainly in
+`GET /services/C2CCase`.
+
+A paused invocation never progresses and never retries. Worse, starting a new
+`run` for the same workflow key **attaches to the paused invocation** rather than
+beginning a fresh one. So every subsequent demo attempt was politely joining a
+workflow that had already given up.
+
+Two things hid it:
+
+- The workflow's stored state still said `INTAKE`, so `status` looked like an
+  assessment in progress. State and liveness are different things and the API
+  only exposed the first.
+- `DELETE /invocations/{id}?mode=purge` does **not** clear a paused invocation.
+  It has to be killed first, then purged. Purging 397 sibling invocations left
+  the one that mattered untouched.
+
+**Corrective change.** Operational, and documented in
+`REPRODUCE_AND_RECORD.md` §6: to clear a stuck workflow key, kill then purge.
+
+```
+DELETE /invocations/{id}?mode=kill
+DELETE /invocations/{id}?mode=purge
+```
+
+After that the demo ran end to end on the first attempt.
+
+**Lesson.** **State is not liveness.** `GET /c2c/cases/{id}` faithfully reported
+the last state the workflow wrote, and was completely silent about whether
+anything was still executing. Every diagnosis built on that endpoint was
+therefore wrong for two runs, and the guess it invited — "the backend is slow
+again" — was plausible enough to survive several attempts.
+
+The generalisable version: **an endpoint that reports stored state should also
+report whether the thing that writes it is alive.** Restate knew — the invocation
+status said `paused` the whole time — and C2C never asked.
+
+This is the fourth failure in this project caused by two distinct conditions
+collapsing into one indistinguishable signal: a missing answer read as a wrong
+answer (F-008), a timeout read as a completion (F-011), a gateway read as the
+model it impersonated (F-007), and now a paused workflow read as a slow one.

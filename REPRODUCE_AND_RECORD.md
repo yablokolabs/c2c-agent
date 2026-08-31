@@ -191,7 +191,11 @@ make demo              # ~10 model calls, 7-16 MINUTES. See the timing note belo
 | 5 | rejection delivered; back to `AWAITING_APPROVAL` |
 | 6 | challenge approved; `state CHALLENGED` |
 | 7 | the case summary and claim letter, banner-stamped |
-| 8 | audit: actions attempted vs landed, duplicates absorbed |
+| 8 | audit: **2 attempted, 2 landed, 0 duplicates** |
+
+A verified run of all eight steps is committed at `trajectories/demo/` — the
+transcript, the case summary, the challenge letter and the airline audit. Final
+state `CHALLENGED`, claim `SYN-CLM-00001`, 420 units, citing S3.6 and S9.1(a).
 
 Teardown, which touches **only** what C2C started:
 
@@ -240,6 +244,29 @@ one, so it hits this and the baseline does not. See `FAILURES.md` **F-009**.
 
 **Never** paper over it by pointing at a gateway. That is F-007.
 
+### Clearing a stuck or paused workflow key
+
+`purge` alone does **not** clear a paused invocation — it must be killed first.
+Purging every sibling invocation while leaving the paused one in place is what
+cost two demo attempts.
+
+```bash
+# find the run invocation for the key
+curl -s http://localhost:9070/query -H 'content-type: application/json' -d '{
+  "query": "SELECT id, status FROM sys_invocation WHERE target_service_name=\'C2CCase\' AND target_service_key=\'R12\' AND target_handler_name=\'run\'" }'
+
+# kill, then purge
+curl -X DELETE "http://localhost:9070/invocations/<ID>?mode=kill"
+curl -X DELETE "http://localhost:9070/invocations/<ID>?mode=purge"
+
+# confirm: state should come back empty
+curl -s http://localhost:8099/c2c/cases/R12     # -> {}
+```
+
+A paused invocation reports `status: paused` in `sys_invocation` while
+`GET /c2c/cases/{id}` still shows the last stored state. **Check the invocation
+status, not the case state**, when a demo appears stuck.
+
 ### Other
 
 | Symptom | Cause / fix |
@@ -248,6 +275,7 @@ one, so it hits this and the baseline does not. See `FAILURES.md` **F-009**.
 | results look plausible but wrong | check `model_endpoint` in the result file |
 | `Address already in use` on 9095 | `C2C_RESTATE_SERVICE_PORT=9096 make up` |
 | workflow id rejected as used | Restate retains ids; the durability suite tags per run, the demo does not — use `C2C_DEMO_CASE=R16` for a second same-day demo |
+| demo sits at `INTAKE` and never moves | **the workflow is paused, not slow.** Restate's default is `max_attempts: 70, on_max_attempts: Pause`; once paused it never retries, and a new `run` on the same key *attaches to the paused invocation*. `status` still reports the last stored state, so it looks like work in progress. See F-013 and the clearing procedure below. |
 | durability scenarios time out | stale registration: `make restate-register` |
 
 ---

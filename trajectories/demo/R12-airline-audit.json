@@ -1,0 +1,43 @@
+{
+    "banner": "SYNTHETIC DEMO \u2014 NOT FOR SUBMISSION \u2014 NOT LEGAL ADVICE",
+    "entries": [
+        {
+            "seq": 1,
+            "at": "2026-08-31T06:50:34.224941+00:00",
+            "action": "submit_claim",
+            "case_id": "R12",
+            "idempotency_key": "d330d27b-3fe4-4b26-a12c-308f5c48dc38",
+            "deduplicated": false
+        },
+        {
+            "seq": 2,
+            "at": "2026-08-31T06:50:37.448773+00:00",
+            "action": "challenge_rejection",
+            "case_id": "R12",
+            "idempotency_key": "03288b18-db62-4a8a-acec-a29ee059b320",
+            "deduplicated": false
+        }
+    ],
+    "effective": [
+        {
+            "seq": 1,
+            "at": "2026-08-31T06:50:34.224941+00:00",
+            "action": "submit_claim",
+            "case_id": "R12",
+            "idempotency_key": "d330d27b-3fe4-4b26-a12c-308f5c48dc38",
+            "deduplicated": false
+        },
+        {
+            "seq": 2,
+            "at": "2026-08-31T06:50:37.448773+00:00",
+            "action": "challenge_rejection",
+            "case_id": "R12",
+            "idempotency_key": "03288b18-db62-4a8a-acec-a29ee059b320",
+            "deduplicated": false
+        }
+    ],
+    "call_counts": {
+        "submit_claim": 1,
+        "challenge": 1
+    }
+}

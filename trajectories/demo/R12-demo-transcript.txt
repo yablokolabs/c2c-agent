@@ -1,0 +1,110 @@
+
+  C2C demo — case R12
+  SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE
+
+──────────────────────────────────────────────────────────────────────────
+  1. Reset the synthetic world
+──────────────────────────────────────────────────────────────────────────
+  {'reset': True}
+
+──────────────────────────────────────────────────────────────────────────
+  2. Open the case
+──────────────────────────────────────────────────────────────────────────
+  The workflow starts, and the agent assesses. This takes a minute or two:
+  the caseworker reads documents and looks up clauses, then an independent
+  verifier checks the result.
+                                                            
+
+──────────────────────────────────────────────────────────────────────────
+  3. The agent has decided, and stopped
+──────────────────────────────────────────────────────────────────────────
+  state           AWAITING_APPROVAL
+  pending action  challenge_rejection  <- waiting on a human
+
+  compensation    420 units
+  duty of care    0 units
+  cause           carrier_controlled
+  citations       S1.2, S2.1(a), S3.2(b), S3.6, S4.2, S5.1, S9.1(a)
+
+  rationale: The operational record (D3) shows a carrier-controlled crew-duty cause—crew exhaustion following HB's own rotation delay—contradicting the carrier's invoked extraordinary weather. Per S3.6, the operational record governs; D3 also confirms CAVOK conditions. With cancellation notice under 7 days (46 hours, D2) and no re-routing offer, S4.2 and S5.1 entitle the passenger to 100% of Band B (420 units). The rejection is validly challengeable under S9.1(a).
+
+  Nothing has been sent. The workflow is suspended on a durable promise,
+  consuming nothing, and will stay there for as long as it takes.
+
+──────────────────────────────────────────────────────────────────────────
+  4. A human approves
+──────────────────────────────────────────────────────────────────────────
+  {'accepted': True, 'promise': 'approval', 'duplicate': False}
+  state           AWAITING_CARRIER
+  pending action  challenge_rejection  <- waiting on a human
+  claim           SYN-CLM-00001
+
+──────────────────────────────────────────────────────────────────────────
+  5. Weeks pass, then the carrier rejects
+──────────────────────────────────────────────────────────────────────────
+  Delivered here as an external event. In production this is the 4-to-8 week
+  silence where most valid claims quietly die.
+                                                            
+  state           AWAITING_APPROVAL
+  pending action  challenge_rejection  <- waiting on a human
+  claim           SYN-CLM-00001
+
+  The rejection cites weather. The operational record on file says the crew
+  timed out and both stations were CAVOK. The agent proposes a challenge.
+
+──────────────────────────────────────────────────────────────────────────
+  6. A human approves the challenge
+──────────────────────────────────────────────────────────────────────────
+  {'accepted': True, 'promise': 'challenge_approval', 'duplicate': False}
+  state           CHALLENGED
+  pending action  challenge_rejection  <- waiting on a human
+  claim           SYN-CLM-00001
+
+──────────────────────────────────────────────────────────────────────────
+  7. What the passenger actually receives
+──────────────────────────────────────────────────────────────────────────
+  # Your claim — booking HB1188
+  
+  **The airline's refusal does not hold up. Challenge it.**
+  
+  ## Where you stand
+  
+  We assess that you are owed **420 units** in total:
+  
+  - **420 units** compensation for the disruption
+  
+  ## Why
+  
+  The operational record (D3) shows a carrier-controlled crew-duty cause—crew exhaustion following HB's own rotation delay—contradicting the carrier's invoked extraordinary weather. Per S3.6, the operational record governs; D3 also confirms CAVOK conditions. With cancellation notice under 7 days (46 hours, D2) and no re-routing offer, S4.2 and S5.1 entitle the passenger to 100% of Band B (420 units). The rejection is validly challengeable under S9.1(a).
+  
+  This rests on **S1.2**, **S2.1(a)**, **S3.2(b)**, **S3.6**, **S4.2**, **S5.1**, **S9.1(a)** of the C2C Synthetic Hackathon Compensation Policy.
+  
+  We classify the cause as **within the airline's control**.
+  
+  ## What happens next
+  
+  Send the challenge below. If they maintain the refusal, or say nothing for 28 days, escalation becomes available.
+  
+  Nothing is sent on your behalf without your explicit approval, every time.
+  
+  ---
+  
+
+  Full letter: http://localhost:8099/c2c/cases/R12/document?kind=letter
+
+──────────────────────────────────────────────────────────────────────────
+  8. What actually reached the carrier
+──────────────────────────────────────────────────────────────────────────
+    1  submit_claim         R12      key=d330d27b…
+    2  challenge_rejection  R12      key=03288b18…
+
+  2 action(s) attempted, 2 landed.
+  Duplicates absorbed: 0
+
+──────────────────────────────────────────────────────────────────────────
+  The case is now waiting on the carrier again, with a durable 28-day clock
+  running. If the carrier stays silent, the workflow wakes itself and proposes
+  escalation. Nobody has to remember to check.
+
+  SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE
+
