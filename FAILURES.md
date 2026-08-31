@@ -648,7 +648,7 @@ Two things hid it:
   the one that mattered untouched.
 
 **Corrective change.** Operational, and documented in
-`REPRODUCE_AND_RECORD.md` §6: to clear a stuck workflow key, kill then purge.
+`REPRODUCTION_GUIDE.md` §6: to clear a stuck workflow key, kill then purge.
 
 ```
 DELETE /invocations/{id}?mode=kill

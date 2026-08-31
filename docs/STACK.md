@@ -96,7 +96,7 @@ The workflow does not care what does. The approval arrives as
 `POST /c2c/cases/{id}/approve`, which a Telegram bot, a curl command or a web
 form can all send. The evaluation and the durability suite use HTTP directly, so
 **a judge can reproduce every result without Telegram**, which is a requirement
-in `docs/REPRODUCTION.md`.
+in `REPRODUCTION_GUIDE.md`.
 
 ## Deliberately not used
 

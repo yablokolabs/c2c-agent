@@ -116,7 +116,7 @@ deployment is additive and does not disturb existing tenants; standing up a
 second server, or reinstalling this one, would have risked them.
 
 **Reverses if.** A judge reproducing from a clean environment has no Restate
-server, in which case `docs/REPRODUCTION.md` covers starting a throwaway one.
+server, in which case `REPRODUCTION_GUIDE.md` covers starting a throwaway one.
 The headline reasoning result does not require Restate at all.
 
 

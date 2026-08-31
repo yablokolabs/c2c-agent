@@ -214,7 +214,7 @@ Docker and no Telegram** for the headline result.
 For the durability half: `make up && make failure-tests && make down`.
 
 Full guide with versions, expected output, runtime and measured cost:
-[`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
+[`REPRODUCTION_GUIDE.md`](REPRODUCTION_GUIDE.md).
 
 ---
 
@@ -322,7 +322,16 @@ paid.
 
 ---
 
-## Where everything is
+## The four deliverables
+
+| | | |
+|---|---|---|
+| **01** | Solution code and improvement changelog | this repository · [`IMPROVEMENT_CHANGELOG.md`](IMPROVEMENT_CHANGELOG.md) |
+| **02** | Reproduction guide | [`REPRODUCTION_GUIDE.md`](REPRODUCTION_GUIDE.md) |
+| **03** | Solution video | script in [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md), submitted separately |
+| **04** | Agent trajectories | [`trajectories/README.md`](trajectories/README.md) |
+
+## Where everything else is
 
 | | |
 |---|---|
@@ -332,7 +341,7 @@ paid.
 | Experiments, including removed ones | [`experiments/`](experiments/) |
 | **Failure journal** | [`FAILURES.md`](FAILURES.md) |
 | Metrics and their weaknesses | [`docs/EVALUATION.md`](docs/EVALUATION.md) · [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) |
-| Reproduction | [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) |
+| Reproduction | [`REPRODUCTION_GUIDE.md`](REPRODUCTION_GUIDE.md) |
 | Demo script | [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) |
 | Agent instructions | [`agents/caseworker/SYSTEM_PROMPT.md`](agents/caseworker/SYSTEM_PROMPT.md) · [`agents/verifier/SYSTEM_PROMPT.md`](agents/verifier/SYSTEM_PROMPT.md) |
 | The synthetic policy | [`benchmark/POLICY.md`](benchmark/POLICY.md) |

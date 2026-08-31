@@ -31,8 +31,11 @@ REQUIRED = [
     "agents/verifier/SYSTEM_PROMPT.md",
     "docs/PROBLEM.md", "docs/PERSONAL_MOTIVATION.md", "docs/ARCHITECTURE.md",
     "docs/STACK.md", "docs/DECISIONS.md", "docs/ENVIRONMENT.md",
-    "docs/REPRODUCTION.md", "docs/EVALUATION.md", "docs/DEMO_SCRIPT.md",
+    "docs/EVALUATION.md", "docs/DEMO_SCRIPT.md",
     "docs/LIMITATIONS.md", "docs/HACKATHON_REQUIREMENTS.md",
+    # The four things the brief actually asks for, named as it names them.
+    "REPRODUCTION_GUIDE.md",   # deliverable 02
+    "trajectories/README.md",  # deliverable 04
 ]
 
 SECRET_PATTERNS = [

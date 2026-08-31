@@ -9,7 +9,7 @@ Mapped against `micro1_First_Hackathon97ce7c5.pdf`.
 | **Who has this problem?** | `docs/PROBLEM.md` — a passenger who is probably owed money and has a job; secondarily the small claims operations that do this at volume. |
 | **What bottleneck makes it worth solving?** | `docs/PROBLEM.md` — the work is small, the calendar is enormous. Two or three multi-week silences, each one where a valid claim quietly dies. |
 | **Does the agent solve it well?** | `docs/EVALUATION.md`, `IMPROVEMENT_CHANGELOG.md`, `evaluation/results/`. Two suites, fair baseline, results reported including where they are flat. |
-| **Can another person reproduce the result?** | `docs/REPRODUCTION.md`. The headline result needs no Restate, no Docker and no Telegram. |
+| **Can another person reproduce the result?** | `REPRODUCTION_GUIDE.md`. The headline result needs no Restate, no Docker and no Telegram. |
 
 ## Judging criteria
 
@@ -19,7 +19,7 @@ Mapped against `micro1_First_Hackathon97ce7c5.pdf`.
 | Agent solution & engineering (30) | `docs/ARCHITECTURE.md`, `docs/STACK.md`, `docs/DECISIONS.md`, `agents/*/SYSTEM_PROMPT.md` |
 | End-to-end quality (20) | `make demo`, `docs/DEMO_SCRIPT.md`, the claim artifacts the workflow produces |
 | Measured improvement (15) | `IMPROVEMENT_CHANGELOG.md`, `experiments/`, `evaluation/results/` |
-| Reproducibility (15) | `docs/REPRODUCTION.md`, `Makefile`, `make reproduce` |
+| Reproducibility (15) | `REPRODUCTION_GUIDE.md`, `Makefile`, `make reproduce` |
 | Hot take / insights (5) | `README.md`, and `FAILURES.md` for what produced it |
 
 ## Ground rules
@@ -42,7 +42,7 @@ Mapped against `micro1_First_Hackathon97ce7c5.pdf`.
 | Deliverable | Where |
 |---|---|
 | 01 — solution code and improvement changelog | this repository; `IMPROVEMENT_CHANGELOG.md`; agent instructions in `agents/*/SYSTEM_PROMPT.md` and `prompts/` |
-| 02 — reproduction guide | `docs/REPRODUCTION.md`, with versions, commands, expected output, runtime and measured cost |
+| 02 — reproduction guide | `REPRODUCTION_GUIDE.md`, with versions, commands, expected output, runtime and measured cost |
 | 03 — solution video | `docs/DEMO_SCRIPT.md` is the script; the recording is submitted separately |
 | 04 — agent trajectories | `trajectories/runs/<run-id>/events.jsonl` and `trajectory.md`, one per run, for every agent |
 
