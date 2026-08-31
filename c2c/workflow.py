@@ -34,6 +34,8 @@ from typing import Any, Optional
 import httpx
 import restate
 
+from c2c import notify
+
 CONTROL_PLANE = os.environ.get("C2C_CONTROL_PLANE", "http://localhost:8099")
 AIRLINE = os.environ.get("C2C_AIRLINE", "http://localhost:8099/airline")
 HTTP_TIMEOUT = float(os.environ.get("C2C_HTTP_TIMEOUT", "120"))
@@ -69,11 +71,26 @@ async def _set_state(ctx: restate.WorkflowContext, state: str, **extra: Any) -> 
         ctx.set(k, v)
 
 
+async def _tell(ctx: restate.WorkflowContext, stage: str, **fields: Any) -> None:
+    """Tell the passenger where their case has got to.
+
+    Inside `ctx.run`, so a replay after a crash does not re-send a message they
+    have already read. `notify.send` never raises, so a Telegram outage cannot
+    park a claim behind an undelivered update.
+    """
+
+    async def deliver() -> dict:
+        return notify.send(notify.render(stage, **fields))
+
+    await ctx.run(f"notify_{stage}", deliver, max_attempts=2)
+
+
 @case_workflow.main()
 async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     """Carry one case from intake to a terminal state."""
     case_id = ctx.key()
     await _set_state(ctx, "INTAKE", case_id=case_id, opened_by=req.get("opened_by", "unknown"))
+    await _tell(ctx, "case_opened", pnr=req.get("pnr", case_id))
 
     # --- assess -------------------------------------------------------------
     # The agent runs in the control plane, not here. If it throws, Restate
@@ -96,6 +113,8 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     action = verdict.get("next_action")
     if action not in CONSEQUENTIAL:
         await _set_state(ctx, "CLOSED_NO_ACTION")
+        await _tell(ctx, "assessed_no_claim", pnr=req.get("pnr", case_id),
+                    rationale=verdict.get("rationale", "no rationale recorded"))
         return {"case_id": case_id, "outcome": "closed_no_action",
                 "next_action": action, "verdict": verdict}
 
@@ -109,6 +128,7 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
         # Invariant: an action a human rejected must never execute. This
         # returns before any side effect is reachable.
         await _set_state(ctx, "CLOSED_BY_HUMAN")
+        await _tell(ctx, "closed_by_human", pnr=req.get("pnr", case_id))
         return {"case_id": case_id, "outcome": "rejected_by_human",
                 "rejected_action": action, "reason": decision.get("reason", ""),
                 "verdict": verdict}
@@ -136,6 +156,7 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     submitted = await ctx.run("submit", do_submit)
     claim_id = submitted["claim_id"]
     await _set_state(ctx, "SUBMITTED", claim_id=claim_id)
+    await _tell(ctx, "claim_filed", amount=verdict.get("compensation_units", 0))
 
     # --- wait for the carrier, or for the policy clock ----------------------
     await _set_state(ctx, "AWAITING_CARRIER")
@@ -146,13 +167,30 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
         return {"case_id": case_id, "claim_id": claim_id, **outcome}
 
     ctx.set("carrier_reply", reply)
+    await _tell(ctx, "carrier_replied", pnr=req.get("pnr", case_id))
+
     if reply.get("type") in ("settlement_offer", "settled", "paid"):
-        await _set_state(ctx, "RESOLVED_SETTLED")
-        return {"case_id": case_id, "claim_id": claim_id, "outcome": "settled",
-                "carrier_reply": reply}
+        # S9.4: an offer is only acceptable if it meets the full entitlement.
+        # Telling the passenger the shortfall is the difference between an agent
+        # that closes cases and one that gets them paid properly.
+        owed = ((verdict.get("compensation_units") or 0)
+                + verdict.get("duty_of_care_units", 0)
+                + verdict.get("downgrade_reimbursement_units", 0))
+        offered = reply.get("amount_units")
+        if offered is not None and offered < owed:
+            await _tell(ctx, "offer_short", pnr=req.get("pnr", case_id),
+                        offered=offered, owed=owed, shortfall=owed - offered)
+        else:
+            await _set_state(ctx, "RESOLVED_SETTLED")
+            await _tell(ctx, "resolved", pnr=req.get("pnr", case_id),
+                        amount=offered if offered is not None else owed)
+            return {"case_id": case_id, "claim_id": claim_id, "outcome": "settled",
+                    "carrier_reply": reply}
 
     # --- challenge ----------------------------------------------------------
     await _set_state(ctx, "AWAITING_APPROVAL", pending_action="challenge_rejection")
+    await _tell(ctx, "rejection_challengeable",
+                rationale=verdict.get("rationale", "the record does not support their ground"))
     ch_decision = await ctx.promise("challenge_approval").value()
     if not ch_decision.get("approved"):
         await _set_state(ctx, "CLOSED_BY_HUMAN")
@@ -167,6 +205,8 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
 
     await ctx.run("challenge", do_challenge)
     await _set_state(ctx, "CHALLENGED")
+    await _tell(ctx, "challenge_sent", pnr=req.get("pnr", case_id),
+                citations=", ".join(verdict.get("policy_citations") or []) or "the record")
 
     after = await _await_carrier(ctx, "challenge_response", CHALLENGE_SILENCE_DAYS)
     if after is None:
@@ -194,6 +234,7 @@ async def _await_carrier(
 
 async def _escalate(ctx: restate.WorkflowContext, case_id: str, ground: str) -> dict:
     await _set_state(ctx, "AWAITING_APPROVAL", pending_action="escalate")
+    await _tell(ctx, "escalation_ready", pnr=case_id, ground=ground)
     decision = await ctx.promise("escalation_approval").value()
     if not decision.get("approved"):
         await _set_state(ctx, "CLOSED_BY_HUMAN")
@@ -206,6 +247,7 @@ async def _escalate(ctx: restate.WorkflowContext, case_id: str, ground: str) -> 
 
     lodged = await ctx.run("escalate", do_escalate)
     await _set_state(ctx, "ESCALATED", escalation_reference=lodged.get("reference"))
+    await _tell(ctx, "escalated", reference=lodged.get("reference", "pending"))
     return {"outcome": "escalated", "ground": ground,
             "escalation_reference": lodged.get("reference")}
 
