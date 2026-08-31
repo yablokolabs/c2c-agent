@@ -556,12 +556,23 @@ docs/ARCHITECTURE.md
 docs/STACK.md
 docs/DECISIONS.md
 docs/ENVIRONMENT.md
-docs/REPRODUCTION.md
 docs/EVALUATION.md
 docs/DEMO_SCRIPT.md
+docs/RECORDING.md
 docs/LIMITATIONS.md
 IMPROVEMENT_CHANGELOG.md
 FAILURES.md
+
+The four items the brief asks to be submitted are named the way the brief
+names them, so a judge does not have to hunt:
+
+REPRODUCTION_GUIDE.md      deliverable 02, the reproduction guide
+trajectories/README.md     deliverable 04, the agent trajectories
+
+The reproduction guide replaces what was previously `docs/REPRODUCTION.md`,
+`REPRODUCE_AND_RECORD.md` and `FROM_SCRATCH.md` — three overlapping documents
+where the brief asks for one. Recording guidance was never part of that
+deliverable and lives in `docs/RECORDING.md` beside the script.
 
 README should be optimized for judges and explain quickly:
 
