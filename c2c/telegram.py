@@ -123,7 +123,8 @@ def parse_callback(data: str) -> Optional[dict]:
 
 class Telegram:
     def __init__(self, token: str = TOKEN, chat_id: str = CHAT_ID,
-                 api: str = API, client: Optional[httpx.Client] = None):
+                 api: str = API, client: Optional[httpx.Client] = None,
+                 recorder=None):
         self.base = f"https://api.telegram.org/bot{token}"
         self.chat_id = chat_id
         self.api = api
@@ -134,6 +135,7 @@ class Telegram:
         # conversation is cheap to restart, and once a case is opened its content
         # is persisted by c2c.intake and its lifecycle by Restate.
         self.conversations: dict[str, intake_mod.Intake] = {}
+        self.recorder = recorder
 
     def send_approval_request(self, case_id: str, state: dict) -> dict:
         return self.http.post(f"{self.base}/sendMessage", json={
@@ -188,7 +190,7 @@ class Telegram:
         if attachment:
             conv.attachments.append(attachment)
 
-        record = intake_mod.understand(conv, llm or LLM())
+        record = intake_mod.understand(conv, llm or LLM(), rec=self.recorder)
         if record is None:
             self.say(chat_id, "Sorry — I didn't follow that. Can you tell me the flight, "
                               "the date, and what went wrong?")
@@ -281,7 +283,9 @@ def main() -> int:
               "-H 'content-type: application/json' -d '{\"approved\":true}'")
         return 2
 
-    tg = Telegram(token=token, chat_id=chat)
+    from c2c.trajectory import Recorder
+
+    tg = Telegram(token=token, chat_id=chat, recorder=Recorder.open("intake"))
     print(f"C2C is listening on Telegram. Control plane: {tg.api}")
     print("A passenger can now describe a disruption and attach documents.\n")
     while True:

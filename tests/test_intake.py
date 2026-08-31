@@ -98,3 +98,24 @@ def test_intake_never_mentions_the_policy_or_an_amount():
     p = system_prompt().lower()
     assert "do not assess" in p
     assert "never invent" in p
+
+
+def test_intake_records_a_trajectory_like_every_other_agent(tmp_path):
+    """The brief asks for representative trajectories for *every* agent. Intake
+    is also the only one that sees a passenger's own words, which makes it the
+    one most worth being able to audit."""
+    from c2c.trajectory import Recorder
+
+    rec = Recorder.open("test", root=tmp_path)
+    understand(Intake(messages=["cancelled"]), StubLLM(json.dumps(RECORD)), rec=rec)
+    kinds = [e["event_type"] for e in rec.read()]
+    assert kinds == ["AGENT_START", "USER_INPUT", "MODEL_RESPONSE", "FINAL_DECISION"]
+    assert all(e["agent"] == "intake" for e in rec.read())
+
+
+def test_an_unusable_intake_reply_is_recorded_as_an_error(tmp_path):
+    from c2c.trajectory import Recorder
+
+    rec = Recorder.open("test", root=tmp_path)
+    assert understand(Intake(messages=["?"]), StubLLM("not json"), rec=rec) is None
+    assert "ERROR" in [e["event_type"] for e in rec.read()]

@@ -1,9 +1,11 @@
-# From scratch, on a clean machine
+# Reproduction guide
+
+*Deliverable 02. Written for someone starting from a clean environment.*
 
 Every command below was run on a fresh `git clone` into an empty directory. The
 outputs are what actually came back, not what should have.
 
-**Verified on:** commit `bbb7429`, Ubuntu 24.04, Docker 29.1.3.
+**Verified on:** commit `8587685`, Ubuntu 24.04, Docker 29.1.3.
 
 ---
 
@@ -276,20 +278,130 @@ Text attachments are read. Photos are not — that needs OCR, which is not built
 and it says so rather than storing a blank document that would look like
 evidence.
 
-## 8. The headline benchmark — costs real money
+## 8. The evaluation, end to end
+
+### Regenerating the merged results
+
+The headline is two runs plus a merge. Run them **sequentially** — see §6.
 
 ```bash
-docker compose exec api python -m c2c.eval.run --system baseline --stage baseline-check
+export C2C_LLM_BACKEND=cli
+export C2C_MIN_CALL_INTERVAL=3.0
+unset ANTHROPIC_API_KEY ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN
 ```
 
-~28 model calls, ~15 minutes, ~$1.40. The full agent is ~102 calls and ~$3.80.
-`REPRODUCE_AND_RECORD.md` §3 has the whole chain including the merge step, and
-§6 covers the throughput ceiling you will probably hit on the agent run.
+### 3a. Baseline — one direct prompt
 
-Committed results are in `evaluation/results/`; you do not have to re-run them to
-read them.
+```bash
+python -m c2c.eval.run --system baseline --stage baseline-v2 --workers 3 \
+  --note "Clean re-measurement: CLI backend, paced calls."
+```
 
-## 9. Tear down
+**Checkpoint.** `Case Resolution Accuracy 0.82`, `calls=28`, ~868s, ~$1.37, and
+**no** `WARNING: N of 28 cases never reached the model`. If that warning appears,
+the run is void — see §6.
+
+### 3b. Full agent — tools, loop, independent verifier
+
+```bash
+python -m c2c.eval.run --system agent --stage final-v2 --workers 1 \
+  --note "Full agent: tools, loop, independent verifier, one revision."
+```
+
+**Checkpoint.** ~102 model calls across 28 cases. On the recorded run this
+stopped after 18 cases with `WARNING: 10 of 28 cases never reached the model`.
+That is expected under the ceiling; continue to 3c.
+
+### 3c. Gap-fill — only the cases 3b missed
+
+Substitute the case ids the warning actually names.
+
+```bash
+python -m c2c.eval.run --system agent --stage final-v2-gap --workers 1 \
+  --cases R19,R20,R21,R22,R23,R24,R25,R26,R27,R28 \
+  --note "The 10 cases final-v2 never reached."
+```
+
+**Checkpoint.** `Case Resolution Accuracy 0.90`, `calls=34`, `failed: R26`.
+
+### 3d. Merge
+
+```bash
+python -m c2c.eval.merge --stage final-v2-merged final-v2 final-v2-gap
+```
+
+**Checkpoint.**
+
+```
+final-v2-merged: 28 cases from 2 runs
+  final-v2         18 cases
+  final-v2-gap     10 cases
+  Case Resolution Accuracy  0.93
+  failed: R07, R26
+```
+
+The merge **refuses** rather than guesses: it errors if any case is covered
+twice, if coverage is incomplete, or if the parts disagree on system, model or
+endpoint. It reads the *newest* file per stage — this repo contains an earlier,
+crashed `final-v2` from 09:41 which is correctly ignored in favour of the 15:20
+run.
+
+### 3e. Compare
+
+```bash
+python -m c2c.eval.report --compare \
+  evaluation/results/baseline-v2--20260830T092738Z.json \
+  evaluation/results/final-v2-merged--20260830T194802Z.json
+```
+
+**Checkpoint.**
+
+```
+Case Resolution Accuracy   0.82   0.93   +0.11
+Unsupported claims            0      0
+False escalations             0      0
+fixed:  R01, R04, R05, R16, R18
+broken: R07, R26
+```
+
+### 3f. Durability — no model calls, ~30s
+
+```bash
+make up
+python -m c2c.eval.durability
+```
+
+**Checkpoint.** `6/6`, `duplicate consequential acts 0`. Then verify by hand in
+the newest `evaluation/results/durability--*.json`:
+
+- **D01** `calls_that_reached_the_carrier == 4` (three 503s, one success)
+- **D06** `submit_attempts_at_carrier == 2` **and** `submissions_that_landed == 1`
+- **D05** `submit_attempts_at_carrier == 0`
+
+If D06 shows 1 attempt the `SIGKILL` missed its window and the scenario proved
+nothing — re-run.
+
+---
+
+
+## 9. What good looks like
+
+| Claim | Where | Value |
+|---|---|---|
+| Baseline | `baseline-v2--20260830T092738Z.json` | **0.82** |
+| Full agent | `final-v2-merged--20260830T194802Z.json` | **0.93** |
+| Improvement | `make compare` | **+0.11** (3 cases) |
+| Unsupported claims / false escalations | both runs | **0** |
+| Durability | `durability--20260829T065338Z.json` | **6/6**, 0 duplicates |
+| Best constant answer on this suite | `tests/test_benchmark.py` | 0.25 |
+
+**+0.11 is three cases and there is no valid variance estimate** — the one this
+project had was withdrawn in F-008. Report it as directional.
+
+---
+
+
+## 10. Tear down
 
 ```bash
 docker compose down -v
@@ -317,3 +429,82 @@ by hand during development and were missing from `pyproject.toml`, so a clean
 clone could not start the workflow service at all. It is fixed, and it is the
 argument for doing this from an empty directory rather than trusting the machine
 you built it on.
+
+## 11. Known failure modes
+
+### Throughput ceiling — the one that will bite you
+
+**Symptom.** `LLMError('cli backend failed after N attempts: claude -p exited 1: ')`
+with an empty message after the colon, and a run summary showing
+`WARNING: N of 28 cases never reached the model`.
+
+**Cause.** The CLI drops calls under sustained load and reports nothing. Single
+calls succeed throughout — probing with one `claude -p` will mislead you into
+thinking it is fine. The agent makes 3-4 calls per case against the baseline's
+one, so it hits this and the baseline does not. See `FAILURES.md` **F-009**.
+
+**Retry, in order of preference:**
+
+1. `--workers 1` and `C2C_MIN_CALL_INTERVAL=3.0`
+2. Split the work: run the missed cases with `--cases`, then `c2c.eval.merge`.
+   A 10-case burst succeeded where a 28-case run failed twice.
+3. `C2C_MIN_CALL_INTERVAL=6.0` for the smaller burst.
+
+**Never** paper over it by pointing at a gateway. That is F-007.
+
+### After running the durability suite in Docker
+
+The suite hosts and kills its own SDK service, so in Docker it runs in a
+throwaway container and registers *that* container's address. Restate then routes
+to it — and it is gone the moment the suite finishes.
+
+```bash
+# list deployments; anything not pointing at http://workflow:9095 is stale
+curl -s localhost:9170/deployments | python -m json.tool | grep uri
+
+curl -X DELETE "http://localhost:9170/deployments/<STALE_ID>?force=true"
+curl -X POST http://localhost:9170/deployments \
+  -H 'content-type: application/json' \
+  -d '{"uri":"http://workflow:9095","force":true}'
+```
+
+Avoid it entirely by stopping the workflow service first:
+`docker compose stop workflow`, run the suite, then `docker compose start workflow`.
+
+### Clearing a stuck or paused workflow key
+
+`purge` alone does **not** clear a paused invocation — it must be killed first.
+Purging every sibling invocation while leaving the paused one in place is what
+cost two demo attempts.
+
+```bash
+# find the run invocation for the key
+curl -s http://localhost:9070/query -H 'content-type: application/json' -d '{
+  "query": "SELECT id, status FROM sys_invocation WHERE target_service_name=\'C2CCase\' AND target_service_key=\'R12\' AND target_handler_name=\'run\'" }'
+
+# kill, then purge
+curl -X DELETE "http://localhost:9070/invocations/<ID>?mode=kill"
+curl -X DELETE "http://localhost:9070/invocations/<ID>?mode=purge"
+
+# confirm: state should come back empty
+curl -s http://localhost:8099/c2c/cases/R12     # -> {}
+```
+
+A paused invocation reports `status: paused` in `sys_invocation` while
+`GET /c2c/cases/{id}` still shows the last stored state. **Check the invocation
+status, not the case state**, when a demo appears stuck.
+
+### Other
+
+| Symptom | Cause / fix |
+|---|---|
+| every case scores 0, `calls=0` | backend erroring. Test one: `--cases R01` |
+| results look plausible but wrong | check `model_endpoint` in the result file |
+| `Address already in use` on 9095 | `C2C_RESTATE_SERVICE_PORT=9096 make up` |
+| everything times out after running the durability suite in Docker | **the suite clobbered the deployment.** It registers its own SDK endpoint at an ephemeral container IP with `force:true`; when that container exits, Restate is left routing to a dead address. Delete the stale deployment and re-register — see below. |
+| workflow id rejected as used | Restate retains ids; the durability suite tags per run, the demo does not — use `C2C_DEMO_CASE=R16` for a second same-day demo |
+| demo sits at `INTAKE` and never moves | **the workflow is paused, not slow.** Restate's default is `max_attempts: 70, on_max_attempts: Pause`; once paused it never retries, and a new `run` on the same key *attaches to the paused invocation*. `status` still reports the last stored state, so it looks like work in progress. See F-013 and the clearing procedure below. |
+| durability scenarios time out | stale registration: `make restate-register` |
+
+---
+

@@ -57,14 +57,36 @@ def system_prompt() -> str:
     return prompts.load("intake")
 
 
-def understand(intake: Intake, llm: LLM) -> Optional[dict]:
+def understand(intake: Intake, llm: LLM, rec=None) -> Optional[dict]:
     """Read the conversation. Returns the structured record, or None if the
     model produced nothing usable — which is a real failure, not something to
-    paper over with a default."""
+    paper over with a default.
+
+    Records a trajectory like the other agents. It is the only one that sees a
+    passenger's own words, which makes it the one most worth being able to audit
+    afterwards.
+    """
+    if rec:
+        rec.emit("AGENT_START", agent="intake",
+                 input={"messages": len(intake.messages),
+                        "attachments": [n for n, _ in intake.attachments]})
+        rec.emit("USER_INPUT", agent="intake", input=intake.as_prompt())
+
     result = llm.complete(system_prompt(), intake.as_prompt())
+    if rec:
+        rec.emit("MODEL_RESPONSE", agent="intake", output=result.text,
+                 duration_ms=result.duration_ms, usage=result.usage())
+
     raw = extract_json(result.text)
     if raw is None or "narrative" not in raw:
+        if rec:
+            rec.emit("ERROR", agent="intake", success=False,
+                     output="no usable intake record in the reply")
         return None
+    if rec:
+        rec.emit("FINAL_DECISION", agent="intake",
+                 output={"ready": raw.get("ready"), "missing": raw.get("missing"),
+                         "pnr": raw.get("pnr")})
     return raw
 
 
