@@ -49,7 +49,7 @@ Do not attempt to run it live. A single assessment is 3.5 minutes at the median
 and the demo does two, which is longer than the entire video.
 
 If a case id is already used (Restate retains workflow ids), either use
-`C2C_DEMO_CASE=R16` or purge the invocations for that key through the admin API
+`C2C_DEMO_CASE=R12` or purge the invocations for that key through the admin API
 at `:9070`.
 
 Two terminals. **Left:** the completed `make demo` output. **Right:**
@@ -85,8 +85,8 @@ failure-injection output answers that where a dashboard does not.
 It makes ~10 model calls and is subject to the throughput ceiling in §6. It is
 durable: the workflow survives, so re-running the script picks the case up where
 it stopped rather than starting over. Check with
-`curl localhost:8099/c2c/cases/R12`.
+`curl localhost:8099/c2c/cases/R18`.
 
 If it fails repeatedly, narrate step 7 over the committed trajectory at
 `trajectories/runs/<newest>/trajectory.md` and the artifact at
-`GET /c2c/cases/R12/document`.
+`GET /c2c/cases/R18/document`.

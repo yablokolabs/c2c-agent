@@ -1,9 +1,13 @@
 """Walk one case through the full durable lifecycle.
 
-Uses R12 — a carrier rejection citing weather against an operational record
-showing crew out of duty hours — because it exercises everything: assessment,
-human approval, submission, a carrier response arriving days later, a challenge,
-and a second approval.
+Defaults to R18: an airline blaming a bird strike for a cancellation forty hours
+later, while holding two spare aircraft it never used. It exercises everything —
+assessment, human approval, submission, a carrier response arriving days later, a
+challenge, and a second approval — and the reasoning is the most interesting in
+the benchmark, because the airline's excuse was genuine and had *expired*.
+
+Set `C2C_DEMO_CASE` to run a different one. Restate keeps a workflow id for a
+retention period, so a second run on the same day needs a different case.
 
 Every artifact is stamped SYNTHETIC DEMO. Nothing leaves this machine.
 """
@@ -21,15 +25,31 @@ import httpx
 from c2c.telegram import format_request, keyboard
 
 API = os.environ.get("C2C_API", "http://localhost:8099")
-CASE = os.environ.get("C2C_DEMO_CASE", "R12")
+CASE = os.environ.get("C2C_DEMO_CASE", "R18")
 BANNER = "SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE"
 
-SCRIPTED_REJECTION = {
-    "type": "rejection",
-    "text": ("Halcyon has assessed your claim. HB640 was cancelled owing to extraordinary "
-             "circumstances, namely adverse weather beyond our control. No compensation is "
-             "payable. This is our final response."),
+# The carrier's reply, arriving days later. Written per case so the airline and
+# the flight match the file the agent just read — a rejection quoting the wrong
+# flight number is the sort of thing that is invisible in a test and obvious on
+# a screen.
+SCRIPTED_REJECTIONS = {
+    "R18": ("Indigo North has assessed your claim. IN300 on 23 June was cancelled as a "
+            "consequence of a bird strike, an extraordinary circumstance outside our "
+            "control. No compensation is payable. This is our final response."),
+    "R12": ("Halcyon has assessed your claim. HB640 was cancelled owing to extraordinary "
+            "circumstances, namely adverse weather beyond our control. No compensation is "
+            "payable. This is our final response."),
+    "R16": ("Orion Reach has reimbursed your expenses in full. Compensation is not payable, "
+            "as OR480 was cancelled due to adverse weather constituting an extraordinary "
+            "circumstance."),
 }
+DEFAULT_REJECTION = ("We have assessed your claim. The disruption arose from extraordinary "
+                     "circumstances outside our control and no compensation is payable. "
+                     "This is our final response.")
+
+
+def scripted_rejection() -> dict:
+    return {"type": "rejection", "text": SCRIPTED_REJECTIONS.get(CASE, DEFAULT_REJECTION)}
 
 
 def rule(title: str = "") -> None:
@@ -132,7 +152,7 @@ def main(argv=None) -> int:
         if args.advance:
             print(json.dumps(
                 c.post(f"{API}/c2c/cases/{CASE}/carrier-event",
-                       json={"promise": "carrier_response", "payload": SCRIPTED_REJECTION}).json(),
+                       json={"promise": "carrier_response", "payload": scripted_rejection()}).json(),
                 indent=2))
             return 0
 
@@ -181,7 +201,7 @@ def main(argv=None) -> int:
         print("  Delivered here as an external event. In production this is the 4-to-8 week")
         print("  silence where most valid claims quietly die.")
         c.post(f"{API}/c2c/cases/{CASE}/carrier-event",
-               json={"promise": "carrier_response", "payload": SCRIPTED_REJECTION})
+               json={"promise": "carrier_response", "payload": scripted_rejection()})
         wait_for(c, {"AWAITING_APPROVAL"}, label="re-assessing")
         print(" " * 60, end="\r")
         st = show_status(c)

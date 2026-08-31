@@ -3,6 +3,11 @@
 Five minutes exactly. Timings are cumulative and the beats are budgeted to land
 on 5:00 with nothing rushed.
 
+The case is **R18**: an airline blaming a bird strike for a cancellation forty
+hours later, while holding two spare aircraft it never used. It is the most
+interesting reasoning in the benchmark, because the airline's excuse was
+*genuine* — and had expired.
+
 **Before recording:**
 
 ```bash
@@ -64,14 +69,27 @@ Show `benchmark/POLICY.md`, then one case file.
 > video. What is on screen is a genuine execution; the trajectory is committed
 > alongside it.
 
-**Step 3 — the assessment.**
+**Step 3 — the assessment.** *(The strongest 20 seconds in the video. Slow down.)*
 
-> "It listed the documents, read the operational record, then looked up the
-> clauses it was relying on. The carrier said weather. Its own log says the crew
-> timed out and both airports were clear. The policy says the operational record
-> governs. So: 420 units, and the rejection is challengeable.
+> "The passenger's complaint is one sentence: *they say a bird strike the day
+> before means they owe me nothing, even though my flight wasn't until the
+> following evening.*
 >
-> An independent verifier then checked that — and it never sees the caseworker's
+> A bird strike genuinely is an extraordinary circumstance. Under this policy the
+> airline owes nothing for one. So the obvious answer is: no claim.
+>
+> Watch what it actually did. It listed the documents, read the operations log,
+> and found the timestamps — the bird strike ended at 01:10 on the 22nd, the
+> flight was due out at 17:10 on the 23rd. Forty hours. The policy says an
+> extraordinary cause reverts to the airline's responsibility if more than twelve
+> hours passed and they could have recovered. And one line further down: they
+> held two serviceable spare aircraft at Helsinki the whole time and assigned
+> neither.
+>
+> So the excuse was real, and it expired. 420 units. That is not a lookup — it is
+> reading a log, doing date arithmetic, and noticing an absence.
+>
+> An independent verifier then checked it, and it never sees the caseworker's
 > working, only the case. A second opinion, not a review that inherits the same
 > wrong turn."
 
@@ -90,8 +108,10 @@ land, and pause on the boxed message.)*
 
 **Steps 4–6.**
 
-> "I approve. It submits. Weeks pass — here that's one HTTP event. The rejection
-> arrives, the agent re-reads it, proposes a challenge, stops again."
+> "I approve. It submits. Weeks pass — here that's one HTTP event. Indigo North
+> comes back and refuses, citing the bird strike. The agent re-reads that against
+> the same log, holds its position, proposes a challenge, and stops again for a
+> second approval."
 
 **Step 7 — what the passenger receives.** *(Let this breathe.)*
 
@@ -130,6 +150,15 @@ Run `make failure-tests`.
 Run `make compare`. Show `IMPROVEMENT_CHANGELOG.md`.
 
 > "Baseline **0.82**, full agent **0.93**, same 28 cases, same model.
+>
+> R18, the case you just watched, is one the baseline gets wrong — and how it
+> gets it wrong is the interesting part. It found the same reasoning: the
+> twelve-hour rule, the forty hours, the unused spare aircraft. Same 420 units.
+> Then it asked for a boarding pass it didn't need and answered *request
+> evidence* instead of *submit the claim*.
+>
+> It had the answer and talked itself out of acting on it. That is what the
+> verifier is for.
 >
 > The changelog has every iteration. Two I'd rather show than hide.
 >

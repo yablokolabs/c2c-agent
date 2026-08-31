@@ -119,3 +119,32 @@ def test_an_unusable_intake_reply_is_recorded_as_an_error(tmp_path):
     rec = Recorder.open("test", root=tmp_path)
     assert understand(Intake(messages=["?"]), StubLLM("not json"), rec=rec) is None
     assert "ERROR" in [e["event_type"] for e in rec.read()]
+
+
+def test_the_scripted_rejection_matches_the_case_being_demoed():
+    """A rejection quoting the wrong airline and flight number is invisible in a
+    test and obvious on a screen."""
+    import importlib
+    import os
+
+    for case, carrier, flight in [("R18", "Indigo North", "IN300"),
+                                  ("R12", "Halcyon", "HB640"),
+                                  ("R16", "Orion Reach", "OR480")]:
+        os.environ["C2C_DEMO_CASE"] = case
+        demo = importlib.reload(importlib.import_module("c2c.tools.demo"))
+        text = demo.scripted_rejection()["text"]
+        assert carrier in text and flight in text, f"{case} rejection names the wrong flight"
+    os.environ.pop("C2C_DEMO_CASE", None)
+    importlib.reload(importlib.import_module("c2c.tools.demo"))
+
+
+def test_an_unscripted_case_gets_a_generic_rejection_not_another_case_s():
+    import importlib
+    import os
+
+    os.environ["C2C_DEMO_CASE"] = "R03"
+    demo = importlib.reload(importlib.import_module("c2c.tools.demo"))
+    text = demo.scripted_rejection()["text"]
+    assert "Halcyon" not in text and "Indigo North" not in text
+    os.environ.pop("C2C_DEMO_CASE", None)
+    importlib.reload(importlib.import_module("c2c.tools.demo"))
