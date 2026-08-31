@@ -3,6 +3,7 @@ an unrelated project. Its baseline is a property of one *server*, and storing it
 globally made it false-alarm the moment a second Restate appeared."""
 
 import json
+import pathlib
 
 import pytest
 
@@ -77,10 +78,12 @@ def test_pid_scan_never_returns_its_own_process():
     assert os.getpid() not in _pids_running("python")
 
 
+@pytest.mark.skipif(not pathlib.Path("docs").is_dir(),
+                    reason="checks repository documentation; the runtime image "
+                           "ships only the code and data it needs")
 def test_no_document_points_at_a_file_that_does_not_exist():
     """A stale path in a user-facing error message sends a judge somewhere that
     is not there. Found one in configure.py after the deliverables were renamed."""
-    import pathlib
     import re
 
     root = pathlib.Path(".")

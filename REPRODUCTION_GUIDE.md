@@ -101,7 +101,10 @@ docker compose exec api sh -c 'cd /tmp && claude -p "Reply with exactly: PONG" \
 docker compose exec api python -m pytest tests/ -q
 ```
 
-**Expected:** `170 passed, 1 skipped` in about a second.
+**Expected:** `173 passed, 2 skipped` in about a second. Two skip in the
+container by design: one makes a model call, and one checks repository
+documentation the runtime image does not ship. On a clone with Python installed
+you get `174 passed, 1 skipped`.
 
 ## 6. Durability — 6/6, no model calls, ~30 seconds
 

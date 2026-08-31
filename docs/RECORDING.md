@@ -2,6 +2,30 @@
 
 *Supports deliverable 03. The narration itself is in [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md); this is the mechanics.*
 
+## You do not need `make`
+
+`make` is not installed on most minimal cloud images, and you do not need it.
+Every command in this document and in the script has a Docker equivalent that
+needs nothing but Docker.
+
+| Script says | Docker equivalent |
+|---|---|
+| `make up` | `docker compose up -d --build` |
+| `make test` | `docker compose exec api python -m pytest tests/ -q` |
+| `make demo-reset` | `curl -X POST localhost:8099/airline/_admin/reset` |
+| `make demo` | `docker compose exec api python -m c2c.tools.demo` |
+| `make failure-tests` | see REPRODUCTION_GUIDE.md §6 — it needs its own container |
+| `make compare` | `docker compose exec api python -m c2c.eval.report --compare evaluation/results/baseline-v2--*.json evaluation/results/final-v2-merged--*.json` |
+| `make restate-check` | `docker compose exec api python -m c2c.tools.restate_check` |
+| `make bot` | `docker compose --profile telegram up -d bot` |
+
+`make` is a convenience wrapper on a machine that already has Python. On a fresh
+VM, use the right-hand column.
+
+**For filming, the right-hand column is arguably better anyway** — the commands
+are explicit about what is being run, and a viewer can see it is going through
+Docker rather than something already set up off-screen.
+
 ## Sequence
 
 Target 5:00. Script with narration: `docs/DEMO_SCRIPT.md`.

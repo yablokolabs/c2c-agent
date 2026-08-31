@@ -25,11 +25,15 @@ WORKDIR /app
 # Dependencies first, so a code change does not reinstall the world.
 COPY pyproject.toml README.md ./
 COPY c2c ./c2c
-RUN pip install --no-cache-dir -e .
+# Including the dev extras, so the test suite runs inside the container. The
+# reproduction guide tells a judge to run it there, and without pytest that
+# instruction was wrong.
+RUN pip install --no-cache-dir -e ".[dev]"
 
 COPY benchmark ./benchmark
 COPY agents ./agents
 COPY prompts ./prompts
+COPY tests ./tests
 
 # Live cases and trajectories are written at runtime and mounted from the host.
 RUN mkdir -p data/cases trajectories/runs evaluation/results
