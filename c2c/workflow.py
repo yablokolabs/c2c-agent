@@ -81,7 +81,15 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     async def do_assess() -> dict:
         return await _post(f"{CONTROL_PLANE}/c2c/assess", json={"case_id": case_id})
 
-    verdict = await ctx.run("assess", do_assess)
+    # Bounded, unlike every other step here. An assessment is expensive — four
+    # or five model calls — and the model transport already retries five times
+    # inside it. Left unbounded, a transient backend failure compounds: Restate
+    # retries the whole step, which restarts the caseworker from scratch, which
+    # makes another five attempts. One observed run produced 67 agent starts for
+    # 6 completed assessments and never left INTAKE. Three attempts is enough to
+    # ride out a blip and few enough to surface a real outage as a failure
+    # instead of a runaway. See FAILURES.md F-012.
+    verdict = await ctx.run("assess", do_assess, max_attempts=3)
     ctx.set("verdict", verdict)
     await _set_state(ctx, "ASSESSED")
 

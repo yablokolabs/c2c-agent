@@ -237,3 +237,16 @@ def test_enforcement_is_off_by_default():
                    json.dumps({"decision": "pass", "findings": []})])
     got, calls = pipeline.run_case(CASE, llm)
     assert len(calls) == 2, "the default path must be unchanged"
+
+
+def test_the_assess_step_bounds_its_retries():
+    """An assessment is 4-5 model calls and the transport already retries inside
+    it. Unbounded Restate retries compound that into a runaway: one observed run
+    made 67 agent starts for 6 completed assessments. See FAILURES.md F-012."""
+    import inspect
+
+    from c2c import workflow
+
+    src = inspect.getsource(workflow.run)
+    assert 'ctx.run("assess", do_assess, max_attempts=' in src, (
+        "the assess step must bound its retries")

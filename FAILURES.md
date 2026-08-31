@@ -550,3 +550,64 @@ every caller.
 This is the same shape as F-008, where a case the model never saw was scored as a
 case the model got wrong. Both times, two distinct outcomes were collapsed into
 one return value, and the system confidently reported the wrong one.
+
+---
+
+## F-012 — An unbounded retry on an expensive step became a runaway
+
+| | |
+|---|---|
+| **Found** | the third attempt at an end-to-end demo |
+| **Commit** | fixed after `707daa0` |
+| **Evidence** | **397** invocations against workflow key `R12`; 67 `AGENT_START` events for 6 completed assessments |
+
+**Observed.** With F-010 and F-011 fixed, the demo still never left `INTAKE`. It
+sat there for twenty minutes and gave up. The control plane log showed
+`LLMError: cli backend failed after 5 attempts: claude -p exited 1` — the
+throughput ceiling from F-009 again.
+
+But the interesting number is not the failure, it is the volume. The live
+trajectory recorded **67 `AGENT_START` events and only 6 `FINAL_DECISION`s**, and
+Restate held **397 invocations** against a single workflow key.
+
+**Expected.** A transient backend failure costs a few retries and then either
+succeeds or surfaces as a failure.
+
+**Root cause.** Compounding retries at two layers, neither aware of the other.
+
+`LLM.complete` retries five times inside a single model call. `ctx.run("assess")`
+was unbounded, so Restate retried the **whole assessment** on failure — and an
+assessment is four to five model calls that start from scratch every time.
+
+So one transient refusal became: five transport attempts, fail, Restate retries,
+a fresh caseworker makes five more attempts on call one, fail, retry, and so on.
+The cost per "attempt" was an entire re-assessment, and nothing bounded how many
+of those there could be. The workflow never left `INTAKE` because the step never
+succeeded, and it never gave up because nothing told it to.
+
+The durability layer was working exactly as designed. That was the problem:
+durable retry of an expensive, externally-dependent step is a loaded gun if the
+step is not bounded.
+
+**Corrective change.** `ctx.run("assess", do_assess, max_attempts=3)`. Three is
+enough to ride out a blip and few enough that a real outage surfaces as a
+workflow failure instead of a runaway. Every other durable step in the workflow
+stays unbounded, correctly — submitting a claim is cheap, idempotent and must
+eventually happen.
+
+A guard test asserts the assess step passes `max_attempts`.
+
+**Lesson.** **Retries compose multiplicatively, and nothing in either layer can
+see the other.** Five transport retries under an unbounded workflow retry is not
+"retry twice"; it is unbounded × 5, with a full re-assessment as the unit.
+
+The rule this suggests: **bound retries at the layer that knows the cost.** The
+transport knows a call is cheap and retries freely. The workflow knows an
+assessment is expensive and must therefore be the one to say "three, then stop."
+Defaulting to "retry until it works" is right for a claim submission and wrong
+for anything that costs four model calls to attempt.
+
+And a smaller one worth stating: **"the workflow is still running" is not
+automatically good news.** Durability guarantees the case is not lost. It
+guarantees nothing about the case making progress, and a durable system that is
+durably failing will do so patiently and expensively.
