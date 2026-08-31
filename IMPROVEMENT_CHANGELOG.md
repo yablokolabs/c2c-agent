@@ -84,3 +84,29 @@ boundary obvious — which is why FastAPI holds no case state either.
 
 **Decision: REMOVE**, with the reason recorded rather than the component quietly
 omitted. See `docs/STACK.md`.
+
+---
+
+## Found while wiring up the Telegram demo — environment issues
+
+Not model findings: these surfaced while taking the finished system from the
+development machine to a fresh box for the demo, and each one silently broke
+the pipeline rather than failing loudly. They are recorded because a judge
+starting from a clean checkout will meet them.
+
+| Symptom | Root cause | Fix | Evidence |
+|---|---|---|---|
+| The model-reachability check (`claude -p` PONG) **hangs with no output** | A stale **legacy iptables** ruleset (xtables, from an older Docker install) coexists with Docker's nftables rules and has `FORWARD policy DROP` with rules only for the default `docker0` bridge — so the compose network's outbound traffic is silently dropped before NAT. Docker's own rules look fine while the legacy ruleset does the dropping. | Accept the compose bridge in the legacy chains and masquerade its subnet; bridge name and subnet are **derived from the running stack** so the same commands work anywhere. Documented in `REPRODUCTION_GUIDE.md` §4 and `DEMO_SCRIPT_TELEGRAM.md`. | `iptables-legacy -L FORWARD -n -v` shows `policy DROP` and no rule for `br-...`; the legacy MASQUERADE rule for the compose subnet counts 0 packets while the container's `curl` times out. After the fix, the same `curl` returns in ~0.04s. |
+| Telegram bot starts, says *listening*, but never replies; logs repeat `poll failed: Network is unreachable` | The `bot` service had **no `~/.claude` OAuth mount** (the `api` service has one), so the intake assessment's `claude -p` call ran unauthenticated and failed after five retries. The poll error is stale log noise from the network issue above; the real failure is `cli backend failed after 5 attempts`. | Add the same `${HOME}/.claude` mounts to the `bot` service as the `api` service has. | Before: `claude auth status` in the bot container reports `loggedIn: false`; after the mount, `true` and the PONG check returns `PONG`. |
+| A pasted bot token is rejected with Telegram 404 on every call | The token in `.env` had extra characters appended (a timestamp) — Telegram returns 404 `Not Found` for any token that is not exactly right, and `getUpdates` swallows the 404, so the bot appears healthy while receiving nothing. | Fix the token, then **recreate** the bot container — env vars are read at container start, so editing `.env` alone does nothing until then. | `getMe` returns 404 before, 200 `{"ok":true,...}` after; token length in `.env` went from 54 (corrupted) to 46 (clean). |
+| Docs hardcoded a developer's home path | `CLAUDE.md` declared the project root as `/home/azureuser/...` — wrong on any other machine. | Use `./` (relative to the clone); the demo docs now derive the iptables bridge/subnet from docker instead of baking in `br-...` and `172.18.0.0/16`. | `CLAUDE.md` project root now reads `./`. |
+
+**What it taught.** Three of these are the same failure class as F-008, at the
+environment level: a component that looks healthy while silently doing nothing.
+The bot logs *listening* regardless of whether it is authenticated; the
+container's network looks fine from the host side while the legacy ruleset
+drops its traffic; `getUpdates` swallows Telegram's 404. The reliable check is
+the one that asks the remote end — `getMe` for the token, a `curl` from inside
+the container for egress, and the PONG call before anything else. That is why
+the reproduction guide and the demo script both start by proving the model is
+reachable rather than trusting the stack to look up.
