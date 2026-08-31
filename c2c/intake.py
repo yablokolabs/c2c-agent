@@ -27,6 +27,7 @@ from c2c.llm import LLM, extract_json
 from c2c.models import Case, Document
 
 LIVE_CASES = Path("data/cases")
+INCOMPLETE_INTAKE = Path("data/intake")
 
 DOC_TYPES = {
     "booking_confirmation", "boarding_pass", "carrier_notification",
@@ -135,6 +136,43 @@ def to_case(record: dict, case_id: Optional[str] = None) -> Case:
         documents=docs,
         ground_truth=None,
     )
+
+
+def save_incomplete(chat_id: str, record: dict, directory: Optional[Path] = None) -> Optional[Path]:
+    """Persist an in-progress intake record before the case is opened.
+
+    The live conversation is the part that dies first when the worker restarts.
+    This keeps it durable enough that a passenger does not get asked from zero
+    just because the process that received their first message is gone.
+
+    Returns the path written, or None if intake cannot be made durable in this
+    runtime. A missing persistent intake is not a case failure: the in-memory
+    conversation still works while the worker is up.
+    """
+    if directory is None:
+        directory = INCOMPLETE_INTAKE
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return None
+    path = directory / f"{chat_id}.json"
+    try:
+        path.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n")
+    except OSError:
+        return None
+    return path
+
+
+def load_incomplete(chat_id: str, directory: Optional[Path] = None) -> Optional[dict]:
+    if directory is None:
+        return None
+    path = directory / f"{chat_id}.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except Exception:  # noqa: BLE001 - one bad file must not hide the rest
+        return None
 
 
 def save(case: Case, directory: Path = LIVE_CASES) -> Path:

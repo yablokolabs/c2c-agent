@@ -157,6 +157,18 @@ class Telegram:
     # --- intake: a passenger describing what happened ----------------------
 
     def _conversation(self, chat_id: str) -> intake_mod.Intake:
+        # Load any persisted incomplete intake first. The in-memory dict is
+        # still the fast path and the source of truth while the worker is up,
+        # but a restart must not make a passenger start from zero.
+        existing = self.conversations.get(chat_id)
+        if existing is not None and existing.messages:
+            return existing
+        persisted = intake_mod.load_incomplete(chat_id)
+        if persisted and persisted.get("messages"):
+            conv = intake_mod.Intake(messages=list(persisted.get("messages", [])),
+                                     attachments=list(persisted.get("attachments", [])))
+            self.conversations[chat_id] = conv
+            return conv
         return self.conversations.setdefault(chat_id, intake_mod.Intake())
 
     def fetch_file(self, file_id: str) -> str:
@@ -195,6 +207,13 @@ class Telegram:
             self.say(chat_id, "Sorry — I didn't follow that. Can you tell me the flight, "
                               "the date, and what went wrong?")
             return {"ready": False, "record": None}
+
+        # Persist the in-progress intake before we reply. This is what survives
+        # a worker restart: the case itself is not opened yet, and the passenger
+        # should not be asked from zero because the process that received their
+        # first message went away. If persistence fails, the in-memory
+        # conversation still works while the worker is up.
+        intake_mod.save_incomplete(chat_id, record)
 
         reply = record.get("reply") or _fallback_reply(record)
         self.say(chat_id, reply)
