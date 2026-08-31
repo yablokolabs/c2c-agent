@@ -75,7 +75,7 @@ def check_model(values: dict[str, str]) -> bool:
         print("        (run `claude` once interactively if you have never logged in)")
         return True
     print("  FAIL  no ANTHROPIC_API_KEY and no `claude` CLI on PATH.")
-    print("        C2C needs one of them. See docs/REPRODUCTION.md section 2.")
+    print("        C2C needs one of them. See REPRODUCTION_GUIDE.md.")
     return False
 
 

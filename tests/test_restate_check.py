@@ -75,3 +75,33 @@ def test_pid_scan_never_returns_its_own_process():
     from c2c.eval.durability import _pids_running
 
     assert os.getpid() not in _pids_running("python")
+
+
+def test_no_document_points_at_a_file_that_does_not_exist():
+    """A stale path in a user-facing error message sends a judge somewhere that
+    is not there. Found one in configure.py after the deliverables were renamed."""
+    import pathlib
+    import re
+
+    root = pathlib.Path(".")
+    referenced: dict[str, str] = {}
+    for f in list(root.glob("*.md")) + list(root.glob("docs/*.md")) + list(root.rglob("c2c/**/*.py")):
+        text = f.read_text()
+        # Markdown link targets, and paths in prose that carry a directory —
+        # not bare filenames, which are usually just being named in a sentence.
+        for m in re.findall(r"\]\(([^)\s#]+\.md)\)", text):
+            referenced[m] = str(f)
+        for m in re.findall(r"\b((?:docs|agents|prompts|benchmark|trajectories|experiments)/[\w./-]+\.md)\b", text):
+            referenced[m] = str(f)
+
+    # CLAUDE.md deliberately names the superseded files when explaining the rename.
+    superseded = {"docs/REPRODUCTION.md", "REPRODUCE_AND_RECORD.md", "FROM_SCRATCH.md"}
+    def resolves(target: str, referencing: str) -> bool:
+        """A link resolves either from the repo root or from beside the file
+        that made it — both are ordinary in Markdown."""
+        rel = target.lstrip("./")
+        return (root / rel).exists() or (pathlib.Path(referencing).parent / target).exists()
+
+    missing = {t: src for t, src in referenced.items()
+               if t not in superseded and not resolves(t, src)}
+    assert not missing, f"references to files that do not exist: {missing}"
