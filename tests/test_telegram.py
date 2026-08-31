@@ -89,3 +89,17 @@ def test_updates_are_not_replayed():
     tg = Telegram(token="t", chat_id="1", api="http://cp", client=http)
     tg.poll_once()
     assert tg.offset == 8
+
+
+def test_the_demo_shows_the_passenger_surface_not_the_http_call():
+    """The workflow suspends on a durable promise and does not care what
+    resolves it — but a demo that only shows the HTTP call hides the thing the
+    passenger actually experiences."""
+    import inspect
+
+    from c2c.tools import demo
+
+    src = inspect.getsource(demo)
+    assert "format_request" in src and "show_approval_request(st)" in src
+    assert src.count("show_approval_request(st)") == 2, (
+        "both approval gates should render the passenger's view")

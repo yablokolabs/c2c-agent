@@ -186,7 +186,7 @@ make demo              # ~10 model calls, 7-16 MINUTES. See the timing note belo
 |---|---|
 | 1 | `{'reset': True}` |
 | 2 | workflow starts; assessment runs |
-| 3 | `state AWAITING_APPROVAL`, `pending_action submit_claim`, 420 units, cause `carrier_controlled` |
+| 3 | `state AWAITING_APPROVAL`, `pending_action submit_claim`, 420 units, cause `carrier_controlled`, then a boxed render of the approval as the passenger receives it |
 | 4 | approval accepted; `state SUBMITTED` / `AWAITING_CARRIER`, a `SYN-CLM-` id |
 | 5 | rejection delivered; back to `AWAITING_APPROVAL` |
 | 6 | challenge approved; `state CHALLENGED` |

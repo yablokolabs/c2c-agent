@@ -75,11 +75,18 @@ Show `benchmark/POLICY.md`, then one case file.
 > working, only the case. A second opinion, not a review that inherits the same
 > wrong turn."
 
-**Step 3 — the stop.** *(This is the thesis. Let it land.)*
+**Step 3 — the stop, and what the passenger sees.** *(This is the thesis. Let it
+land, and pause on the boxed message.)*
 
 > "And now it stops. Nothing has been sent. Submitting a claim is consequential,
 > so it waits for a human — suspended on a durable promise, consuming nothing,
-> surviving restarts, for as long as it takes."
+> surviving restarts, for as long as it takes.
+>
+> And this is what actually reaches the passenger. Not a dashboard they have to
+> remember to open — a message, weeks after they last thought about this, with
+> the amount, the reasoning, the clauses it rests on, and two buttons. That is
+> the whole interaction. They are not managing a case; they are answering a
+> question."
 
 **Steps 4–6.**
 

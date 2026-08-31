@@ -18,6 +18,8 @@ import time
 
 import httpx
 
+from c2c.telegram import format_request, keyboard
+
 API = os.environ.get("C2C_API", "http://localhost:8099")
 CASE = os.environ.get("C2C_DEMO_CASE", "R12")
 BANNER = "SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE"
@@ -69,6 +71,32 @@ def wait_for(c: httpx.Client, wanted: set[str], timeout: float = 900,
                   end="\r", flush=True)
         time.sleep(3)
     return last, False
+
+
+def show_approval_request(st: dict) -> None:
+    """Render the approval exactly as it reaches the passenger.
+
+    The workflow suspends on a durable promise and does not care what resolves
+    it. This is what a person actually sees — the amount, the reasoning, the
+    clauses, and two buttons — rather than the HTTP call underneath.
+
+    Rendered, not sent: no bot token is needed to run the demo, and nothing
+    leaves this machine.
+    """
+    import textwrap
+
+    print()
+    print("  ┌─ what reaches the passenger " + "─" * 42 + "┐")
+    for line in format_request(CASE, st).splitlines():
+        # Wrap rather than truncate. The rationale is the part a person reads to
+        # decide, and a clipped sentence is worse than no sentence.
+        for out in (textwrap.wrap(line, 70) or [""]):
+            print(f"  │ {out}")
+    buttons = [b["text"] for b in keyboard(CASE, st.get("pending_action", ""))["inline_keyboard"][0]]
+    print("  │")
+    print("  │   " + "   ".join(f"[ {b} ]" for b in buttons))
+    print("  └" + "─" * 71 + "┘")
+    print("  (rendered as Telegram would show it; set C2C_TELEGRAM_TOKEN to send it)")
 
 
 def approve(c: httpx.Client, promise: str = "approval", approved: bool = True) -> dict:
@@ -142,6 +170,7 @@ def main(argv=None) -> int:
             return 0
         print("\n  Nothing has been sent. The workflow is suspended on a durable promise,")
         print("  consuming nothing, and will stay there for as long as it takes.")
+        show_approval_request(st)
 
         rule("4. A human approves")
         print(" ", approve(c, "approval"))
@@ -158,6 +187,7 @@ def main(argv=None) -> int:
         st = show_status(c)
         print(f"\n  The rejection cites weather. The operational record on file says the crew")
         print(f"  timed out and both stations were CAVOK. The agent proposes a challenge.")
+        show_approval_request(st)
 
         rule("6. A human approves the challenge")
         print(" ", approve(c, "challenge_approval"))
