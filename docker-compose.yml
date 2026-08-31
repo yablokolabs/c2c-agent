@@ -94,6 +94,10 @@ services:
     env_file: [.env]
     volumes:
       - ./data:/app/data
+      # The bot runs the same intake assessment as the api service, so it needs
+      # the same Claude Code login (or an ANTHROPIC_API_KEY in .env).
+      - ${HOME}/.claude:/root/.claude
+      - ${HOME}/.claude.json:/root/.claude.json
     depends_on:
       api: {condition: service_healthy}
     profiles: [telegram]
