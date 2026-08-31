@@ -18,7 +18,8 @@ RUNDIR   := .run
 .DEFAULT_GOAL := help
 .PHONY: help setup test baseline evaluate evaluate-tools compare reproduce \
         trajectories restate-check restate-register restate-deregister \
-        up down failure-tests demo demo-reset demo-advance demo-approve clean audit
+        up down failure-tests demo demo-reset demo-advance demo-approve clean audit \
+        configure bot compose-up compose-down
 
 help:  ## show this help
 	@grep -hE '^[a-z][a-z-]*:.*?## ' $(MAKEFILE_LIST) | \
@@ -130,3 +131,16 @@ trajectories: setup  ## re-render every recorded run as judge-readable Markdown
 
 audit: setup  ## check the repo's claims against its evidence
 	$(PY) -m c2c.tools.audit --write
+
+configure: setup  ## interactive setup — writes .env and checks it works
+	$(PY) -m c2c.tools.configure
+
+bot: setup  ## run C2C on Telegram (needs make configure)
+	$(PY) -m c2c.telegram
+
+compose-up: ## start everything in Docker, including its own Restate
+	docker compose up --build -d
+	@echo "control plane  http://localhost:8099/docs"
+
+compose-down: ## stop and remove the Docker stack
+	docker compose down -v

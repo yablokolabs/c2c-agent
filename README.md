@@ -182,10 +182,21 @@ twice.
 
 ## Reproducing this
 
+**With Docker, and nothing else:**
+
 ```bash
 git clone https://github.com/yablokolabs/c2c-agent.git && cd c2c-agent
+cp .env.example .env          # add an ANTHROPIC_API_KEY
+docker compose up --build -d  # own Restate, control plane, durable workflow
+curl localhost:8199/c2c/health
+```
+
+**Or locally:**
+
+```bash
 make setup
-make test        # 76 tests, no model calls, no services
+make configure   # optional — writes .env and checks it actually works
+make test        # 165 tests, no model calls, no services
 make reproduce   # baseline + agent + comparison
 ```
 

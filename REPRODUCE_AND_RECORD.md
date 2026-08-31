@@ -23,6 +23,37 @@ git checkout 707daa0
 
 ---
 
+## 2a. The short version — Docker only
+
+If you have Docker and nothing else:
+
+```bash
+git clone https://github.com/yablokolabs/c2c-agent.git && cd c2c-agent
+cp .env.example .env          # put an ANTHROPIC_API_KEY in it
+docker compose up --build -d
+```
+
+That brings up its own Restate server, the control plane and the durable
+workflow service, and registers `C2CCase`. It uses non-default host ports
+(**9170** admin, **8180** ingress, **8199** API) specifically so it cannot
+collide with a Restate you already have.
+
+```bash
+curl localhost:8199/c2c/health        # {"ok":true,"cases":28,...}
+curl localhost:9170/services          # C2CCase
+docker compose --profile telegram up -d bot   # optional
+docker compose down -v
+```
+
+**Model access, two ways.** Either put `ANTHROPIC_API_KEY` in `.env`, or — if
+you are already logged into Claude Code on this machine — uncomment the
+`~/.claude` mounts in `docker-compose.yml` and the container reuses that OAuth
+session instead. Neither is needed to verify the project: `make test` and the
+durability suite make no model calls at all.
+
+For the guided version, `make configure` walks through it and *checks* each
+piece works, including sending a real test message to your Telegram bot.
+
 ## 2. Prerequisites and environment
 
 | Component | Version used | Required |

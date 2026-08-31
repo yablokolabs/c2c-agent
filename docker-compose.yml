@@ -1,0 +1,100 @@
+# C2C, self-contained.
+#
+#   cp .env.example .env    # then put an ANTHROPIC_API_KEY in it
+#   docker compose up
+#
+# This brings up its own Restate server on non-default host ports (9170 admin,
+# 8180 ingress, 8199 API) so it cannot collide with a Restate you already have.
+# That matters here: the machine this was developed on runs one shared with an
+# unrelated project. Override with C2C_RESTATE_ADMIN_PORT etc. if you like.
+#
+# Model access — two ways, pick either:
+#
+#   1. Put ANTHROPIC_API_KEY in .env. Simplest, and what `make configure` sets up.
+#
+#   2. Already logged into Claude Code on this machine? Reuse that login instead
+#      of getting a key, by uncommenting the ~/.claude mounts below. The
+#      container then runs `claude -p` against your existing OAuth session.
+#
+# Neither is needed to check the project works: `make test` makes no model calls
+# and neither does the durability suite. Only assessing a case needs a model.
+
+services:
+  restate:
+    image: docker.io/restatedev/restate:1.7.7
+    ports:
+      - "${C2C_RESTATE_ADMIN_PORT:-9170}:9070"   # admin
+      - "${C2C_RESTATE_INGRESS_PORT:-8180}:8080" # ingress
+    healthcheck:
+      test: ["CMD", "restate", "--yes", "svc", "ls"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - restate-data:/restate-data
+
+  api:
+    build: .
+    ports:
+      - "${C2C_API_PORT:-8199}:8099"
+    env_file: [.env]
+    volumes:
+      - ./data:/app/data
+      - ./trajectories:/app/trajectories
+      - ./evaluation:/app/evaluation
+      # Option 2 — reuse an existing Claude Code login instead of an API key:
+      # - ${HOME}/.claude:/root/.claude
+      # - ${HOME}/.claude.json:/root/.claude.json
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8099/c2c/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # The Restate SDK endpoint. Restate calls back into this; it is not something
+  # you call directly.
+  workflow:
+    build: .
+    command: ["python", "-m", "c2c.restate_service"]
+    env_file: [.env]
+    environment:
+      C2C_RESTATE_SERVICE_PORT: "9095"
+    volumes:
+      - ./data:/app/data
+      - ./trajectories:/app/trajectories
+    depends_on:
+      api: {condition: service_healthy}
+
+  # Registers the workflow with Restate, then exits. Compose has no "run once
+  # after both are up" primitive, so this is it.
+  register:
+    image: curlimages/curl:latest
+    depends_on:
+      restate: {condition: service_healthy}
+      workflow: {condition: service_started}
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        for i in $$(seq 1 30); do
+          if curl -fs -X POST http://restate:9070/deployments \
+               -H 'content-type: application/json' \
+               -d '{"uri":"http://workflow:9095","force":true}' > /dev/null; then
+            echo "registered C2CCase"; exit 0
+          fi
+          echo "waiting for the workflow service..."; sleep 2
+        done
+        echo "could not register C2CCase"; exit 1
+
+  # Optional. Only starts with: docker compose --profile telegram up
+  bot:
+    build: .
+    command: ["python", "-m", "c2c.telegram"]
+    env_file: [.env]
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      api: {condition: service_healthy}
+    profiles: [telegram]
+
+volumes:
+  restate-data:
