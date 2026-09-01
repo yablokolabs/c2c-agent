@@ -249,6 +249,50 @@ class Telegram:
             return False
         return "?" not in (record.get("reply") or "")
 
+    def _case_waits_for_evidence(self, case_id: str) -> bool:
+        """True when the workflow is durably waiting for the passenger to send
+        the documents the agent asked for (AWAITING_EVIDENCE).
+
+        Fails closed: if the control plane cannot be read, the plain
+        acknowledgment is sent, so a blip can never turn into a lost message.
+        """
+        try:
+            state = self.http.get(f"{self.api}/c2c/cases/{case_id}").json()
+            return state.get("state") == "AWAITING_EVIDENCE"
+        except Exception:  # noqa: BLE001
+            return False
+
+    def _send_evidence(self, chat_id: str, case_id: str, text: str,
+                       attachment: Optional[tuple]) -> None:
+        """Record what the passenger sent in answer to the evidence request.
+
+        The documents go to the case file first (the re-assessment reads the
+        file), then the workflow is told, using the round it is actually
+        waiting on — resolving the wrong promise would leave the case waiting
+        forever.
+        """
+        docs = []
+        if text:
+            docs.append({"type": "correspondence", "content": text})
+        if attachment:
+            name, content = attachment
+            docs.append({"type": "correspondence", "content": f"[{name}]\n{content}"})
+        if not docs:
+            self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
+                              "in touch if anything else is needed.")
+            return
+        try:
+            state = self.http.get(f"{self.api}/c2c/cases/{case_id}").json()
+            round_n = int(state.get("evidence_round") or 0)
+            self.http.post(f"{self.api}/c2c/cases/{case_id}/evidence",
+                           json={"round": round_n, "documents": docs})
+            self.say(chat_id, "Got it — I've added that to your case and I'm "
+                              "re-checking it with the new documents.")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  could not record evidence for {case_id}: {exc!r}")
+            self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
+                              "in touch if anything else is needed.")
+
     def _fallback_reply(self, record: dict) -> str:
         """A passenger should never get a blank acknowledgment when the model
         returned a usable intake record but left `reply` empty.
@@ -329,13 +373,19 @@ class Telegram:
             # arrived, the case opened, and this message came in while it was
             # being processed or after). The intake conversation was deliberately
             # ended when the case opened; starting a fresh one would interrogate
-            # the passenger from zero. Acknowledge deterministically instead —
-            # no model call, nothing to drift into a first-contact question.
+            # the passenger from zero. If the case is durably waiting for
+            # evidence, the message IS the evidence — record it and let the
+            # workflow re-assess. Otherwise acknowledge deterministically, no
+            # model call, nothing to drift into a first-contact question.
             if chat_id in self.opened_cases:
                 case_id = self.opened_cases[chat_id]
-                self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
-                                  "in touch if anything else is needed.")
-                handled.append({"case_id": case_id, "event": "acknowledged"})
+                if self._case_waits_for_evidence(case_id):
+                    self._send_evidence(chat_id, case_id, text, attachment)
+                    handled.append({"case_id": case_id, "event": "evidence recorded"})
+                else:
+                    self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
+                                      "in touch if anything else is needed.")
+                    handled.append({"case_id": case_id, "event": "acknowledged"})
                 continue
             attachment = None
             doc = msg.get("document") or (msg.get("photo") or [{}])[-1]

@@ -117,6 +117,37 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     await _set_state(ctx, "ASSESSED")
 
     action = verdict.get("next_action")
+    if action == "request_evidence":
+        # The agent needs documents the passenger has not sent. The case waits
+        # durably instead of closing: the passenger is told exactly what is
+        # missing, and every time they send something the case is re-assessed
+        # with the new documents until the agent either has enough (and the
+        # case proceeds) or closes it.
+        #
+        # Each round waits on its own promise (`evidence_0`, `evidence_1`, ...)
+        # so a replay cannot re-read a resolved promise and spin without new
+        # input. And the re-assess step has a fresh name per round, because
+        # Restate deduplicates ctx.run by name — reusing "assess" would hand
+        # back the first verdict.
+        evidence_round = 0
+        while True:
+            missing = verdict.get("missing_evidence") or []
+            await _set_state(ctx, "AWAITING_EVIDENCE", evidence_round=evidence_round)
+            await _tell(ctx, "evidence_requested", pnr=req.get("pnr", case_id),
+                        missing="\n".join(f"• {m}" for m in missing) or "nothing on file")
+            await ctx.promise(f"evidence_{evidence_round}").value()
+            evidence_round += 1
+
+            async def do_reassess() -> dict:
+                return await _post(f"{CONTROL_PLANE}/c2c/assess", json={"case_id": case_id})
+
+            verdict = await ctx.run(f"assess_after_evidence_{evidence_round}", do_reassess,
+                                    max_attempts=3)
+            ctx.set("verdict", verdict)
+            action = verdict.get("next_action")
+            if action != "request_evidence":
+                break
+
     if action not in CONSEQUENTIAL:
         await _set_state(ctx, "CLOSED_NO_ACTION")
         if action == "request_evidence":
@@ -303,9 +334,24 @@ async def carrier_event(ctx: restate.WorkflowSharedContext, event: dict) -> dict
 
 
 @case_workflow.handler()
+async def evidence(ctx: restate.WorkflowSharedContext, event: dict) -> dict:
+    """Deliver passenger-submitted evidence for the round the workflow is
+    waiting on. Resolving the same round twice is absorbed: a redelivered
+    submission cannot trigger two re-assessments."""
+    name = f"evidence_{int(event.get('round', 0))}"
+    try:
+        await ctx.promise(name).resolve(event.get("documents", event))
+        return {"accepted": True, "promise": name, "duplicate": False}
+    except Exception:  # noqa: BLE001 - already resolved
+        return {"accepted": False, "promise": name, "duplicate": True,
+                "detail": "this evidence round was already delivered"}
+
+
+@case_workflow.handler()
 async def status(ctx: restate.WorkflowSharedContext) -> dict:
     keys = ["state", "case_id", "verdict", "claim_id", "pending_action",
-            "carrier_reply", "challenge_reply", "escalation_reference", "opened_by"]
+            "carrier_reply", "challenge_reply", "escalation_reference", "opened_by",
+            "evidence_round"]
     out = {}
     for k in keys:
         v = await ctx.get(k)

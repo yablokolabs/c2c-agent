@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from c2c.agent.pipeline import run_case
 from c2c.artifact import case_summary, claim_letter
 from c2c.llm import DEFAULT_MODEL, LLM
-from c2c.intake import load_live, save as save_live, to_case
+from c2c.intake import add_documents, load_live, save as save_live, to_case
 from c2c.models import Verdict, load_cases
 from c2c.trajectory import Recorder
 
@@ -128,6 +128,38 @@ async def carrier_event(case_id: str, event: CarrierEvent) -> dict:
         )
         r.raise_for_status()
         return r.json()
+
+
+class EvidenceSubmission(BaseModel):
+    """Documents a passenger sent in reply to an evidence request."""
+    round: int = 0
+    documents: list[dict] = []
+
+
+@router.post("/cases/{case_id}/evidence")
+async def submit_evidence(case_id: str, req: EvidenceSubmission) -> dict:
+    """Record passenger-submitted evidence, then tell the workflow to re-assess.
+
+    Order matters: the documents are written to the case file first, because the
+    workflow's re-assessment reads the file. Only then is the `evidence_{round}`
+    promise resolved, which unblocks the workflow to re-run the agent with the
+    new documents.
+
+    If the promise is already resolved (duplicate submission), the documents are
+    still stored — storing twice is a small harm; losing a passenger's evidence
+    is not.
+    """
+    added = add_documents(case_id, req.documents)
+    if added is None:
+        raise HTTPException(404, f"no such live case {case_id!r}")
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.post(
+            f"{RESTATE_INGRESS}/{WORKFLOW}/{case_id}/evidence", json=req.model_dump()
+        )
+        r.raise_for_status()
+        result = r.json()
+    return {"case_id": case_id, "added": added, "accepted": result.get("accepted"),
+            "duplicate": result.get("duplicate", False)}
 
 
 @router.get("/cases/{case_id}")

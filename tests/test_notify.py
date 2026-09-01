@@ -49,6 +49,22 @@ def test_an_evidence_request_lists_what_is_missing():
     assert "isn't a claim worth making" not in out
 
 
+def test_the_evidence_loop_waits_on_a_fresh_promise_each_round():
+    """The case waits durably for evidence instead of closing. Each round must
+    wait on its own promise (a replay must not re-read a resolved promise and
+    spin), and the re-assessment must have a fresh step name (Restate
+    deduplicates ctx.run by name — reusing "assess" would hand back the first
+    verdict)."""
+    import inspect
+
+    from c2c import workflow
+
+    src = inspect.getsource(workflow)
+    assert "AWAITING_EVIDENCE" in src
+    assert 'ctx.promise(f"evidence_{evidence_round}")' in src
+    assert 'ctx.run(f"assess_after_evidence_{evidence_round}"' in src
+
+
 def test_an_evidence_request_gets_its_own_message_not_a_no_claim():
     """request_evidence must not tell the passenger "there isn't a claim worth
     making" — the agent simply needs more documents, and saying otherwise is

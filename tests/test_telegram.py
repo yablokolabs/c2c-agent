@@ -426,6 +426,76 @@ def test_a_follow_up_after_the_case_opens_is_acknowledged_not_interrogated(tmp_p
     assert not any("which airline" in t or "tell me what happened" in t.lower() for t in sent)
 
 
+def test_evidence_for_an_open_case_is_recorded_not_acked(tmp_path, monkeypatch):
+    """A case that asked for evidence stays open and waiting; the passenger's
+    next message is evidence, not chatter — it goes to the case file and the
+    workflow is told to re-assess on the round it is actually waiting for.
+    No model call; no interrogation.
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+
+    class Stub(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    if "getUpdates" in url:
+                        return {"result": [
+                            {"update_id": 1, "message": {"chat": {"id": "9"}, "text": (
+                                "Flight IN300 from Helsinki to Istanbul was cancelled. "
+                                "Booking IN5540, Y. Tanaka.")}},
+                            {"update_id": 2, "message": {"chat": {"id": "9"}, "text": (
+                                "here is my boarding pass: IN300 23JUN")}},
+                        ]}
+                    if "/c2c/cases/" in url:
+                        return {"state": "AWAITING_EVIDENCE", "evidence_round": 2}
+                    return {"result": {"file_path": "docs/ticket.txt"}}
+            return R()
+
+        def post(self, url, json=None):
+            self.posts.append((url, json))
+            class R:
+                def json(_):
+                    if "from-intake" in url:
+                        return {"case_id": "C2C-2026-EVID1"}
+                    return {"ok": True}
+            return R()
+
+    class CountingLLM(IntakeStubLLM):
+        def __init__(self):
+            super().__init__(READY)
+            self.calls = 0
+
+        def complete(self, system, user, max_tokens=4096):
+            self.calls += 1
+            return super().complete(system, user, max_tokens)
+
+    class TestBot(Telegram):
+        llm = None
+
+        def handle_message(self, chat_id, text, attachment=None, llm=None):
+            if self.llm is None:
+                self.llm = CountingLLM()
+            return super().handle_message(chat_id, text, attachment, llm=self.llm)
+
+    http = Stub()
+    tg = TestBot(token="t", chat_id="1", api="http://cp", client=http)
+    handled = tg.poll_once()
+    assert any(h.get("event") == "case opened" for h in handled)
+    assert any(h.get("event") == "evidence recorded" for h in handled)
+    assert tg.llm.calls == 1, "recording evidence must not call the model"
+    evidence_calls = [p for p in http.posts if p[0].endswith("/evidence")]
+    assert len(evidence_calls) == 1
+    assert evidence_calls[0][1]["round"] == 2, "must resolve the round the workflow waits on"
+    docs = evidence_calls[0][1]["documents"]
+    assert any("boarding pass: IN300" in d["content"] for d in docs)
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert any("added that to your case" in t for t in sent)
+    assert not any("which airline" in t or "tell me what happened" in t.lower() for t in sent)
+
+
 def test_conversations_are_kept_separate_per_chat():
     tg = _tg(IntakeStubHTTP())
     tg.handle_message("1", "passenger one", llm=IntakeStubLLM(NOT_READY))

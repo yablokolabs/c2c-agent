@@ -76,6 +76,27 @@ def test_empty_documents_are_dropped_not_stored_blank():
     assert [d.doc_id for d in c.documents] == ["D2"]
 
 
+def test_passenger_evidence_is_appended_to_the_live_case(tmp_path):
+    from c2c.intake import add_documents, load_live
+
+    save(to_case(RECORD, case_id="LIVE-EVID"), tmp_path)
+    ids = add_documents("LIVE-EVID", [
+        {"type": "correspondence", "content": "here is the boarding pass"},
+        {"type": "boarding_pass", "content": "IN300 23JUN"},
+    ], tmp_path)
+    assert ids == ["E2", "E3"]  # D1 from intake, then evidence continues the numbering
+    back = load_live(tmp_path)["LIVE-EVID"]
+    assert len(back.documents) == 3  # the booking confirmation from intake + 2
+    assert back.documents[1].content == "here is the boarding pass"
+    assert back.documents[2].type == "boarding_pass"
+
+
+def test_evidence_for_a_case_not_on_disk_returns_none(tmp_path):
+    from c2c.intake import add_documents
+
+    assert add_documents("LIVE-MISSING", [{"content": "x"}], tmp_path) is None
+
+
 def test_a_live_case_survives_the_process_that_received_it(tmp_path):
     c = to_case(RECORD, case_id="LIVE-TEST1")
     save(c, tmp_path)

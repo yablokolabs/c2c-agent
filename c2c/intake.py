@@ -204,6 +204,32 @@ def remove_incomplete(chat_id: str, directory: Optional[Path] = None) -> None:
         pass
 
 
+def add_documents(case_id: str, documents: list[dict],
+                  directory: Path = LIVE_CASES) -> Optional[list[str]]:
+    """Append passenger-submitted evidence to a live case file.
+
+    A case that asked for evidence stays open and waiting (AWAITING_EVIDENCE in
+    the workflow); the passenger sends the missing documents over chat and this
+    is what records them, before the workflow is told to re-assess. The re-run
+    reads the file, so the new documents must be on disk first.
+
+    Returns the doc ids added, or None if the case is not on disk.
+    """
+    case = load_live(directory).get(case_id)
+    if case is None:
+        return None
+    start = len(case.documents)
+    for i, d in enumerate(documents, start=start + 1):
+        dtype = d.get("type", "correspondence")
+        case.documents.append(Document(
+            doc_id=f"E{i}",
+            type=dtype if dtype in DOC_TYPES else "correspondence",
+            content=str(d.get("content", "")),
+        ))
+    save(case, directory)
+    return [d.doc_id for d in case.documents[start:]]
+
+
 def save(case: Case, directory: Path = LIVE_CASES) -> Path:
     """Persist a live case. The control plane is restartable and holds no state;
     a case that arrived from a passenger has to outlive the process that
