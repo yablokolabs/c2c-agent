@@ -767,9 +767,9 @@ opens the case, the "?" is acknowledged, and the model is called exactly once.
 **Lesson.** The conversation-drop at case open is now handled at both ends: the
 case only opens when the model is done asking (F-016), and anything the
 passenger says afterwards is acknowledged rather than re-collected (F-017). The
-remaining boundary is in-memory: after a bot restart the opened-case mark is
-gone, so a follow-up message starts intake again. Recording the case-per-chat
-mapping durably is a future experiment, not this fix.
+remaining boundary was in-memory: after a bot restart the opened-case mark was
+gone, so a follow-up message started intake again. That boundary is now closed
+in F-020 — the mapping is persisted.
 
 ---
 
@@ -816,6 +816,81 @@ was told anything. And: **a container is a snapshot of its env at creation**.
 The bot, api and workflow read the same `.env`, but a recreated container picks
 up a fixed token and a thirty-hour-old one does not. After any `.env` change,
 recreate every container that reads it; checking one is not checking the rest.
+
+---
+
+## F-019 — Approval requests were never sent, so every consequential case stalled silently
+
+| | |
+|---|---|
+| **Found** | live case `C2C-2026-R69TF` — "nothing is replied at telegram end" after the carrier tool |
+| **Commit** | fixed in `1628e68` |
+| **Evidence** | `send_approval_request` (with the Approve/Reject keyboard) had **no caller** in the live path; the demo rendered it, the bot never sent it. Case sat at `AWAITING_APPROVAL` forever |
+
+**Observed.** A live case reached the approval gate and the passenger heard
+nothing. The workflow suspended on the durable `approval` promise — exactly as
+designed — and waited. The carrier tool's refusal had resolved the
+`carrier_response` promise early, but the reply can only come after the claim
+is filed, and the claim can only be filed after approval, and the passenger was
+never asked. From the passenger's side: nothing.
+
+**Root cause.** The approval request with the Approve/Reject buttons existed
+only in the demo tooling (`c2c.tools.demo` renders it) and as an unused method
+on the bot. Nothing in the live path ever sent it. A case that suspends on a
+human answer must deliver the question; rendering it for a demo is not that.
+This is F-018's shape again — the workflow's steps all "succeeded" while the
+passenger was told nothing — but structural this time, not a token.
+
+**Corrective change.** The workflow now sends the approval request through the
+durable notify step (`_ask_approval`, inside `ctx.run` so a replay cannot send
+twice), with the inline keyboard whose callback data carries the promise name
+it is waiting on. `format_request`/`keyboard` moved into `notify` (it owns
+"telling the passenger what is happening"); the bot re-exports them and its
+existing callback handling resolves the promise.
+
+**Outcome.** 197 passed, 1 skipped.
+
+**Lesson.** Anything a passenger must answer has to be *delivered by the
+workflow* — a button rendered by demo tooling is not a channel. And the carrier
+tool's "the passenger should hear from C2C within a minute or two" is only true
+once the claim is actually filed; before that, the refusal waits its turn
+behind evidence and approval, which is correct but surprising if the tool
+implies otherwise.
+
+---
+
+## F-020 — The chat-to-case mapping was in-memory, so a restart forgot the passenger's case
+
+| | |
+|---|---|
+| **Found** | while answering "can I continue the chat thread or start afresh?" after a bot redeploy |
+| **Commit** | fixed in `1cc39ea` |
+| **Evidence** | `opened_cases` was a plain dict on the bot; a recreate emptied it |
+
+**Observed.** After a bot restart, a passenger sending a follow-up in an
+existing thread would start a **fresh intake** — the bot no longer knew the
+chat belonged to an open case — and a complete account could open a *duplicate*
+case instead of reaching the open one.
+
+**Root cause.** The `opened_cases` mapping (chat → case id) lived only in the
+bot's memory. The intake conversation and the case itself were durable; the
+one fact that connected the passenger to their case was not. F-017's lesson
+had even flagged this boundary as remaining.
+
+**Corrective change.** Persist the mapping to `data/opened_cases.json`, load it
+on start, and write it on every change. A restarted bot knows which chat owns
+which case, so follow-ups are acknowledged or routed to the open case's
+evidence channel exactly as before the restart. `/start` still clears the chat
+entirely.
+
+**Outcome.** Regression test: open a case, restart the bot, re-send the same
+message — acknowledged, not re-intaked, no duplicate. 198 passed, 1 skipped.
+
+**Lesson.** "The bot holds no state" is a design claim that must be checked
+against what a restart actually needs. The mapping from a person to their case
+is exactly the state a restart must not lose — it is the difference between
+the passenger's evidence landing on the open case and a duplicate case being
+opened from the same words.
 
 ---
 
