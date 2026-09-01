@@ -773,6 +773,52 @@ mapping durably is a future experiment, not this fix.
 
 ---
 
+## F-018 — The workflow's notifications silently died behind a stale container token
+
+| | |
+|---|---|
+| **Found** | live case `C2C-2026-QMMD7`, Sep 1 19:5x UTC |
+| **Commit** | fixed in `3e166bd` |
+| **Evidence** | `docker inspect c2c-agent-workflow-1` env showed `C2C_TELEGRAM_TOKEN=…0297s01:00 PM` — a timestamp appended to the token (the same corruption as the environment section below); workflow container created Aug 31 13:27, `.env` fixed since, never recreated |
+
+**Observed.** The passenger opened a case, got the intake acknowledgments, and
+then nothing. The workflow assessed the case (`POST /c2c/assess` → 200), reached
+`CLOSED_NO_ACTION` with `next_action: request_evidence`, and the passenger heard
+none of it. Every follow-up message got the bot's "your case is open"
+acknowledgment — the workflow's own notifications never arrived.
+
+**Root cause.** The workflow container was created Aug 31 13:27, before `.env`
+was fixed, and was never recreated — so it ran with the corrupted token
+(`…s01:00 PM`). Every `notify.send` got a Telegram 404 and was swallowed by
+design ("a dead notifier must never stall a case"). The case progressed
+perfectly and the passenger was told nothing. This is the F-008 shape again: a
+component that looks healthy while silently doing nothing — the workflow's
+durable steps all "succeeded" because the notification failure is recorded, not
+raised.
+
+There was a second, quieter lie: the case asked for evidence but the message it
+*would* have sent said "there isn't a claim worth making" — the
+`assessed_no_claim` template, the opposite of the truth for a
+`request_evidence` verdict.
+
+**Corrective change.**
+
+- Recreated the workflow container so it reads the fixed `.env`; verified
+  `getMe` from inside it returns the bot.
+- Added an `evidence_requested` notification stage that lists exactly what is
+  missing, and mapped `request_evidence` verdicts to it in the workflow.
+
+**Outcome.** 191 passed, 1 skipped.
+
+**Lesson.** A notification layer whose contract is "never raise" needs its own
+health check — the workflow's steps succeeding is not evidence the passenger
+was told anything. And: **a container is a snapshot of its env at creation**.
+The bot, api and workflow read the same `.env`, but a recreated container picks
+up a fixed token and a thirty-hour-old one does not. After any `.env` change,
+recreate every container that reads it; checking one is not checking the rest.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |
