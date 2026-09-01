@@ -87,6 +87,18 @@ omitted. See `docs/STACK.md`.
 
 ---
 
+## Intake memory — within a session, and across a restart
+
+The intake step was re-asking for facts the passenger had already given. Two
+axes, two fixes:
+
+| Stage | What was tried, and why | Evidence | Decision / learning |
+|---|---|---|---|
+| **Intake prompt + reply path** (`62d8abf`, `46f14d9`) | The model was not told it was seeing a continuing conversation, so it could drift back into "I need everything" mid-exchange. The prompt now says the input is the whole conversation so far; the Telegram reply path became state-aware instead of a blank acknowledgment. | regression tests for the exact live exchange: a complete account followed by a reply that no longer asks for name, airline, flight, date and what happened · 182 passed | **KEEP.** Fixed the within-session half. |
+| **Restart durability** (`6e57242` working tree) | The persistence half of the same fix was broken: `save_incomplete` wrote the model record instead of the conversation, and `load_incomplete` returned `None` before ever opening the file. A worker restart still made the passenger start from zero. Persist the conversation itself, reload it on `_conversation`, and delete it once the case opens. | new regression test that simulates a worker restart mid-conversation — fails before, passes after · 185 passed | **KEEP.** F-015. A durability fix needs a test that kills the process; the committed "durability" fix had never exercised the read path. |
+
+---
+
 ## Found while wiring up the Telegram demo — environment issues
 
 Not model findings: these surfaced while taking the finished system from the

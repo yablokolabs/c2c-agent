@@ -138,12 +138,16 @@ def to_case(record: dict, case_id: Optional[str] = None) -> Case:
     )
 
 
-def save_incomplete(chat_id: str, record: dict, directory: Optional[Path] = None) -> Optional[Path]:
-    """Persist an in-progress intake record before the case is opened.
+def save_incomplete(chat_id: str, record: dict, messages: Optional[list[str]] = None,
+                    attachments: Optional[list[tuple[str, str]]] = None,
+                    directory: Optional[Path] = None) -> Optional[Path]:
+    """Persist an in-progress intake conversation before the case is opened.
 
     The live conversation is the part that dies first when the worker restarts.
     This keeps it durable enough that a passenger does not get asked from zero
-    just because the process that received their first message is gone.
+    just because the process that received their first message is gone. The
+    conversation itself (messages and attachments) is what must survive, with
+    the model's record kept alongside for the next turn.
 
     Returns the path written, or None if intake cannot be made durable in this
     runtime. A missing persistent intake is not a case failure: the in-memory
@@ -156,16 +160,26 @@ def save_incomplete(chat_id: str, record: dict, directory: Optional[Path] = None
     except OSError:
         return None
     path = directory / f"{chat_id}.json"
+    payload = {
+        "messages": list(messages or []),
+        "attachments": list(attachments or []),
+        "record": record,
+    }
     try:
-        path.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n")
+        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
     except OSError:
         return None
     return path
 
 
 def load_incomplete(chat_id: str, directory: Optional[Path] = None) -> Optional[dict]:
+    """Reload a persisted incomplete conversation for a chat.
+
+    Returns None when there is nothing usable on disk. Callers default to the
+    standard intake directory, matching save_incomplete.
+    """
     if directory is None:
-        return None
+        directory = INCOMPLETE_INTAKE
     path = directory / f"{chat_id}.json"
     if not path.exists():
         return None
@@ -173,6 +187,21 @@ def load_incomplete(chat_id: str, directory: Optional[Path] = None) -> Optional[
         return json.loads(path.read_text())
     except Exception:  # noqa: BLE001 - one bad file must not hide the rest
         return None
+
+
+def remove_incomplete(chat_id: str, directory: Optional[Path] = None) -> None:
+    """Forget a persisted incomplete conversation once a case has been opened.
+
+    The passenger's account now lives in the case file, and leaving the intake
+    file behind would resurrect an already-opened conversation on the next
+    restart — and a ready record could open a duplicate case.
+    """
+    if directory is None:
+        directory = INCOMPLETE_INTAKE
+    try:
+        (directory / f"{chat_id}.json").unlink(missing_ok=True)
+    except OSError:
+        pass
 
 
 def save(case: Case, directory: Path = LIVE_CASES) -> Path:

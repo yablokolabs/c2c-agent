@@ -674,6 +674,54 @@ model it impersonated (F-007), and now a paused workflow read as a slow one.
 
 ---
 
+## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
+
+| | |
+|---|---|
+| **Found** | while verifying the intake memory fix from `46f14d9` end to end |
+| **Commit** | introduced by `46f14d9`, fixed after `6e57242` |
+| **Evidence** | `tests/test_telegram.py::test_incomplete_intake_survives_a_worker_restart` fails before the fix: after a restart the model sees only the latest message |
+
+**Observed.** The passenger keeps getting asked from zero after the Telegram
+worker restarts — "it keeps forgetting and keeps asking again and again". The
+in-memory conversation accumulates correctly while the worker is up, and two
+commits (`62d8abf`, `46f14d9`) had already fixed the prompt and added
+persistence. But the persistence half was broken in two ways, so a restart
+still lost everything:
+
+1. `save_incomplete` wrote the **model's record** (passenger_name, pnr,
+   narrative, …) to disk. It never wrote the conversation itself.
+2. `_conversation` reloaded with `load_incomplete(chat_id)` and looked for
+   `persisted["messages"]` — but the default `directory` was `None`, so
+   `load_incomplete` returned `None` **before ever opening the file**, and even
+   if it had opened it, the persisted blob had no `messages` key.
+
+The restart path had no test at all, which is how both defects survived the
+"durability" commit.
+
+**Corrective change.**
+
+- `save_incomplete` now persists `{messages, attachments, record}` — the
+  conversation is the thing that must survive, with the record kept alongside.
+- `load_incomplete` defaults to the standard intake directory, matching
+  `save_incomplete`, and `_conversation` reconstructs the `Intake` from the
+  persisted messages (with a fallback to the record's narrative for files
+  written by the broken version).
+- `remove_incomplete` deletes the file once a case is opened, so a restart
+  cannot resurrect an already-opened conversation and open a duplicate case.
+
+**Outcome.** Three regression tests added: a restart mid-conversation preserves
+all prior messages in the model's next prompt; opening a case clears the
+persisted intake; and a `/start` reset discards it too. 185 passed, 1 skipped.
+
+**Lesson.** A fix that claims durability needs a test that kills the process.
+The in-memory path was fully tested; the persisted path was written,
+committed, and never exercised — the code was even correct about *wanting*
+`messages` on reload, while writing a blob that could never contain it. The
+two halves of a round-trip can each look right and still not connect.
+
+---
+
 ## F-014 — The workflow timed out on its own agent
 
 | | |

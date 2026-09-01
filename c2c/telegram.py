@@ -164,11 +164,18 @@ class Telegram:
         if existing is not None and existing.messages:
             return existing
         persisted = intake_mod.load_incomplete(chat_id)
-        if persisted and persisted.get("messages"):
-            conv = intake_mod.Intake(messages=list(persisted.get("messages", [])),
-                                     attachments=list(persisted.get("attachments", [])))
-            self.conversations[chat_id] = conv
-            return conv
+        if persisted:
+            messages = list(persisted.get("messages") or [])
+            attachments = [(name, text) for name, text in persisted.get("attachments") or []]
+            # Files written before the conversation itself was persisted only
+            # carried the model record; fall back to its narrative so nothing
+            # the passenger already said is lost.
+            if not messages and (persisted.get("record") or {}).get("narrative"):
+                messages = [persisted["record"]["narrative"]]
+            if messages:
+                conv = intake_mod.Intake(messages=messages, attachments=attachments)
+                self.conversations[chat_id] = conv
+                return conv
         return self.conversations.setdefault(chat_id, intake_mod.Intake())
 
     def fetch_file(self, file_id: str) -> str:
@@ -213,7 +220,7 @@ class Telegram:
         # should not be asked from zero because the process that received their
         # first message went away. If persistence fails, the in-memory
         # conversation still works while the worker is up.
-        intake_mod.save_incomplete(chat_id, record)
+        intake_mod.save_incomplete(chat_id, record, conv.messages, conv.attachments)
 
         reply = record.get("reply") or _fallback_reply(record)
         self.say(chat_id, reply)
@@ -289,6 +296,7 @@ class Telegram:
             # A first contact deserves an introduction, not an interrogation.
             if text.strip().lower() in ("/start", "start", "hi", "hello", "hey"):
                 self.conversations.pop(chat_id, None)
+                intake_mod.remove_incomplete(chat_id)
                 self.say(chat_id, GREETING)
                 handled.append({"case_id": "-", "event": "greeted"})
                 continue
@@ -305,6 +313,7 @@ class Telegram:
                     # The workflow itself announces the reference and what happens
                     # next, so saying it here too would just say it twice.
                     self.conversations.pop(chat_id, None)
+                    intake_mod.remove_incomplete(chat_id)
                     handled.append({"case_id": case_id, "event": "case opened"})
             else:
                 handled.append({"case_id": "-", "event": "intake in progress"})

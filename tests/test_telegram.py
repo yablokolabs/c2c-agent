@@ -186,7 +186,37 @@ def test_the_conversation_accumulates_across_messages():
     assert "my flight was cancelled" in llm2.seen[0] and "MR414" in llm2.seen[0]
 
 
-def test_a_complete_live_exchange_does_not_restart_from_zero(tmp_path):
+def test_incomplete_intake_survives_a_worker_restart(tmp_path, monkeypatch):
+    """A passenger mid-conversation is not asked from zero just because the
+    Telegram worker restarted. The in-progress conversation is persisted per
+    chat before replying, and a fresh process reloads it for the next message.
+
+    This is the restart half of the intake-memory fix: within a running worker
+    the conversation accumulates in memory, but a restart must not make the
+    passenger repeat everything.
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+
+    # First worker: passenger gives the first half of the account.
+    first = Telegram(token="t", chat_id="1", api="http://cp", client=IntakeStubHTTP())
+    first.handle_message("1", "my flight was cancelled", llm=IntakeStubLLM(NOT_READY))
+
+    # The worker dies. A brand-new instance has no in-memory state at all.
+    restarted = Telegram(token="t", chat_id="1", api="http://cp", client=IntakeStubHTTP())
+    llm = IntakeStubLLM(READY)
+    restarted.handle_message("1", "it was MR414 on 6 March", llm=llm)
+
+    # The model must have been given the earlier message too — otherwise the
+    # passenger is being asked from zero again, which is exactly the failure
+    # this regression test exists for.
+    assert "my flight was cancelled" in llm.seen[0]
+    assert "MR414" in llm.seen[0]
+
+
+def test_a_complete_live_exchange_does_not_restart_from_zero(tmp_path, monkeypatch):
     """The failure mode described in the live intake: the passenger gives a
     complete account, then the next reply still asks for name, airline, flight,
     date and what happened as if the passenger had said nothing.
@@ -199,7 +229,7 @@ def test_a_complete_live_exchange_does_not_restart_from_zero(tmp_path):
 
     http = IntakeStubHTTP()
     tg = Telegram(token="t", chat_id="1", api="http://cp", client=http)
-    intake_mod.INCOMPLETE_INTAKE = tmp_path / "intake"
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
 
     record_so_far = _json.dumps({
         "passenger_name": "Y. Tanaka",
@@ -226,6 +256,46 @@ def test_a_complete_live_exchange_does_not_restart_from_zero(tmp_path):
     assert "name, the airline and flight number" not in " ".join(sent)
     assert "name, booking reference, flight number" not in " ".join(sent)
     assert "Tell me your name" not in " ".join(sent)
+
+
+def test_opening_a_case_clears_the_persisted_incomplete(tmp_path, monkeypatch):
+    """Once a case is opened, the persisted intake conversation is removed —
+    otherwise a restart would resurrect the same ready conversation and could
+    open a duplicate case.
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+
+    class OpensCase(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    return {"result": [{"update_id": 1, "message": {
+                        "chat": {"id": "9"}, "text": "my flight was cancelled"}}]}
+            return R()
+
+        def post(self, url, json=None):
+            self.posts.append((url, json))
+            class R:
+                def json(_):
+                    if "from-intake" in url:
+                        return {"case_id": "C2C-2026-ABCDE"}
+                    return {"ok": True}
+            return R()
+
+    class OpensCaseTelegram(Telegram):
+        """poll_once drives handle_message without an llm; inject the stub so
+        the intake assessment makes no real model call."""
+        def handle_message(self, chat_id, text, attachment=None, llm=None):
+            return super().handle_message(chat_id, text, attachment, llm=IntakeStubLLM(READY))
+
+    tg = OpensCaseTelegram(token="t", chat_id="1", api="http://cp", client=OpensCase())
+    handled = tg.poll_once()
+    assert handled == [{"case_id": "C2C-2026-ABCDE", "event": "case opened"}]
+    assert "9" not in tg.conversations
+    assert not (intake_mod.INCOMPLETE_INTAKE / "9.json").exists()
 
 
 def test_conversations_are_kept_separate_per_chat():
@@ -281,6 +351,22 @@ def test_an_opener_does_not_become_part_of_the_case_narrative():
     tg = _tg(http)
     tg.poll_once()
     assert "9" not in tg.conversations
+
+
+def test_an_opener_discards_any_persisted_incomplete(tmp_path, monkeypatch):
+    """A passenger who resets with /start means a fresh start: the persisted
+    incomplete conversation must go too, or a later restart would resurrect
+    the account they explicitly reset."""
+    from c2c import intake as intake_mod
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+    path = intake_mod.INCOMPLETE_INTAKE / "9.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{\"messages\": [\"old account\"]}")
+
+    http = _updates_http("/start")
+    _tg(http).poll_once()
+    assert not path.exists()
 
 
 def test_the_greeting_says_what_it_does_and_what_it_will_not_do():
