@@ -733,6 +733,46 @@ the container was rebuilt.
 
 ---
 
+## F-017 — A message arriving while the case opens landed in a fresh intake and was interrogated
+
+| | |
+|---|---|
+| **Found** | live test, Sep 1 19:40 UTC, container bot |
+| **Commit** | fixed in `9fdd9af` |
+| **Evidence** | container intake run `20260901T194019Z-intake-04783d` — account seen `messages: 1` with `ready: true`, then `?` seen `messages: 1` |
+
+**Observed.** Passenger sent the full account, then "?" while it was being
+processed. The bot replied correctly to the account ("We've opened a case for
+your cancelled flight IN300…") and then interrogated the "?" from zero ("which
+airline and flight, where it was going…"). The passenger: "but i already told".
+
+**Root cause.** Opening a case ends the intake conversation by design (the case
+file now owns the account; Restate owns the lifecycle). But the "?" arrived in
+the same poll batch, after the case had opened: the conversation was already
+dropped, so it landed in a fresh, empty intake. F-016's guard correctly let this
+one through — the model's reply had no question in it, so the case opened as it
+should. The follow-up message is the hole: nothing remembered that this chat's
+case is open, so any later message starts a first-contact interrogation.
+
+**Corrective change.** Track opened cases per chat (`opened_cases[chat_id]`). A
+message for a chat whose case is open is acknowledged deterministically — "Your
+case C2C-… is open, a caseworker will be in touch" — with **no model call**, so
+it can never drift into a first-contact question. `/start` still fully resets
+both the intake conversation and the opened-case mark.
+
+**Outcome.** Regression test replays the exact two-message batch: the account
+opens the case, the "?" is acknowledged, and the model is called exactly once.
+188 passed, 1 skipped.
+
+**Lesson.** The conversation-drop at case open is now handled at both ends: the
+case only opens when the model is done asking (F-016), and anything the
+passenger says afterwards is acknowledged rather than re-collected (F-017). The
+remaining boundary is in-memory: after a bot restart the opened-case mark is
+gone, so a follow-up message starts intake again. Recording the case-per-chat
+mapping durably is a future experiment, not this fix.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |
