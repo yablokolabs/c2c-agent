@@ -27,6 +27,57 @@ import httpx
 
 BANNER = "SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE"
 
+PROMISE_FOR_ACTION = {
+    "submit_claim": "approval",
+    "challenge_rejection": "challenge_approval",
+    "escalate": "escalation_approval",
+    "accept_settlement": "approval",
+    "send_followup": "approval",
+}
+
+ACTION_LABEL = {
+    "submit_claim": "Submit this claim to the carrier",
+    "challenge_rejection": "Challenge the carrier's rejection",
+    "escalate": "Escalate to the Synthetic Passenger Rights Body",
+    "accept_settlement": "Accept the carrier's settlement offer",
+    "send_followup": "Send a follow-up to the carrier",
+}
+
+
+def format_request(case_id: str, state: dict) -> str:
+    """The approval message. Everything a person needs to answer without
+    opening anything else, and nothing they don't."""
+    action = state.get("pending_action", "")
+    v = state.get("verdict") or {}
+    lines = [
+        f"*Case {case_id}* needs your approval",
+        "",
+        f"*{ACTION_LABEL.get(action, action)}*",
+        "",
+    ]
+    if v.get("compensation_units") is not None:
+        lines.append(f"Compensation: *{v['compensation_units']} units*")
+    if v.get("duty_of_care_units"):
+        lines.append(f"Duty of care: {v['duty_of_care_units']} units")
+    if v.get("downgrade_reimbursement_units"):
+        lines.append(f"Downgrade: {v['downgrade_reimbursement_units']} units")
+    if v.get("cause_class"):
+        lines.append(f"Cause: {v['cause_class'].replace('_', ' ')}")
+    if v.get("policy_citations"):
+        lines.append(f"Under: {', '.join(v['policy_citations'])}")
+    if v.get("rationale"):
+        lines += ["", v["rationale"]]
+    lines += ["", f"_{BANNER}_"]
+    return "\n".join(lines)
+
+
+def keyboard(case_id: str, action: str) -> dict:
+    promise = PROMISE_FOR_ACTION.get(action, "approval")
+    return {"inline_keyboard": [[
+        {"text": "Approve", "callback_data": f"ok|{case_id}|{promise}"},
+        {"text": "Reject", "callback_data": f"no|{case_id}|{promise}"},
+    ]]}
+
 
 def _load_dotenv() -> None:
     """Read .env if present. Keeps the bot token out of the shell history and
@@ -129,21 +180,26 @@ def configured() -> bool:
     return bool(TOKEN and CHAT_ID)
 
 
-def send(text: str, chat_id: Optional[str] = None, timeout: float = 15) -> dict:
+def send(text: str, chat_id: Optional[str] = None, timeout: float = 15,
+          reply_markup: Optional[dict] = None) -> dict:
     """Deliver one update. Never raises.
 
     A notifier that can throw is a notifier that can stall a claim. The workflow
     calls this from inside a durable step, and a durable step that fails is
     retried — so a Telegram outage would otherwise park the case rather than the
-    message.
+    message. `reply_markup` carries the Approve/Reject buttons for approval
+    requests.
     """
     if not configured():
         print(f"\n[notify — no C2C_TELEGRAM_TOKEN set, printing instead]\n{text}\n", flush=True)
         return {"delivered": False, "reason": "not configured", "text": text}
     try:
+        payload = {"chat_id": chat_id or CHAT_ID, "text": text, "parse_mode": "Markdown"}
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
         r = httpx.post(
             f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-            json={"chat_id": chat_id or CHAT_ID, "text": text, "parse_mode": "Markdown"},
+            json=payload,
             timeout=timeout,
         )
         if r.status_code == 200:

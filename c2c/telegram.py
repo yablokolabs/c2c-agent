@@ -27,27 +27,12 @@ import httpx
 
 from c2c import intake as intake_mod
 from c2c.llm import LLM
+from c2c.notify import ACTION_LABEL, PROMISE_FOR_ACTION, format_request, keyboard
 
 API = os.environ.get("C2C_API", "http://localhost:8099")
 TOKEN = os.environ.get("C2C_TELEGRAM_TOKEN", "")
 CHAT_ID = os.environ.get("C2C_TELEGRAM_CHAT_ID", "")
 BANNER = "SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE"
-
-PROMISE_FOR_ACTION = {
-    "submit_claim": "approval",
-    "challenge_rejection": "challenge_approval",
-    "escalate": "escalation_approval",
-    "accept_settlement": "approval",
-    "send_followup": "approval",
-}
-
-ACTION_LABEL = {
-    "submit_claim": "Submit this claim to the carrier",
-    "challenge_rejection": "Challenge the carrier's rejection",
-    "escalate": "Escalate to the Synthetic Passenger Rights Body",
-    "accept_settlement": "Accept the carrier's settlement offer",
-    "send_followup": "Send a follow-up to the carrier",
-}
 
 
 GREETING = """Hi — I'm C2C.
@@ -72,41 +57,6 @@ as text files too.
 I never send anything to an airline without asking you first.
 
 _SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE_"""
-
-
-def format_request(case_id: str, state: dict) -> str:
-    """The approval message. Everything a person needs to answer without
-    opening anything else, and nothing they don't."""
-    action = state.get("pending_action", "")
-    v = state.get("verdict") or {}
-    lines = [
-        f"*Case {case_id}* needs your approval",
-        "",
-        f"*{ACTION_LABEL.get(action, action)}*",
-        "",
-    ]
-    if v.get("compensation_units") is not None:
-        lines.append(f"Compensation: *{v['compensation_units']} units*")
-    if v.get("duty_of_care_units"):
-        lines.append(f"Duty of care: {v['duty_of_care_units']} units")
-    if v.get("downgrade_reimbursement_units"):
-        lines.append(f"Downgrade: {v['downgrade_reimbursement_units']} units")
-    if v.get("cause_class"):
-        lines.append(f"Cause: {v['cause_class'].replace('_', ' ')}")
-    if v.get("policy_citations"):
-        lines.append(f"Under: {', '.join(v['policy_citations'])}")
-    if v.get("rationale"):
-        lines += ["", v["rationale"]]
-    lines += ["", f"_{BANNER}_"]
-    return "\n".join(lines)
-
-
-def keyboard(case_id: str, action: str) -> dict:
-    promise = PROMISE_FOR_ACTION.get(action, "approval")
-    return {"inline_keyboard": [[
-        {"text": "Approve", "callback_data": f"ok|{case_id}|{promise}"},
-        {"text": "Reject", "callback_data": f"no|{case_id}|{promise}"},
-    ]]}
 
 
 def parse_callback(data: str) -> Optional[dict]:

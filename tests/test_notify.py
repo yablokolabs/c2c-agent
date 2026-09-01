@@ -150,6 +150,39 @@ def test_a_rejected_send_reports_telegrams_own_reason(monkeypatch):
     assert r["delivered"] is False and "chat not found" in r["reason"]
 
 
+def test_send_carries_the_approval_buttons_when_given(monkeypatch):
+    import c2c.notify as n
+
+    class R:
+        status_code = 200
+        def json(self): return {"ok": True}
+
+    sent = {}
+    def fake_post(url, json=None, timeout=15):
+        sent.update(json or {})
+        return R()
+
+    monkeypatch.setattr(n, "TOKEN", "t"); monkeypatch.setattr(n, "CHAT_ID", "1")
+    monkeypatch.setattr(n.httpx, "post", fake_post)
+    n.send("approve?", reply_markup={"inline_keyboard": [[{"text": "Approve"}]]})
+    assert "reply_markup" in sent and "inline_keyboard" in sent["reply_markup"]
+
+
+def test_every_approval_gate_sends_the_request_with_buttons():
+    """A case that suspends on a human approval must ask the passenger where
+    they already are — the buttons are what let the tap become the approval.
+    Without this the case waits silently at AWAITING_APPROVAL forever."""
+    import inspect
+
+    from c2c import workflow
+
+    src = inspect.getsource(workflow)
+    assert src.count("_ask_approval(") >= 3, "all three approval gates must ask"
+    assert "reply_markup=markup" in src
+    assert 'ctx.promise("approval")' in src and 'ctx.promise("challenge_approval")' in src \
+        and 'ctx.promise("escalation_approval")' in src
+
+
 def test_the_opening_message_gives_a_reference_the_passenger_can_quote():
     out = render("case_opened", case_id="C2C-2026-K7M2P")
     assert "C2C-2026-K7M2P" in out

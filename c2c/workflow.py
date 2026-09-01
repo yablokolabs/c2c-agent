@@ -35,6 +35,7 @@ import httpx
 import restate
 
 from c2c import notify
+from c2c.notify import format_request, keyboard
 
 CONTROL_PLANE = os.environ.get("C2C_CONTROL_PLANE", "http://localhost:8099")
 AIRLINE = os.environ.get("C2C_AIRLINE", "http://localhost:8099/airline")
@@ -89,6 +90,24 @@ async def _tell(ctx: restate.WorkflowContext, stage: str, **fields: Any) -> None
         return notify.send(notify.render(stage, **fields))
 
     await ctx.run(f"notify_{stage}", deliver, max_attempts=2)
+
+
+async def _ask_approval(ctx: restate.WorkflowContext, case_id: str, action: str,
+                        verdict: dict, promise_name: str) -> None:
+    """Send the approval request, with the Approve/Reject buttons.
+
+    The case suspends on a durable promise and consumes nothing until someone
+    answers, which may be days — so the passenger has to be able to answer from
+    where they already are. The callback data carries the promise name the
+    workflow is waiting on; the bot's callback handling resolves it.
+    """
+    text = format_request(case_id, {"pending_action": action, "verdict": verdict or {}})
+    markup = keyboard(case_id, action)
+
+    async def deliver() -> dict:
+        return notify.send(text, reply_markup=markup)
+
+    await ctx.run(f"notify_approval_{promise_name}", deliver, max_attempts=2)
 
 
 @case_workflow.main()
@@ -165,8 +184,10 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
 
     # --- human approval -----------------------------------------------------
     # A durable promise, not a poll. The workflow suspends here and consumes
-    # nothing until someone answers, which may be days.
+    # nothing until someone answers, which may be days. The passenger is asked
+    # on Telegram, with the Approve/Reject buttons.
     await _set_state(ctx, "AWAITING_APPROVAL", pending_action=action)
+    await _ask_approval(ctx, case_id, action, verdict, "approval")
     decision = await ctx.promise("approval").value()
 
     if not decision.get("approved"):
@@ -237,6 +258,7 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     await _set_state(ctx, "AWAITING_APPROVAL", pending_action="challenge_rejection")
     await _tell(ctx, "rejection_challengeable",
                 rationale=verdict.get("rationale", "the record does not support their ground"))
+    await _ask_approval(ctx, case_id, "challenge_rejection", verdict, "challenge_approval")
     ch_decision = await ctx.promise("challenge_approval").value()
     if not ch_decision.get("approved"):
         await _set_state(ctx, "CLOSED_BY_HUMAN")
@@ -281,6 +303,7 @@ async def _await_carrier(
 async def _escalate(ctx: restate.WorkflowContext, case_id: str, ground: str) -> dict:
     await _set_state(ctx, "AWAITING_APPROVAL", pending_action="escalate")
     await _tell(ctx, "escalation_ready", pnr=case_id, ground=ground)
+    await _ask_approval(ctx, case_id, "escalate", {}, "escalation_approval")
     decision = await ctx.promise("escalation_approval").value()
     if not decision.get("approved"):
         await _set_state(ctx, "CLOSED_BY_HUMAN")
