@@ -42,6 +42,27 @@ BANNER = "SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE"
 OPENED_CASES_FILE = Path(os.environ.get("C2C_OPENED_CASES_FILE", "data/opened_cases.json"))
 
 
+def _extract_pdf(data: bytes) -> str:
+    """Pull the text out of a PDF so it can be treated as evidence.
+
+    Returns the extracted text, or a short explanation if the PDF is a scan
+    (image-only) or corrupt — a blank string would look like an empty document
+    that happens to be evidence-shaped.
+    """
+    try:
+        from pypdf import PdfReader
+        from io import BytesIO
+        reader = PdfReader(BytesIO(data))
+        pages = [(page.extract_text() or "").strip() for page in reader.pages]
+        text = "\n\n".join(p for p in pages if p).strip()
+        if text:
+            return text
+        return "[PDF received but no extractable text — if it is a scan, please " \
+               "send the text or a photo of it]"
+    except Exception as exc:  # noqa: BLE001 - a bad PDF must not drop the message
+        return f"[PDF could not be read: {exc!r}]"
+
+
 def _load_opened_cases() -> dict[str, str]:
     try:
         if OPENED_CASES_FILE.exists():
@@ -160,17 +181,23 @@ class Telegram:
     def fetch_file(self, file_id: str) -> str:
         """Download an attachment and return its text.
 
-        Only text-shaped attachments are read. A photo of a boarding pass would
-        need OCR, which is not built — and saying so is better than silently
-        storing an empty document that looks like evidence.
+        Text-shaped attachments are read as-is; PDFs are extracted with pypdf —
+        boarding passes, cancellation notices and incident reports arrive as
+        PDFs, and storing a placeholder instead of their text would make the
+        evidence channel silently useless. Photos would need OCR, which is not
+        built — and saying so is better than storing an empty document that
+        looks like evidence.
         """
         try:
             meta = self.http.get(f"{self.base}/getFile", params={"file_id": file_id}).json()
             path = meta["result"]["file_path"]
-            if not path.lower().endswith((".txt", ".md", ".csv", ".json", ".eml")):
-                return f"[attachment {path} received; C2C reads text attachments only]"
             r = self.http.get(f"https://api.telegram.org/file/bot{self.token}/{path}")
-            return r.text[:20000]
+            lower = path.lower()
+            if lower.endswith(".pdf"):
+                return _extract_pdf(r.content)[:20000]
+            if lower.endswith((".txt", ".md", ".csv", ".json", ".eml")):
+                return r.text[:20000]
+            return f"[attachment {path} received; C2C reads text attachments and PDFs only]"
         except Exception as exc:  # noqa: BLE001 - a bad attachment must not drop the message
             return f"[attachment could not be read: {exc!r}]"
 

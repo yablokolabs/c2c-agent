@@ -620,7 +620,53 @@ def test_a_non_text_attachment_says_so_rather_than_storing_a_blank():
                 def json(_): return {"result": {"file_path": "photos/pass.jpg"}}
             return R()
     out = _tg(PhotoHTTP()).fetch_file("file-1")
-    assert "text attachments only" in out
+    assert "text attachments and PDFs only" in out
+
+
+def test_a_pdf_attachment_is_read_not_stored_as_a_placeholder():
+    """Passengers send check-in confirmations and cancellation notices as PDFs.
+    A PDF must have its text extracted and treated as evidence — storing a
+    "text attachments only" placeholder instead would make the evidence
+    channel silently useless for the documents that matter most."""
+    from io import BytesIO
+
+    def make_pdf(text: str) -> bytes:
+        objs = [
+            b"<< /Type /Catalog /Pages 2 0 R >>",
+            b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+            b"/Resources << /Font << /F1 5 0 R >> >> >>",
+            b"<< /Length %d >>\nstream\n%s\nendstream" % (
+                len(b"BT /F1 24 Tf 72 700 Td (%s) Tj ET" % text.encode()),
+                b"BT /F1 24 Tf 72 700 Td (%s) Tj ET" % text.encode()),
+            b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        ]
+        out = bytearray(b"%PDF-1.4\n")
+        offsets = []
+        for i, o in enumerate(objs, 1):
+            offsets.append(len(out))
+            out += b"%d 0 obj " % i + o + b" endobj\n"
+        xref = len(out)
+        out += b"xref\n0 %d\n" % (len(objs) + 1)
+        out += b"0000000000 65535 f \n"
+        for off in offsets:
+            out += b"%010d 00000 n \n" % off
+        out += (b"trailer << /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
+                % (len(objs) + 1, xref))
+        return bytes(out)
+
+    pdf_bytes = make_pdf("CHECKED IN - ACCEPTED FOR TRAVEL")
+
+    class PDFHTTP(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                text = ""
+                content = pdf_bytes
+                def json(_): return {"result": {"file_path": "docs/check_in.pdf"}}
+            return R()
+
+    out = _tg(PDFHTTP()).fetch_file("file-1")
+    assert "ACCEPTED FOR TRAVEL" in out, f"PDF text must be extracted, got: {out!r}"
 
 
 def _updates_http(text):

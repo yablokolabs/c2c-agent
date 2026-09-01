@@ -13,6 +13,9 @@ dependencies = [
     # missing here, so a clean clone could not start the workflow service.
     "hypercorn>=0.17",
     "restate-sdk>=1.0",
+    # Boarding passes, cancellations and incident reports arrive as PDFs; the
+    # bot must read them or the evidence channel stores placeholders.
+    "pypdf>=4.0",
 ]
 
 [project.optional-dependencies]
