@@ -894,6 +894,53 @@ opened from the same words.
 
 ---
 
+## F-021 — The evidence branch read `attachment` before it was extracted, and dropped the passenger's documents
+
+| | |
+|---|---|
+| **Found** | live demo: passenger attached three PDFs in answer to an evidence request; bot replied with the generic "case is open" acknowledgment three times and the case never re-assessed |
+| **Commit** | fixed in `2416bea` |
+| **Evidence** | `poll failed, retrying: cannot access local variable 'attachment'` at 20:45:55; no `POST /c2c/cases/*/evidence` in the api access log; case still `AWAITING_EVIDENCE` with `evidence_round: 0` and no documents on file |
+
+**Observed.** A passenger sent three documents (check-in confirmation,
+cancellation notice, incident report) in answer to the evidence request. The
+bot acknowledged each one with the generic "case is open" message. The
+workflow never re-assessed — the case stayed at `AWAITING_EVIDENCE` asking
+for documents that had already been sent.
+
+**Root cause.** In `poll_once`, the evidence branch called
+`self._send_evidence(chat_id, case_id, text, attachment)` — but `attachment`
+was only assigned *after* that branch. On the first message of a poll batch
+for an open case, `attachment` was unbound, raising `UnboundLocalError`, which
+killed the whole poll. The update had already advanced the offset, so the
+message was consumed and lost — no retry, no evidence, no reply. The generic
+acknowledgment the passenger saw was the *preceding* messages being drained.
+
+The existing test missed it because it ran two updates in one batch: the first
+message took the intake path and bound `attachment` before the second message
+reached the evidence branch. A document as the *first* message in a batch for
+an already-open case was never exercised.
+
+**Corrective change.** Extract the attachment once, up front, before the
+opened-case branch, so both the evidence and intake paths see it. Also name
+the case in the evidence-request message (`case *C2C-...*`) so a passenger
+with several open cases knows which one is asking — in this incident the
+passenger was replying to a different case's request while the bot checked
+the chat's mapped case, which was not yet waiting.
+
+**Outcome.** Regression test: a document as the only message in a poll batch
+for an open `AWAITING_EVIDENCE` case is recorded, its text reaches the case
+file, and no model call fires. 199 passed, 1 skipped.
+
+**Lesson.** A variable read before it is assigned fails *only on the first
+iteration* — which is exactly the case a test with a warm-up message never
+sees. When a branch can be entered on the first pass, the test must enter it
+on the first pass too. And the incident showed the same shape as F-018: the
+bot looked healthy (it acknowledged!) while silently doing nothing for the
+case that mattered.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |
