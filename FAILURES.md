@@ -941,6 +941,78 @@ case that mattered.
 
 ---
 
+## F-022 — A redeployed workflow kept Restate's old handler manifest, so every `/evidence` call 404'd
+
+| | |
+|---|---|
+| **Found** | live demo: bot recorded the passenger's evidence, then the api's call to Restate's `evidence` handler returned `404 Not Found` — the case stayed at `AWAITING_EVIDENCE` forever |
+| **Commit** | fixed in `2416bea` + `make restate-register` after every workflow redeploy |
+| **Evidence** | `httpx.HTTPStatusError: Client error '404 Not Found' for url 'http://restate:8080/C2CCase/.../evidence'`; `GET /services` on the admin port listed `status`, `run`, `carrier_event`, `approve` but **not** `evidence`; the deployment's `created_at` predated the evidence handler |
+
+**Observed.** After the bot ingested the passenger's documents, the api's
+`POST /evidence` failed with 404 from Restate. The documents were written to
+the case file (the api writes before calling Restate) but the workflow's
+promise never resolved, so the case waited on evidence that had already been
+sent.
+
+**Root cause.** Restate holds a *manifest* of the workflow's handlers, learned
+when the deployment is registered. The `register` one-shot in compose (and
+`make restate-register`) is what teaches it. Redeploying the workflow container
+with `docker compose up -d` alone does **not** re-run that one-shot, so Restate
+kept the manifest from the *first* registration — which predated the
+`evidence` handler. All the older handlers (`status`, `approve`, `carrier_event`)
+kept working, which made the failure look case-specific rather than a stale
+deployment.
+
+**Corrective change.** Re-register the deployment after every workflow redeploy
+(`make restate-register`, or `docker compose up register`). Verified the
+`evidence` handler appears in `/services` after re-registration, and the
+passenger's evidence resolved the promise and unblocked the case.
+
+**Outcome.** Evidence round resolved; the case re-assessed, reached
+`AWAITING_APPROVAL`, and the claim was filed.
+
+**Lesson.** A redeploy that only replaces the container does not replace what
+the orchestrator *knows about* the service. Restate's handler manifest is
+learned at registration time, so the deploy step and the registration step are
+one step — split them and every new handler silently 404s while the old ones
+keep working.
+
+---
+
+## F-023 — The bot could not read PDF attachments, so evidence was stored as a placeholder
+
+| | |
+|---|---|
+| **Found** | live demo: passenger attached a check-in confirmation, cancellation notice and incident report as PDFs; the case file recorded `[attachment ... received; C2C reads text attachments only]` and the re-assessment still asked for the documents |
+| **Commit** | fixed in `a431faa` |
+| **Evidence** | `fetch_file` returned a placeholder for any path not ending in `.txt/.md/.csv/.json/.eml`; the re-assessment's `list_documents` showed only the placeholder text |
+
+**Observed.** The passenger sent PDFs. The bot recorded them as evidence (the
+F-021 fix worked) but their content was a placeholder saying text attachments
+only, so the agent, re-assessing, still listed the check-in confirmation and
+cancellation notice as missing. The passenger then sent `.txt` versions, which
+were read correctly and unblocked the case.
+
+**Root cause.** `fetch_file` treated anything that was not a plain-text
+extension as unreadable and returned a placeholder without downloading it.
+Real evidence — boarding passes, cancellation notices, incident reports — is
+exactly the PDF case that was refused.
+
+**Corrective change.** Extract PDF text with `pypdf` (added to dependencies).
+Scanned PDFs with no extractable text get an explicit "if it is a scan, send
+the text" message rather than a blank that looks like evidence.
+
+**Outcome.** A regression test builds a PDF in-memory and asserts its text
+reaches the case file. 200 passed, 1 skipped.
+
+**Lesson.** The evidence channel is only as good as the formats it can read.
+Refusing PDFs silently degraded every document the passenger was actually
+likely to send; the failure surfaced only because the passenger tried `.txt`
+as a workaround and it worked.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |
