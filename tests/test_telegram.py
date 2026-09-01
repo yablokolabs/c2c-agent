@@ -156,6 +156,17 @@ def test_a_passenger_message_becomes_an_intake_record():
     assert "my flight was cancelled" in llm.seen[0]
 
 
+def test_a_message_is_acknowledged_before_the_model_reply():
+    """The intake assessment takes tens of seconds; a passenger who sees
+    nothing assumes the bot is dead and keeps sending messages. Receipt must
+    be acknowledged immediately, before the model call."""
+    http = IntakeStubHTTP()
+    _tg(http).handle_message("1", "IN300 was cancelled", llm=IntakeStubLLM(READY))
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert sent[0] == "Got it — one moment while I look at this."
+    assert any("Got it — I have what I need" in t for t in sent)
+
+
 def test_the_passenger_always_gets_a_reply():
     http = IntakeStubHTTP()
     _tg(http).handle_message("1", "help", llm=IntakeStubLLM(READY))

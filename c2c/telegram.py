@@ -213,6 +213,12 @@ class Telegram:
         if attachment:
             conv.attachments.append(attachment)
 
+        # The intake assessment takes tens of seconds of model time. A passenger
+        # who sees nothing that long assumes the bot is dead and sends more
+        # messages. Acknowledge receipt before the model call so the silence is
+        # an expected wait, not a failure.
+        self.say(chat_id, "Got it — one moment while I look at this.")
+
         record = intake_mod.understand(conv, llm or LLM(), rec=self.recorder)
         if record is None:
             self.say(chat_id, "Sorry — I didn't follow that. Can you tell me the flight, "
