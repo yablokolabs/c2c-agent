@@ -94,11 +94,16 @@ Field rules:
 - `ready` is `true` only when there is enough to attempt an assessment: who they
   are, which flight, and what went wrong. Missing receipts or a missing
   operational record do not block readiness — the caseworker can ask for those.
+  **And** `ready` means you are done asking: if your reply still asks the
+  passenger for anything, `ready` must be `false`. Opening a case ends the
+  conversation, so a `true` with a question in the reply would throw away the
+  passenger's answer.
 - `missing` is written for the passenger to read, not for a lawyer. "The
   airline's cancellation email, so we can see when they told you" beats
   "S8.1(e) notification timestamp".
-- `reply` acknowledges what you have so far. If you already have enough to open a
-  case, say that and stop asking. If you do not, say what you still need and ask
-  one or two specific follow-up questions. Never invent a generic first-contact
-  question after the passenger has already given the key facts. Warm, brief, no
-  jargon, no promises about outcomes.
+- `reply` acknowledges what you have so far. If `ready` is `true`, say the case
+  is opening and do **not** ask the passenger anything — no question marks, no
+  "if you have X, that would help". If `ready` is `false`, say what you still
+  need and ask one or two specific follow-up questions. Never invent a generic
+  first-contact question after the passenger has already given the key facts.
+  Warm, brief, no jargon, no promises about outcomes.

@@ -222,9 +222,22 @@ class Telegram:
         # conversation still works while the worker is up.
         intake_mod.save_incomplete(chat_id, record, conv.messages, conv.attachments)
 
-        reply = record.get("reply") or _fallback_reply(record)
+        reply = record.get("reply") or self._fallback_reply(record)
         self.say(chat_id, reply)
-        return {"ready": bool(record.get("ready")), "record": record}
+        return {"ready": self._ready(record), "record": record}
+
+    @staticmethod
+    def _ready(record: dict) -> bool:
+        """A ready intake record must not still be asking the passenger things.
+
+        Opening a case drops the intake conversation, so if the model claims
+        ready while its reply asks a question, the passenger's answer would land
+        in a fresh intake and they would be asked from zero. Treat that as not
+        ready: keep the conversation going until the model asks nothing more.
+        """
+        if not record.get("ready"):
+            return False
+        return "?" not in (record.get("reply") or "")
 
     def _fallback_reply(self, record: dict) -> str:
         """A passenger should never get a blank acknowledgment when the model

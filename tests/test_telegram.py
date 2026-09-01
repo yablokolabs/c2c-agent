@@ -186,6 +186,61 @@ def test_the_conversation_accumulates_across_messages():
     assert "my flight was cancelled" in llm2.seen[0] and "MR414" in llm2.seen[0]
 
 
+def test_ready_while_still_asking_does_not_open_or_reset(tmp_path, monkeypatch):
+    """The live failure from the IN300 exchange: the model says ready ("I
+    have enough to open a case") but its reply still asks a question ("was it
+    23 June 2025 or 2026?"). Opening the case at that point drops the
+    conversation, and the passenger's answer lands in a fresh intake that asks
+    from zero. A ready record whose reply still asks something must not open.
+    """
+    from c2c import intake as intake_mod
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+    http, tg = IntakeStubHTTP(), None
+    tg = _tg(http)
+    ready_but_asking = _json.dumps({
+        "passenger_name": "Y. Tanaka", "pnr": "IN5540", "narrative": "cancelled",
+        "documents": [], "facts": {"what_happened": "cancellation"},
+        "missing": ["the year"], "ready": True,
+        "reply": "Thanks — I have enough to open a case. Was it 23 June 2025 or 2026?",
+    })
+    out = tg.handle_message("1", "Flight IN300 was cancelled", llm=IntakeStubLLM(ready_but_asking))
+    assert out["ready"] is False, "a ready record that still asks must not open the case"
+    # The conversation must survive, so the answer to the question continues it.
+    assert tg.conversations["1"].messages == ["Flight IN300 was cancelled"]
+
+    # The answer arrives; the model asks nothing more, so now it opens.
+    done = _json.dumps({
+        "passenger_name": "Y. Tanaka", "pnr": "IN5540", "narrative": "cancelled in 2026",
+        "documents": [], "facts": {"what_happened": "cancellation"},
+        "missing": [], "ready": True,
+        "reply": "Got it — 2026. I'm opening your case now.",
+    })
+    llm2 = IntakeStubLLM(done)
+    out2 = tg.handle_message("1", "2026", llm=llm2)
+    assert out2["ready"] is True
+    # And the model saw the whole conversation, not just the latest message.
+    assert "Flight IN300 was cancelled" in llm2.seen[0]
+
+
+def test_a_ready_record_without_a_reply_gets_a_state_aware_fallback(tmp_path, monkeypatch):
+    """The fallback path is a method, not a module function; calling it
+    unqualified raised NameError on exactly the path it exists for."""
+    from c2c import intake as intake_mod
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+    http = IntakeStubHTTP()
+    out = _tg(http).handle_message("1", "IN300 was cancelled", llm=IntakeStubLLM(_json.dumps({
+        "passenger_name": "Y. Tanaka", "pnr": "IN5540", "narrative": "cancelled",
+        "documents": [], "facts": {"what_happened": "cancellation",
+                                     "flight_number": "IN300"}, "missing": [],
+        "ready": True, "reply": "",
+    })))
+    assert out["ready"] is True
+    sent = [p[1]["text"] for p in http.posts if "sendMessage" in p[0]]
+    assert any("enough to start your case" in t for t in sent)
+
+
 def test_incomplete_intake_survives_a_worker_restart(tmp_path, monkeypatch):
     """A passenger mid-conversation is not asked from zero just because the
     Telegram worker restarted. The in-progress conversation is persisted per
