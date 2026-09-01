@@ -43,9 +43,10 @@ def test_no_claim_explains_why_rather_than_just_saying_no():
 
 
 def test_an_evidence_request_lists_what_is_missing():
-    out = render("evidence_requested", pnr="X",
+    out = render("evidence_requested", case_id="C2C-2026-XYZ", pnr="X",
                  missing="• booking confirmation\n• boarding pass")
     assert "booking confirmation" in out and "boarding pass" in out
+    assert "C2C-2026-XYZ" in out, "the passenger must know which case is asking"
     assert "isn't a claim worth making" not in out
 
 

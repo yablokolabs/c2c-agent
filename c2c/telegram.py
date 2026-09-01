@@ -335,6 +335,18 @@ class Telegram:
             chat_id = str(msg.get("chat", {}).get("id", ""))
             text = msg.get("text") or msg.get("caption") or ""
 
+            # Fetch the attachment once, up front. The evidence branch below
+            # needs it too — a document the passenger sends in answer to an
+            # evidence request IS the evidence — and extracting it after that
+            # branch left it unbound there: the first message in a poll batch
+            # for an open case crashed with UnboundLocalError and the
+            # passenger's documents were dropped (FAILURES.md F-021).
+            attachment = None
+            doc = msg.get("document") or (msg.get("photo") or [{}])[-1]
+            if doc.get("file_id"):
+                attachment = (doc.get("file_name", "attachment"),
+                              self.fetch_file(doc["file_id"]))
+
             # A first contact deserves an introduction, not an interrogation.
             if text.strip().lower() in ("/start", "start", "hi", "hello", "hey"):
                 self.conversations.pop(chat_id, None)
@@ -363,11 +375,6 @@ class Telegram:
                                       "in touch if anything else is needed.")
                     handled.append({"case_id": case_id, "event": "acknowledged"})
                 continue
-            attachment = None
-            doc = msg.get("document") or (msg.get("photo") or [{}])[-1]
-            if doc.get("file_id"):
-                attachment = (doc.get("file_name", "attachment"),
-                              self.fetch_file(doc["file_id"]))
 
             out = self.handle_message(chat_id, text, attachment)
             if out["ready"] and out["record"]:

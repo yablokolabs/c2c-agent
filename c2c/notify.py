@@ -118,7 +118,7 @@ STAGES = {
     "evidence_requested": (
         "I've gone through what you sent for {pnr}, and there isn't enough to "
         "assess it yet.\n\n"
-        "What's missing:\n{missing}\n\n"
+        "What's missing (case *{case_id}*):\n{missing}\n\n"
         "Send these through when you have them and I'll pick the case straight "
         "back up."
     ),

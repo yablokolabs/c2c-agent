@@ -152,7 +152,7 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
         while True:
             missing = verdict.get("missing_evidence") or []
             await _set_state(ctx, "AWAITING_EVIDENCE", evidence_round=evidence_round)
-            await _tell(ctx, "evidence_requested", pnr=req.get("pnr", case_id),
+            await _tell(ctx, "evidence_requested", case_id=case_id, pnr=req.get("pnr", case_id),
                         missing="\n".join(f"• {m}" for m in missing) or "nothing on file")
             await ctx.promise(f"evidence_{evidence_round}").value()
             evidence_round += 1
@@ -174,7 +174,7 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
             # agent simply needs more documents is the same silence that kills
             # real claims. Say exactly what is missing.
             missing = verdict.get("missing_evidence") or []
-            await _tell(ctx, "evidence_requested", pnr=req.get("pnr", case_id),
+            await _tell(ctx, "evidence_requested", case_id=case_id, pnr=req.get("pnr", case_id),
                         missing="\n".join(f"• {m}" for m in missing) or "nothing on file")
         else:
             await _tell(ctx, "assessed_no_claim", pnr=req.get("pnr", case_id),

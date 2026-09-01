@@ -496,6 +496,54 @@ def test_evidence_for_an_open_case_is_recorded_not_acked(tmp_path, monkeypatch):
     assert not any("which airline" in t or "tell me what happened" in t.lower() for t in sent)
 
 
+def test_evidence_document_as_first_message_in_batch_does_not_crash(tmp_path, monkeypatch):
+    """The evidence branch must work when the document is the first (or only)
+    message in a poll batch. Before the fix, `attachment` was extracted *after*
+    the opened-case branch, so it was unbound exactly there: the first message
+    in a batch for an open case crashed with UnboundLocalError and the
+    passenger's documents were dropped (F-021).
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+
+    class Stub(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    if "getUpdates" in url:
+                        return {"result": [{"update_id": 7, "message": {
+                            "chat": {"id": "42"},
+                            "document": {"file_id": "FILE42",
+                                          "file_name": "boarding_pass.txt"},
+                            "caption": "here is my boarding pass",
+                        }}]}
+                    if "/c2c/cases/" in url:
+                        return {"state": "AWAITING_EVIDENCE", "evidence_round": 0}
+                    return {"result": {"file_path": "docs/boarding_pass.txt"}}
+            return R()
+
+        def post(self, url, json=None):
+            self.posts.append((url, json))
+            class R:
+                def json(_):
+                    return {"ok": True}
+            return R()
+
+    http = Stub()
+    tg = Telegram(token="t", chat_id="1", api="http://cp", client=http)
+    tg.opened_cases["42"] = "C2C-2026-F021"
+    handled = tg.poll_once()
+    assert any(h.get("event") == "evidence recorded" for h in handled)
+    evidence_calls = [p for p in http.posts if p[0].endswith("/evidence")]
+    assert len(evidence_calls) == 1
+    docs = evidence_calls[0][1]["documents"]
+    contents = "\n".join(d.get("content", "") for d in docs)
+    assert "boarding_pass.txt" in contents, "the document text must reach the case file"
+    assert "here is my boarding pass" in contents, "the caption is evidence too"
+
+
 def test_the_opened_case_mapping_survives_a_bot_restart(tmp_path, monkeypatch):
     """A passenger who sends a follow-up after a bot restart must not be asked
     from zero again — and their evidence must land on the open case, not a
