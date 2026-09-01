@@ -19,8 +19,10 @@ project runs without it, including the whole evaluation.
 
 from __future__ import annotations
 
+import json
 import os
 import time
+from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -33,6 +35,28 @@ API = os.environ.get("C2C_API", "http://localhost:8099")
 TOKEN = os.environ.get("C2C_TELEGRAM_TOKEN", "")
 CHAT_ID = os.environ.get("C2C_TELEGRAM_CHAT_ID", "")
 BANNER = "SYNTHETIC DEMO — NOT FOR SUBMISSION — NOT LEGAL ADVICE"
+
+# The chat -> case mapping outlives the process. Without it, a passenger who
+# sends a follow-up after a bot restart is asked from zero again — and their
+# evidence can land in a fresh, duplicate case instead of the open one.
+OPENED_CASES_FILE = Path(os.environ.get("C2C_OPENED_CASES_FILE", "data/opened_cases.json"))
+
+
+def _load_opened_cases() -> dict[str, str]:
+    try:
+        if OPENED_CASES_FILE.exists():
+            return json.loads(OPENED_CASES_FILE.read_text())
+    except Exception:  # noqa: BLE001 - one bad file must not hide the mapping
+        pass
+    return {}
+
+
+def _save_opened_cases(opened: dict[str, str]) -> None:
+    try:
+        OPENED_CASES_FILE.parent.mkdir(parents=True, exist_ok=True)
+        OPENED_CASES_FILE.write_text(json.dumps(opened, indent=2))
+    except OSError:
+        pass
 
 
 GREETING = """Hi — I'm C2C.
@@ -87,8 +111,9 @@ class Telegram:
         self.conversations: dict[str, intake_mod.Intake] = {}
         # Chat ids whose case is already open. A message that arrives while the
         # case was being opened, or after, must not land in a fresh intake that
-        # interrogates the passenger from zero.
-        self.opened_cases: dict[str, str] = {}
+        # interrogates the passenger from zero. Persisted, because a bot restart
+        # must not forget which chat owns which case.
+        self.opened_cases: dict[str, str] = _load_opened_cases()
         self.recorder = recorder
 
     def send_approval_request(self, case_id: str, state: dict) -> dict:
@@ -314,6 +339,7 @@ class Telegram:
             if text.strip().lower() in ("/start", "start", "hi", "hello", "hey"):
                 self.conversations.pop(chat_id, None)
                 self.opened_cases.pop(chat_id, None)
+                _save_opened_cases(self.opened_cases)
                 intake_mod.remove_incomplete(chat_id)
                 self.say(chat_id, GREETING)
                 handled.append({"case_id": "-", "event": "greeted"})
@@ -351,6 +377,7 @@ class Telegram:
                     # next, so saying it here too would just say it twice.
                     self.conversations.pop(chat_id, None)
                     self.opened_cases[chat_id] = case_id
+                    _save_opened_cases(self.opened_cases)
                     intake_mod.remove_incomplete(chat_id)
                     handled.append({"case_id": case_id, "event": "case opened"})
             else:

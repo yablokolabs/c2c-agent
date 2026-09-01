@@ -496,6 +496,59 @@ def test_evidence_for_an_open_case_is_recorded_not_acked(tmp_path, monkeypatch):
     assert not any("which airline" in t or "tell me what happened" in t.lower() for t in sent)
 
 
+def test_the_opened_case_mapping_survives_a_bot_restart(tmp_path, monkeypatch):
+    """A passenger who sends a follow-up after a bot restart must not be asked
+    from zero again — and their evidence must land on the open case, not a
+    duplicate. The chat -> case mapping is persisted.
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+    monkeypatch.setattr("c2c.telegram.OPENED_CASES_FILE", tmp_path / "opened_cases.json")
+
+    class Stub(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    if "getUpdates" in url:
+                        return {"result": [{"update_id": 1, "message": {
+                            "chat": {"id": "9"}, "text": "IN300 was cancelled, IN5540"}}]}
+                    if "/c2c/cases/" in url:
+                        return {"state": "AWAITING_CARRIER"}
+                    return {"result": {"file_path": "docs/ticket.txt"}}
+            return R()
+
+        def post(self, url, json=None):
+            self.posts.append((url, json))
+            class R:
+                def json(_):
+                    if "from-intake" in url:
+                        return {"case_id": "C2C-2026-KEEP1"}
+                    return {"ok": True}
+            return R()
+
+    class StubLLM(IntakeStubLLM):
+        backend = model = "stub"
+
+    class TestBot(Telegram):
+        def handle_message(self, chat_id, text, attachment=None, llm=None):
+            return super().handle_message(chat_id, text, attachment, llm=StubLLM(READY))
+
+    first = TestBot(token="t", chat_id="1", api="http://cp", client=Stub())
+    assert any(h.get("event") == "case opened" for h in first.poll_once())
+    assert (tmp_path / "opened_cases.json").exists()
+
+    # The bot dies. A brand-new instance has no in-memory state.
+    restarted = TestBot(token="t", chat_id="1", api="http://cp", client=Stub())
+    # Re-run the same update: the mapping must have been reloaded from disk.
+    assert restarted.opened_cases.get("9") == "C2C-2026-KEEP1"
+    handled = restarted.poll_once()
+    assert any(h.get("event") == "acknowledged" for h in handled)
+    assert not any(h.get("event") == "case opened" for h in handled), (
+        "a restarted bot must not open a duplicate case")
+
+
 def test_conversations_are_kept_separate_per_chat():
     tg = _tg(IntakeStubHTTP())
     tg.handle_message("1", "passenger one", llm=IntakeStubLLM(NOT_READY))
