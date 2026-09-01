@@ -674,6 +674,65 @@ model it impersonated (F-007), and now a paused workflow read as a slow one.
 
 ---
 
+## F-016 — A case opened while intake was still asking, and the answer landed in an empty conversation
+
+| | |
+|---|---|
+| **Found** | live IN300 exchange, Sep 1 19:26 UTC (stale host bot, SHA `33ea49b`) |
+| **Commit** | fixed after `9365f48`, verified in `65fa129` |
+| **Evidence** | `trajectories/runs/20260831T143136Z-intake-3038b2/events.jsonl` — 19:26:15 account seen with `messages: 3`, 19:27:04 answer `2026` seen with `messages: 1` |
+
+**Observed.** The passenger gave a complete account (IN300 Helsinki–Istanbul,
+23 June, booking IN5540, Y. Tanaka, told on the 22nd at 23:40). The intake
+agent remembered all of it — it restated every fact and asked only for the
+year. The passenger answered "2026", and the bot asked for the flight number
+and name from zero. The user's report: "after the year it kept asking the
+flight number again — that's forgetful."
+
+**Root cause.** The model set `ready: true` while its reply was still asking a
+question ("was it 23 June 2025 or 2026?"). `poll_once` saw `ready`, opened
+the case, and **dropped the intake conversation**. The answer to the bot's own
+question then arrived in a fresh, empty intake. The forgetting is real to the
+passenger, but the model did not forget — the conversation was deleted. Any
+model asked "2026" with zero context asks from zero.
+
+Two contributing layers, both worth recording:
+
+- **Design:** `ready` meant "enough to assess", not "done talking". Opening a
+  case ends the conversation, so the two meanings collide.
+- **Deployment:** the exchange was served by a stale host process
+  (`.venv/bin/python -m c2c.telegram`, started Aug 31) running pre-fix code
+  (SHA `33ea49b`) alongside the rebuilt container, splitting Telegram updates.
+
+**Corrective change.**
+
+- `ready` now means "done asking". The prompt says a ready reply must not ask
+  anything, and the code enforces it (F-006's lesson: enforce in the loop):
+  `Telegram._ready` returns false when the reply still contains a question, so
+  the case waits and the conversation survives until the model asks nothing
+  more. The passenger's answer then continues the same conversation.
+- Killed the stale host bot; the container is the only poller.
+- Also fixed the fallback reply path, which called a method unqualified and
+  would have raised `NameError` on the one path it exists for.
+
+**Outcome.** Regression test replays the exact exchange: ready-but-asking does
+not open the case, the conversation survives, and the follow-up answer is seen
+with full context. 187 passed, 1 skipped.
+
+**Lesson.** Two distinct signals — "enough to start" and "done talking" — were
+collapsed into one boolean, and the system acted on the first while the model
+meant the second. When one boolean gates a destructive transition (opening a
+case deletes the conversation), the semantics must be exact, and the guard
+belongs in the loop, not the prompt. The seventh instance in this project of
+two distinct conditions collapsing into one signal.
+
+The deployment half is the F-008 shape again: two processes answering the same
+channel, one of them silent about being stale. The check is to ask which
+process is actually serving — `ps` showed the leftover on the host long after
+the container was rebuilt.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |
