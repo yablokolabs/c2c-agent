@@ -353,6 +353,68 @@ def test_opening_a_case_clears_the_persisted_incomplete(tmp_path, monkeypatch):
     assert not (intake_mod.INCOMPLETE_INTAKE / "9.json").exists()
 
 
+def test_a_follow_up_after_the_case_opens_is_acknowledged_not_interrogated(tmp_path, monkeypatch):
+    """The passenger sent '?' while the account was being processed: the case
+    opened, the intake conversation was dropped, and the '?' landed in a fresh
+    intake that asked from zero ("which airline and flight…"). Once a case is
+    open for a chat, further messages are acknowledged deterministically — no
+    model call, no interrogation.
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+
+    class TwoUpdates(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    return {"result": [
+                        {"update_id": 1, "message": {"chat": {"id": "9"}, "text": (
+                            "Flight IN300 from Helsinki to Istanbul on 23 June 2026 was "
+                            "cancelled. Booking IN5540, Y. Tanaka. They told me on the "
+                            "22nd at 23:40. They're blaming a bird strike and say they "
+                            "owe me nothing.")}},
+                        {"update_id": 2, "message": {"chat": {"id": "9"}, "text": "?"}},
+                    ]}
+            return R()
+
+        def post(self, url, json=None):
+            self.posts.append((url, json))
+            class R:
+                def json(_):
+                    if "from-intake" in url:
+                        return {"case_id": "C2C-2026-ABCDE"}
+                    return {"ok": True}
+            return R()
+
+    class CountingLLM(IntakeStubLLM):
+        def __init__(self):
+            super().__init__(READY)
+            self.calls = 0
+
+        def complete(self, system, user, max_tokens=4096):
+            self.calls += 1
+            return super().complete(system, user, max_tokens)
+
+    class TestBot(Telegram):
+        llm = None
+
+        def handle_message(self, chat_id, text, attachment=None, llm=None):
+            if self.llm is None:
+                self.llm = CountingLLM()
+            return super().handle_message(chat_id, text, attachment, llm=self.llm)
+
+    tg = TestBot(token="t", chat_id="1", api="http://cp", client=TwoUpdates())
+    handled = tg.poll_once()
+    assert {"case_id": "C2C-2026-ABCDE", "event": "case opened"} in handled
+    assert any(h.get("event") == "acknowledged" for h in handled)
+    assert tg.llm.calls == 1, "the follow-up must not make a model call"
+    sent = [p[1]["text"] for p in tg.http.posts if "sendMessage" in p[0]]
+    assert any("case C2C-2026-ABCDE is open" in t for t in sent)
+    assert not any("which airline" in t or "tell me what happened" in t.lower() for t in sent)
+
+
 def test_conversations_are_kept_separate_per_chat():
     tg = _tg(IntakeStubHTTP())
     tg.handle_message("1", "passenger one", llm=IntakeStubLLM(NOT_READY))

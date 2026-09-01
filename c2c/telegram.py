@@ -135,6 +135,10 @@ class Telegram:
         # conversation is cheap to restart, and once a case is opened its content
         # is persisted by c2c.intake and its lifecycle by Restate.
         self.conversations: dict[str, intake_mod.Intake] = {}
+        # Chat ids whose case is already open. A message that arrives while the
+        # case was being opened, or after, must not land in a fresh intake that
+        # interrogates the passenger from zero.
+        self.opened_cases: dict[str, str] = {}
         self.recorder = recorder
 
     def send_approval_request(self, case_id: str, state: dict) -> dict:
@@ -309,9 +313,23 @@ class Telegram:
             # A first contact deserves an introduction, not an interrogation.
             if text.strip().lower() in ("/start", "start", "hi", "hello", "hey"):
                 self.conversations.pop(chat_id, None)
+                self.opened_cases.pop(chat_id, None)
                 intake_mod.remove_incomplete(chat_id)
                 self.say(chat_id, GREETING)
                 handled.append({"case_id": "-", "event": "greeted"})
+                continue
+
+            # A case is already open for this chat (the passenger's account
+            # arrived, the case opened, and this message came in while it was
+            # being processed or after). The intake conversation was deliberately
+            # ended when the case opened; starting a fresh one would interrogate
+            # the passenger from zero. Acknowledge deterministically instead —
+            # no model call, nothing to drift into a first-contact question.
+            if chat_id in self.opened_cases:
+                case_id = self.opened_cases[chat_id]
+                self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
+                                  "in touch if anything else is needed.")
+                handled.append({"case_id": case_id, "event": "acknowledged"})
                 continue
             attachment = None
             doc = msg.get("document") or (msg.get("photo") or [{}])[-1]
@@ -326,6 +344,7 @@ class Telegram:
                     # The workflow itself announces the reference and what happens
                     # next, so saying it here too would just say it twice.
                     self.conversations.pop(chat_id, None)
+                    self.opened_cases[chat_id] = case_id
                     intake_mod.remove_incomplete(chat_id)
                     handled.append({"case_id": case_id, "event": "case opened"})
             else:
