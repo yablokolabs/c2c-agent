@@ -119,8 +119,16 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
     action = verdict.get("next_action")
     if action not in CONSEQUENTIAL:
         await _set_state(ctx, "CLOSED_NO_ACTION")
-        await _tell(ctx, "assessed_no_claim", pnr=req.get("pnr", case_id),
-                    rationale=verdict.get("rationale", "no rationale recorded"))
+        if action == "request_evidence":
+            # Telling the passenger "there isn't a claim worth making" when the
+            # agent simply needs more documents is the same silence that kills
+            # real claims. Say exactly what is missing.
+            missing = verdict.get("missing_evidence") or []
+            await _tell(ctx, "evidence_requested", pnr=req.get("pnr", case_id),
+                        missing="\n".join(f"• {m}" for m in missing) or "nothing on file")
+        else:
+            await _tell(ctx, "assessed_no_claim", pnr=req.get("pnr", case_id),
+                        rationale=verdict.get("rationale", "no rationale recorded"))
         return {"case_id": case_id, "outcome": "closed_no_action",
                 "next_action": action, "verdict": verdict}
 

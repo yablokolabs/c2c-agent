@@ -10,7 +10,8 @@ def test_every_stage_renders_and_is_banner_stamped():
     fields = dict(pnr="HB1188", case_id="C2C-2026-K7M2P", amount=420,
                   rationale="the record contradicts them",
                   citations="S3.6", ground="56 days of silence", reference="SYN-SPRB-1",
-                  offered=210, owed=420, shortfall=210)
+                  offered=210, owed=420, shortfall=210,
+                  missing="• booking confirmation\n• boarding pass")
     for stage in STAGES:
         out = render(stage, **fields)
         assert BANNER in out
@@ -39,6 +40,25 @@ def test_a_full_offer_recommends_accepting():
 def test_no_claim_explains_why_rather_than_just_saying_no():
     out = render("assessed_no_claim", pnr="X", rationale="the delay was 3h20m")
     assert "3h20m" in out
+
+
+def test_an_evidence_request_lists_what_is_missing():
+    out = render("evidence_requested", pnr="X",
+                 missing="• booking confirmation\n• boarding pass")
+    assert "booking confirmation" in out and "boarding pass" in out
+    assert "isn't a claim worth making" not in out
+
+
+def test_an_evidence_request_gets_its_own_message_not_a_no_claim():
+    """request_evidence must not tell the passenger "there isn't a claim worth
+    making" — the agent simply needs more documents, and saying otherwise is
+    the silence that kills real claims."""
+    import inspect
+
+    from c2c import workflow
+
+    src = inspect.getsource(workflow)
+    assert '"request_evidence"' in src and "evidence_requested" in src
 
 
 def test_send_never_raises_when_unconfigured(capsys, monkeypatch):

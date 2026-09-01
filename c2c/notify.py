@@ -64,6 +64,13 @@ STAGES = {
         "On these facts there isn't a claim worth making, and I'd rather tell you "
         "that than have you chase it. Here's why:\n\n{rationale}"
     ),
+    "evidence_requested": (
+        "I've gone through what you sent for {pnr}, and there isn't enough to "
+        "assess it yet.\n\n"
+        "What's missing:\n{missing}\n\n"
+        "Send these through when you have them and I'll pick the case straight "
+        "back up."
+    ),
     "claim_filed": (
         "Filed. Your claim for *{amount} units* is with the airline ({case_id}).\n\n"
         "They now have 56 days to give a final answer. If they go quiet, I'll "
