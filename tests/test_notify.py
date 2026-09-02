@@ -125,6 +125,61 @@ def test_notifications_are_sent_from_inside_a_durable_step():
     assert "max_attempts=" in src, "a notifier outage must not park a claim"
 
 
+def test_delivery_retries_a_transient_failure_then_succeeds(monkeypatch):
+    """F-027: notify.send never raises, so ctx.run's exception-driven retries
+    can never see a refused delivery — a one-off blip used to swallow the
+    message while the step recorded success. The step itself must retry."""
+    import asyncio
+
+    from c2c import workflow
+
+    async def no_sleep(_):  # keep the test fast
+        return None
+    monkeypatch.setattr(workflow.asyncio, "sleep", no_sleep)
+
+    calls = []
+
+    def send_once() -> dict:
+        calls.append(1)
+        return {"delivered": False} if len(calls) == 1 else {"delivered": True}
+
+    result = asyncio.run(workflow._deliver_notify("test", send_once))
+    assert result["delivered"] is True
+    assert len(calls) == 2, "the transient failure should have been retried"
+
+
+def test_delivery_that_keeps_failing_is_logged_and_reported(capsys, monkeypatch):
+    import asyncio
+
+    from c2c import workflow
+
+    async def no_sleep(_):
+        return None
+    monkeypatch.setattr(workflow.asyncio, "sleep", no_sleep)
+
+    result = asyncio.run(workflow._deliver_notify(
+        "test", lambda: {"delivered": False, "reason": "chat not found"}))
+    assert result["delivered"] is False
+    out = capsys.readouterr().out
+    assert "NOT delivered after" in out, "a lost message must be loud, not silent"
+
+
+def test_a_failed_delivery_is_recorded_not_silently_accepted():
+    """F-027: the workflow must not record a refused delivery as a successful
+    step. The tell checks what notify.send actually reported and writes the
+    failure into case state, where status() can surface it."""
+    import inspect
+
+    from c2c import workflow
+
+    src = inspect.getsource(workflow._tell)
+    assert "_deliver_notify" in src
+    assert 'result.get("delivered")' in src
+    assert "ctx.set(\"notify_failure\"" in src
+    status_src = inspect.getsource(workflow.status)
+    assert "notify_failure" in status_src
+
+
 def test_every_workflow_transition_that_matters_tells_the_passenger():
     import inspect
 

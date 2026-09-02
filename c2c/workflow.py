@@ -27,15 +27,39 @@ registers with is shared with an unrelated project. See docs/ENVIRONMENT.md.
 
 from __future__ import annotations
 
+import asyncio
 import os
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import httpx
 import restate
 
 from c2c import notify
 from c2c.notify import format_request, keyboard
+
+# Deliveries are retried inside the durable step. notify.send never raises — by
+# design, so a Telegram outage cannot park a claim — which means ctx.run's
+# max_attempts (exception-driven) can never see a refused delivery. A transient
+# blip used to swallow the message permanently while the step recorded success
+# (F-027). Retrying here absorbs the blip; what still fails is logged loudly and
+# recorded in case state instead of vanishing without a trace.
+NOTIFY_ATTEMPTS = 3
+
+
+async def _deliver_notify(label: str, send_once: Callable[[], dict]) -> dict:
+    """Deliver one notification, retrying transient failures. Never raises."""
+    last: dict = {"delivered": False, "reason": "no attempt made"}
+    for attempt in range(1, NOTIFY_ATTEMPTS + 1):
+        last = send_once()
+        if last.get("delivered"):
+            return last
+        print(f"[notify] {label} attempt {attempt}/{NOTIFY_ATTEMPTS} failed: "
+              f"{last.get('reason') or last.get('status')}", flush=True)
+        if attempt < NOTIFY_ATTEMPTS:
+            await asyncio.sleep(attempt)  # 1s, 2s backoff
+    print(f"[notify] {label} NOT delivered after {NOTIFY_ATTEMPTS} attempts", flush=True)
+    return last
 
 CONTROL_PLANE = os.environ.get("C2C_CONTROL_PLANE", "http://localhost:8099")
 AIRLINE = os.environ.get("C2C_AIRLINE", "http://localhost:8099/airline")
@@ -82,14 +106,16 @@ async def _tell(ctx: restate.WorkflowContext, stage: str, **fields: Any) -> None
     """Tell the passenger where their case has got to.
 
     Inside `ctx.run`, so a replay after a crash does not re-send a message they
-    have already read. `notify.send` never raises, so a Telegram outage cannot
-    park a claim behind an undelivered update.
+    have already read. Delivery failures are retried within the step and, if
+    they persist, recorded in case state rather than swallowed (F-027).
     """
 
     async def deliver() -> dict:
-        return notify.send(notify.render(stage, **fields))
+        return await _deliver_notify(stage, lambda: notify.send(notify.render(stage, **fields)))
 
-    await ctx.run(f"notify_{stage}", deliver, max_attempts=2)
+    result = await ctx.run(f"notify_{stage}", deliver, max_attempts=2)
+    if not result.get("delivered"):
+        ctx.set("notify_failure", f"{stage}: {result.get('reason') or result.get('status')}")
 
 
 async def _ask_approval(ctx: restate.WorkflowContext, case_id: str, action: str,
@@ -105,9 +131,12 @@ async def _ask_approval(ctx: restate.WorkflowContext, case_id: str, action: str,
     markup = keyboard(case_id, action)
 
     async def deliver() -> dict:
-        return notify.send(text, reply_markup=markup)
+        return await _deliver_notify(
+            f"approval_{promise_name}", lambda: notify.send(text, reply_markup=markup))
 
-    await ctx.run(f"notify_approval_{promise_name}", deliver, max_attempts=2)
+    result = await ctx.run(f"notify_approval_{promise_name}", deliver, max_attempts=2)
+    if not result.get("delivered"):
+        ctx.set("notify_failure", f"approval_{promise_name}: {result.get('reason') or result.get('status')}")
 
 
 @case_workflow.main()
@@ -384,7 +413,7 @@ async def evidence(ctx: restate.WorkflowSharedContext, event: dict) -> dict:
 async def status(ctx: restate.WorkflowSharedContext) -> dict:
     keys = ["state", "case_id", "verdict", "claim_id", "pending_action",
             "carrier_reply", "challenge_reply", "escalation_reference", "opened_by",
-            "evidence_round"]
+            "evidence_round", "notify_failure"]
     out = {}
     for k in keys:
         v = await ctx.get(k)
