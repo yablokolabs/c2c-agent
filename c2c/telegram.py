@@ -264,21 +264,23 @@ class Telegram:
         except Exception:  # noqa: BLE001
             return False
 
-    def _send_evidence(self, chat_id: str, case_id: str, text: str,
-                       attachment: Optional[tuple]) -> None:
+    def _send_evidence(self, chat_id: str, case_id: str, docs: list[dict]) -> None:
         """Record what the passenger sent in answer to the evidence request.
+
+        `docs` is the whole batch from one poll cycle (all the messages and
+        attachments that arrived together), submitted as ONE evidence round.
+        Submitting each message separately would race the workflow: the first
+        POST resolves the round the workflow waits on and wakes it immediately,
+        the re-assessment runs against a case file that is still missing the
+        rest of the burst, and the later POSTs land on an already-resolved
+        round — stored on the file but never re-assessed, so the case waits
+        forever on a round nothing will resolve (FAILURES.md F-026).
 
         The documents go to the case file first (the re-assessment reads the
         file), then the workflow is told, using the round it is actually
         waiting on — resolving the wrong promise would leave the case waiting
         forever.
         """
-        docs = []
-        if text:
-            docs.append({"type": "correspondence", "content": text})
-        if attachment:
-            name, content = attachment
-            docs.append({"type": "correspondence", "content": f"[{name}]\n{content}"})
         if not docs:
             self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
                               "in touch if anything else is needed.")
@@ -340,6 +342,12 @@ class Telegram:
         r = self.http.get(f"{self.base}/getUpdates",
                           params={"offset": self.offset, "timeout": 25}).json()
         handled = []
+        # All evidence from one poll cycle goes out as a single submission per
+        # case. A burst of documents sent together (three PDFs in quick
+        # succession) must arrive as one round: submitted separately, the first
+        # one wakes the workflow and the rest land on an already-resolved
+        # round, so the re-assessment never sees them (F-026).
+        pending_evidence: dict[str, tuple[str, list[dict]]] = {}
         for update in r.get("result", []):
             self.offset = update["update_id"] + 1
 
@@ -395,7 +403,23 @@ class Telegram:
             if chat_id in self.opened_cases:
                 case_id = self.opened_cases[chat_id]
                 if self._case_waits_for_evidence(case_id):
-                    self._send_evidence(chat_id, case_id, text, attachment)
+                    docs = []
+                    if text:
+                        docs.append({"type": "correspondence", "content": text})
+                    if attachment:
+                        name, content = attachment
+                        docs.append({"type": "correspondence",
+                                     "content": f"[{name}]\n{content}"})
+                    if docs:
+                        _chat, existing = pending_evidence.get(case_id, (chat_id, []))
+                        pending_evidence[case_id] = (chat_id, existing + docs)
+                    else:
+                        # Empty message for a waiting case: still acknowledge
+                        # deterministically; nothing was sent to the file.
+                        self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
+                                          "in touch if anything else is needed.")
+                        handled.append({"case_id": case_id, "event": "acknowledged"})
+                        continue
                     handled.append({"case_id": case_id, "event": "evidence recorded"})
                 else:
                     self.say(chat_id, f"Your case {case_id} is open — a caseworker will be "
@@ -416,6 +440,10 @@ class Telegram:
                     handled.append({"case_id": case_id, "event": "case opened"})
             else:
                 handled.append({"case_id": "-", "event": "intake in progress"})
+        # Flush batched evidence: one POST per case, with everything that
+        # arrived in this poll cycle, so the whole burst is one round.
+        for case_id, (chat_id, docs) in pending_evidence.items():
+            self._send_evidence(chat_id, case_id, docs)
         return handled
 
 

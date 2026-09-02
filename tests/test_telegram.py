@@ -544,6 +544,63 @@ def test_evidence_document_as_first_message_in_batch_does_not_crash(tmp_path, mo
     assert "here is my boarding pass" in contents, "the caption is evidence too"
 
 
+def test_a_burst_of_documents_in_one_poll_cycle_is_one_evidence_round(tmp_path, monkeypatch):
+    """Three PDFs sent together must arrive as ONE evidence submission.
+    Before the fix, each message in a poll cycle was posted separately: the
+    first resolved the round the workflow waits on and woke it immediately, the
+    re-assessment ran against a case file still missing the rest of the burst,
+    and the later posts landed on an already-resolved round — stored on the
+    file but never re-assessed, so the case waited forever (F-026).
+    """
+    from c2c import intake as intake_mod
+    from c2c.telegram import Telegram
+
+    monkeypatch.setattr(intake_mod, "INCOMPLETE_INTAKE", tmp_path / "intake")
+
+    class Stub(IntakeStubHTTP):
+        def get(self, url, params=None):
+            class R:
+                def json(_):
+                    if "getUpdates" in url:
+                        return {"result": [
+                            {"update_id": 21, "message": {"chat": {"id": "42"},
+                             "document": {"file_id": "F1", "file_name": "a.pdf"},
+                             "caption": "check-in"}},
+                            {"update_id": 22, "message": {"chat": {"id": "42"},
+                             "document": {"file_id": "F2", "file_name": "b.pdf"},
+                             "caption": "cancellation notice"}},
+                            {"update_id": 23, "message": {"chat": {"id": "42"},
+                             "document": {"file_id": "F3", "file_name": "c.pdf"},
+                             "caption": "operational report"}},
+                        ]}
+                    if "/c2c/cases/" in url:
+                        return {"state": "AWAITING_EVIDENCE", "evidence_round": 3}
+                    return {"result": {"file_path": "docs/x.pdf"}}
+            return R()
+
+        def post(self, url, json=None):
+            self.posts.append((url, json))
+            class R:
+                def json(_):
+                    return {"ok": True}
+            return R()
+
+    http = Stub()
+    tg = Telegram(token="t", chat_id="1", api="http://cp", client=http)
+    tg.opened_cases["42"] = "C2C-2026-F026"
+    handled = tg.poll_once()
+    assert sum(1 for h in handled if h.get("event") == "evidence recorded") == 3
+    evidence_calls = [p for p in http.posts if p[0].endswith("/evidence")]
+    assert len(evidence_calls) == 1, \
+        "a burst of documents must be ONE evidence submission, not N"
+    assert evidence_calls[0][1]["round"] == 3, "must resolve the round the workflow waits on"
+    docs = evidence_calls[0][1]["documents"]
+    contents = "\n".join(d.get("content", "") for d in docs)
+    for expected in ("a.pdf", "b.pdf", "c.pdf",
+                     "check-in", "cancellation notice", "operational report"):
+        assert expected in contents, f"{expected!r} must reach the case file in the batch"
+
+
 def test_the_opened_case_mapping_survives_a_bot_restart(tmp_path, monkeypatch):
     """A passenger who sends a follow-up after a bot restart must not be asked
     from zero again — and their evidence must land on the open case, not a
