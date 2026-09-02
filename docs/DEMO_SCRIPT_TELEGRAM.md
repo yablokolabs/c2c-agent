@@ -113,11 +113,43 @@ Tap **Approve**.
 
 ## 3:25 — Where it breaks, and holds (50s)
 
-Cut to a terminal. Same as the terminal script:
+Cut to a terminal — a **pre-shot clip** filmed during a dry run. The
+durability suite hosts and kills its own SDK service and force-registers it,
+so in this dockerized stack it runs in a throwaway container with the
+long-running workflow stopped first (the §6 recipe). Never run it live
+mid-take, and never the host form (`make failure-tests`) or a bare
+`docker compose exec` — against this stack that kills or snubs the live
+workflow service (F-024). The terminal script's `make failure-tests` form is
+only accurate against the host topology (`make up`).
 
 ```bash
-docker compose exec api python -m c2c.eval.durability   # see REPRODUCTION_GUIDE §6
+docker compose stop workflow
+
+docker compose run --rm \
+  -e C2C_RESTATE_INGRESS=http://restate:8080 \
+  -e C2C_AIRLINE_BASE=http://api:8099/airline \
+  -e C2C_AIRLINE=http://api:8099/airline \
+  -e C2C_RESTATE_ADMIN=http://restate:9070 \
+  api sh -c '
+    H=$(hostname -i | awk "{print \$1}")
+    python -m c2c.restate_service > /tmp/svc.log 2>&1 &
+    for i in $(seq 1 40); do curl -s -o /dev/null http://localhost:9095 && break; sleep 1; done
+    curl -fs -X POST http://restate:9070/deployments -H "content-type: application/json" \
+      -d "{\"uri\":\"http://$H:9095\",\"force\":true}" >/dev/null
+    sleep 2; python -m c2c.eval.durability'
+
+docker compose start workflow
+# restore the registration the throwaway container clobbered (REPRODUCTION_GUIDE §6):
+curl -s localhost:9070/deployments | grep -o '"uri":"[^"]*"'    # find the stale uri
+curl -X DELETE "http://localhost:9070/deployments/<STALE_ID>?force=true"
+curl -X POST http://localhost:9070/deployments -H 'content-type: application/json' \
+  -d '{"uri":"http://workflow:9095","force":true}'
 ```
+
+Expected: `6/6` scenarios, `duplicate consequential acts 0`. Read the raw
+numbers off the newest `evaluation/results/durability--*.json` — D01
+`calls_that_reached_the_carrier == 4`, D06 `2 / 1`, D05 `0` — while you
+narrate.
 
 > "Six failure scenarios. The one that matters is D06 — SIGKILL the worker in the
 > window around the submission. The carrier received **two** attempts and **one**

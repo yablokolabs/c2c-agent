@@ -133,7 +133,11 @@ land, and pause on the boxed message.)*
 
 ## 2:55 — Where it breaks, and holds (50s)
 
-Run `make failure-tests`.
+Run `make failure-tests`. Host topology only — never while the dockerized
+deployment is up: the suite SIGKILLs every process on the host whose command
+line matches `c2c.restate_service`, and host `/proc` includes the live
+workflow container's service. That is F-024; the dockerized form is
+REPRODUCTION_GUIDE §6.
 
 > "Six failure scenarios, no model calls. The one that matters is D06: SIGKILL
 > the worker in the window around the submission.
