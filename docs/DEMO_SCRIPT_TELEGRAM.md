@@ -174,15 +174,20 @@ Unchanged.
 | What you want | Command |
 |---|---|
 | Airline refuses | `docker compose exec api python -m c2c.tools.carrier` |
-| Airline offers too little | `... c2c.tools.carrier --settle 210` |
-| Airline answers the challenge | `... c2c.tools.carrier --after-challenge` |
+| Airline offers too little | `docker compose exec api python -m c2c.tools.carrier --settle 210` |
+| Airline answers the challenge | `docker compose exec api python -m c2c.tools.carrier --after-challenge` |
 
-It targets the most recently opened live case, so you never have to read a
+All three target the most recently opened live case, so you never have to read a
 reference off your phone mid-take.
 
 The `--settle 210` variant is worth knowing: the agent compares the offer against
 the full entitlement under S9.4 and tells the passenger it is **210 short** and
 that it would push back. That is a strong beat if you have time for it.
+
+The `--after-challenge` variant produces the challenge-outcome message (F-025):
+if the airline holds the refusal the passenger is told the case is resolved on
+C2C's side with everything preserved; if the reply is a settlement, the amount
+is named.
 
 ## If something stalls
 
