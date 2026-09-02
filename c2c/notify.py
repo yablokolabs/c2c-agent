@@ -141,6 +141,19 @@ STAGES = {
         "They have 28 days. If they maintain the refusal or say nothing, "
         "escalation becomes available and I'll ask you then."
     ),
+    "challenge_refused": (
+        "The airline has answered our challenge on {pnr} — and they're holding "
+        "the refusal.\n\n"
+        "C2C's part is done for now ({case_id}). Everything is preserved: the "
+        "claim, the challenge, both refusals, and your documents. Quote the "
+        "reference and it's all retrievable."
+    ),
+    "challenge_settled": (
+        "The airline answered our challenge on {pnr} with a settlement of "
+        "*{amount}*.\n\n"
+        "C2C's part is done ({case_id}). The file stays with you if you ever "
+        "need it."
+    ),
     "escalation_ready": (
         "It's time to escalate {pnr}.\n\n{ground}\n\n"
         "This goes to the Synthetic Passenger Rights Body. Your call."

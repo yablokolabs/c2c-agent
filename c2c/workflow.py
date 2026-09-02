@@ -282,7 +282,17 @@ async def run(ctx: restate.WorkflowContext, req: dict) -> dict:
         return {"case_id": case_id, "claim_id": claim_id, **outcome}
 
     ctx.set("challenge_reply", after)
-    await _set_state(ctx, "RESOLVED_AFTER_CHALLENGE")
+    # Tell the passenger how the challenge came out. Resolving without a word
+    # is the exact silence this project exists to remove (F-025).
+    if after.get("type") in ("settlement_offer", "settled", "paid"):
+        amount = after.get("amount_units")
+        amount_text = f"{amount} units" if amount is not None else "an undisclosed figure"
+        await _tell(ctx, "challenge_settled", pnr=req.get("pnr", case_id),
+                    case_id=case_id, amount=amount_text)
+    else:
+        await _tell(ctx, "challenge_refused", pnr=req.get("pnr", case_id),
+                    case_id=case_id)
+    await _set_state(ctx, "RESOLVED_AFTER_CHALLENGE", pending_action=None)
     return {"case_id": case_id, "claim_id": claim_id,
             "outcome": "resolved_after_challenge", "carrier_reply": after}
 

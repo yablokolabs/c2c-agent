@@ -132,8 +132,32 @@ def test_every_workflow_transition_that_matters_tells_the_passenger():
 
     src = inspect.getsource(workflow)
     for stage in ("case_opened", "claim_filed", "carrier_replied", "challenge_sent",
-                  "escalated", "resolved", "offer_short", "closed_by_human"):
+                  "challenge_refused", "challenge_settled", "escalated", "resolved",
+                  "offer_short", "closed_by_human"):
         assert f'"{stage}"' in src, f"the workflow never tells the passenger about {stage}"
+
+
+def test_the_challenge_outcome_is_told_not_silent():
+    """Before F-025 the workflow moved to RESOLVED_AFTER_CHALLENGE and said
+    nothing, so a case that finished its whole arc was indistinguishable, from
+    the passenger's seat, from one that was forgotten. The tell must sit on the
+    challenge-reply path itself, not somewhere unreachable."""
+    import inspect
+
+    from c2c import workflow
+
+    src = inspect.getsource(workflow)
+    reply_branch = src[src.index('ctx.set("challenge_reply", after)'):]
+    assert 'await _tell(ctx, "challenge_refused"' in reply_branch
+    assert 'await _tell(ctx, "challenge_settled"' in reply_branch
+    assert 'pending_action=None' in reply_branch, "a resolved case should not keep a pending action"
+
+
+def test_the_challenge_resolution_messages_carry_the_outcome():
+    out = render("challenge_refused", pnr="X", case_id="C2C-2026-K7M2P")
+    assert "holding the refusal" in out and "C2C-2026-K7M2P" in out
+    out = render("challenge_settled", pnr="X", case_id="C2C-2026-K7M2P", amount="420 units")
+    assert "420 units" in out and "C2C-2026-K7M2P" in out
 
 
 def test_a_rejected_send_reports_telegrams_own_reason(monkeypatch):
