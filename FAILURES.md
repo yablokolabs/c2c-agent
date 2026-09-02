@@ -1062,6 +1062,43 @@ scan sees processes in every container on the machine.
 
 ---
 
+## F-025 — The case resolved after the challenge without ever telling the passenger
+
+| | |
+|---|---|
+| **Found** | live demo: `--after-challenge` delivered the carrier's reply, the case moved to `RESOLVED_AFTER_CHALLENGE`, and no message arrived — "the passenger should hear from C2C within a minute or two" was false |
+| **Commit** | fixed in `bf955f5` |
+| **Evidence** | the workflow's challenge-reply branch set the state and returned with no `_tell`; `notify.STAGES` had no stage for the outcome |
+
+**Observed.** A case that completed its whole arc — claim filed, refused,
+challenged, answered — produced no passenger-visible message at the end. From
+the passenger's seat, a finished case was indistinguishable from a forgotten
+one.
+
+**Root cause.** The challenge flow's reply branch (`_await_carrier` on
+`challenge_response`) was wired to the state machine only: it wrote
+`RESOLVED_AFTER_CHALLENGE` and returned. The notify side was never connected
+— the same class as F-018 and F-019: a meaningful workflow transition whose
+outbound message was missing.
+
+**Corrective change.** The branch now tells the passenger how the challenge
+came out, from inside `ctx.run` with a fresh step name: `challenge_refused`
+(the airline is holding the refusal; the whole file is preserved) or
+`challenge_settled` (with the settlement amount). It also clears
+`pending_action` so a resolved case stops advertising an open decision.
+
+**Outcome.** 202 passed, 1 skipped. Two regression tests: the tells sit on
+challenge-reply path itself (not somewhere unreachable), and both new messages
+render banner-stamped. Workflow + notify deployed with the F-022 re-registration
+step; a status call through the re-registered deployment confirms the path
+serves.
+
+**Lesson.** Every terminal state is owed a terminal message. Enumerate the
+states a case can end in and check that each one tells — a state whose arc
+ends in silence is this project's thesis, inverted.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |
