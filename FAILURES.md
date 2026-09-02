@@ -1062,6 +1062,47 @@ scan sees processes in every container on the machine.
 
 ---
 
+## F-026 — A burst of evidence documents raced the workflow: only the first one was ever re-assessed
+
+| | |
+|---|---|
+| **Found** | live demo: passenger sent three PDFs (check-in, cancellation notice, operational report) in one burst; the bot re-assessed with only the first, asked again for the other two, then went silent — the case sat in `AWAITING_EVIDENCE` forever |
+| **Commit** | fixed in `9399cfc` |
+| **Evidence** | six `POST /evidence` calls in ~2 s (one per message) while the workflow woke on the first; the round-1 re-assessment's `list_documents` showed only `E2`; the later posts returned `duplicate: true` — stored on the file, never re-assessed |
+
+**Observed.** Three PDFs sent together produced: re-assessment → "what's
+missing" for documents that were already on the case file (they arrived as the
+re-assessment ran), then silence. From the passenger's seat: "but I sent the
+documents." The case file had all three with extracted text; the workflow had
+only ever seen the first.
+
+**Root cause.** The bot's poll loop submitted each message as its own evidence
+POST. The first POST resolved the round the workflow waits on and woke it
+immediately; the re-assessment read the case file while the rest of the burst
+was still being written. The later POSTs then hit an already-resolved round
+(`evidence_0`) — absorbed as duplicates, documents stored but no re-assessment
+scheduled. The workflow advanced to round 1 and waited on `evidence_1`, which
+nothing would ever resolve. Same class as F-021's first-message-in-batch
+crash: the poll cycle's granularity did not match the workflow's round
+semantics.
+
+**Corrective change.** The bot now batches all evidence from one poll cycle
+into a single submission per case — one POST, one round, one re-assessment
+that sees the whole burst. An empty message for a waiting case still acks
+without touching the file.
+
+**Outcome.** 203 passed, 1 skipped. New regression test: three documents in
+one poll cycle produce exactly one evidence POST carrying all three, resolved
+against the round the workflow waits on. Bot container rebuilt and deployed;
+`pending_evidence` confirmed in the running image.
+
+**Lesson.** A document burst is one thought, not three messages. When a
+workflow's unit of progress is a round, the ingest side must coalesce to that
+granularity — otherwise the workflow races its own input and the passenger
+watches their documents be "lost" twice: once asked for again, once silent.
+
+---
+
 ## F-025 — The case resolved after the challenge without ever telling the passenger
 
 | | |
