@@ -1103,6 +1103,49 @@ watches their documents be "lost" twice: once asked for again, once silent.
 
 ---
 
+## F-027 — A transient Telegram failure silently swallowed the challenge outcome: the workflow recorded the send as successful and resolved the case anyway
+
+| | |
+|---|---|
+| **Found** | live demo: `--after-challenge` delivered the carrier's reply, the case moved to `RESOLVED_AFTER_CHALLENGE`, and no message arrived — even though the F-025 tell sits on that exact branch, before the state transition |
+| **Commit** | fixed in `4c54c1a` |
+| **Evidence** | case `C2C-2026-3276B` at `RESOLVED_AFTER_CHALLENGE` with `pending_action` cleared (only the F-025 code clears it, *after* the tell — so the tell ran); workflow container logs empty in the window (it logs exceptions, not deliveries); a manual `notify.send` of the same stage from the same container returned `delivered: true` minutes later |
+
+**Observed.** The challenge outcome message never arrived, yet the workflow
+believed it had sent it. From the passenger's seat the case finished its whole
+arc in silence — indistinguishable from F-025, which had supposedly fixed
+this exact moment one commit earlier.
+
+**Root cause.** `notify.send` never raises — deliberately, so a Telegram
+outage cannot park a claim behind an undelivered update. But `ctx.run`'s
+`max_attempts` retries only on *exceptions*, and a refused delivery is a
+return value, not an exception. So a transient failure was recorded as a
+successful durable step: no retry, no log, no trace, and the workflow moved
+on to resolve the case. The never-park guarantee had quietly become a
+ever-tell guarantee — the message was dropped, and nothing anywhere knew.
+
+**Corrective change.** The tell and approval steps now deliver through a
+shared retrying helper: three attempts with 1s/2s backoff inside the same
+durable step (so a replay still cannot double-send), a loud `[notify]` line
+in the workflow log if all three fail, and `notify_failure` written into case
+state where `status()` surfaces it. The never-park contract is kept — the
+workflow still advances rather than wedging — but a lost message is now
+visible and recoverable instead of indistinguishable from success.
+
+**Outcome.** 206 passed, 1 skipped. New tests: a transient failure is
+retried and succeeds; a persistent failure is logged loudly and reported;
+and the tell checks the delivery result and records `notify_failure`.
+Workflow container rebuilt, force re-registered (F-022 discipline), status
+call verified through the new deployment.
+
+**Lesson.** A component that "never fails" moves failure somewhere
+invisible. The never-park decision was right for the workflow's progress; it
+was wrong to let the same decision erase the passenger's only copy of a
+consequential outcome. Retry inside the durable step, and when you still
+cannot deliver, fail loudly into state the case itself can show.
+
+---
+
 ## F-025 — The case resolved after the challenge without ever telling the passenger
 
 | | |
