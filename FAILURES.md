@@ -1013,6 +1013,55 @@ as a workaround and it worked.
 
 ---
 
+## F-024 — The durability suite was run inside the running api container, so every scenario failed slowly against a dead ingress
+
+| | |
+|---|---|
+| **Found** | `docker compose exec api python -m c2c.eval.durability` sat at `d01_carrier_api_503 ...` for minutes with no further output and was presumed hung |
+| **Commit** | documented here and in `c2c/eval/durability.py`; the fix is invocation hygiene, not code |
+| **Evidence** | inside the api container `localhost:8080` answers nothing (port 8099 is the api's own listen port; the real ingress is `restate:8080` on the docker network); the suite defaults `C2C_RESTATE_INGRESS` to `http://localhost:8080` |
+
+**Observed.** A run that looked hung was failing slowly. Every workflow call
+(`start_workflow`, `status`, `approve`) failed instantly against the dead
+ingress, but each scenario then burned two 90-second `wait_for_state` polls —
+roughly three minutes of silence per scenario, ~15 minutes for the six, ending
+in a row of FAILs. The run also armed a `503 × 3` injection in the airline
+simulator before dying, which would have eaten the next three real
+submissions.
+
+**Root cause.** The suite's endpoint defaults (`localhost:8080` for the
+ingress, `localhost:8099` for the control plane) encode the host topology that
+`make up` starts. Inside a container, `localhost:8080` is a dead port. The
+REPRODUCTION_GUIDE.md Docker recipe exists precisely because of this — it sets
+`C2C_RESTATE_INGRESS=http://restate:8080` and
+`C2C_AIRLINE_BASE=http://api:8099/airline`, registers the suite's own SDK
+service, and cleans up afterwards — but nothing stopped a bare `docker
+compose exec` from being run instead.
+
+The sharper hazard is on the other side of the same coin: run from the **host**
+while the compose workflow is up and `Service.kill()` scans host `/proc` for
+`c2c.restate_service` and SIGKILLs the live workflow container's service too —
+`_pids_running` excludes only the caller itself. The suite must never run
+against the compose deployment.
+
+**Corrective change.** No code change (deliberate — option chosen was to keep
+the suite host-topology-only). The docstring now says how to run it the two
+supported ways, the `failure-tests` Makefile target names the host topology and
+points at the guide, and this entry records the mis-invocation. The aborted
+run's armed 503 injection was cleared with `POST /airline/_admin/reset`.
+
+**Outcome.** Stuck run killed (`pkill` on the suite and the durability stub),
+airline simulator reset to `injection: none`, live deployment untouched — one
+registered deployment (`http://workflow:9095`), api healthy, case `6YTA5`
+unaffected.
+
+**Lesson.** A suite's endpoint defaults are an assertion about which topology
+is live. Before running a failure-injection harness, say out loud where its
+ingress, control plane, and service port point — and remember a host `/proc`
+scan sees processes in every container on the machine.
+
+---
+
 ## F-015 — The intake "restart memory" fix persisted the wrong object and never read it back
 
 | | |

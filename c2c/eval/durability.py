@@ -4,6 +4,24 @@ Measures what the reasoning benchmark cannot: whether the system stays with a
 case when things break. Six scenarios, each one a specific invariant from the
 project brief.
 
+How to run -- read this before running:
+
+- Host topology (the designed target): ``make up && make failure-tests``.
+- Docker (clean-stack reproduction only): the throwaway-container recipe in
+  REPRODUCTION_GUIDE.md, which sets ``C2C_RESTATE_INGRESS``/``C2C_AIRLINE_BASE``
+  to the in-network addresses, registers this suite's own SDK service, and
+  cleans up afterwards. Never a plain ``docker compose exec ...`` run.
+
+The defaults encode the host topology. ``docker compose exec api python -m
+c2c.eval.durability`` with default env makes ``http://localhost:8080`` (the
+``C2C_RESTATE_INGRESS`` default) point at a dead port inside the container:
+every workflow call fails instantly, then each scenario burns two 90-second
+state polls, so the run looks hung and ends in six FAILs (F-024). And run from
+the host while the compose workflow is up, ``Service.kill()`` scans host
+``/proc`` for ``c2c.restate_service`` and SIGKILLs the live workflow service
+alongside its own spawned instance -- the suite must never run against the
+compose deployment.
+
 The agent is deliberately not in the loop here. Each scenario points the
 workflow's assess step at a stub that returns a fixed verdict, because what is
 under test is the workflow, and model nondeterminism would only add variance to

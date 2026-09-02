@@ -107,7 +107,11 @@ down:  ## stop only what C2C started, and leave other tenants alone
 
 # --- durability -------------------------------------------------------------
 
-failure-tests: setup  ## run the six failure-injection scenarios (needs 'make up')
+# HOST topology only (make up first), never against the compose deployment:
+# the suite replaces the SDK service and its /proc-wide kill would SIGKILL the
+# live workflow container's service. The Docker recipe is REPRODUCTION_GUIDE.md
+# §3f; the mis-invocation is F-024.
+failure-tests: setup  ## run the six failure-injection scenarios (host topology: 'make up' first; Docker recipe in REPRODUCTION_GUIDE.md §3f)
 	$(PY) -m c2c.eval.durability
 
 # --- demo -------------------------------------------------------------------
